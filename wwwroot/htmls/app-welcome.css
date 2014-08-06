@@ -1,0 +1,16 @@
+	input, /* for mozilla */
+	textarea, /* for mozilla */
+	select, /* for mozilla */
+	option, /* for mozilla */
+	button, /* for mozilla */
+	html,
+	body {
+		font-family: 'Microsoft Yahei UI Light', 'Microsoft Yahei UI', 'Microsoft Yahei', 'SimHei', Sans-Serif;
+		}
+
+	html, body {
+		margin: 0;
+		padding: 0;
+	}
+
+	
