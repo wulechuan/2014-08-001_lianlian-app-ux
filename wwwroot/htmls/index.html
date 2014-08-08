@@ -1,10 +1,380 @@
 <!DOCTYPE html>
 <html lang="zh-CN" class="welcome-test-page">
 <head>
-	<title>连联App</title>
+	<meta charset="utf-8" />
+	<title>animation toolkit testing</title>
+	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	<link rel="stylesheet" href="../stylesheets/lly-animation-toolkits.css" />
+	<link rel="stylesheet" href="../stylesheets/lly-animation-toolkits-debug.css" />
 	<link rel="stylesheet" href="../stylesheets/app-welcome.css" />
+
+	<script src="../scripts/jquery-1.11.1.min.js"></script>
+	<script src="../scripts/init-website.js"></script>
+	<script src="../scripts/wlc-js.js"></script>
+	<script src="../scripts/swipe.js"></script>
+
+	<style id="style-temp">
+		html {
+			background-color: #eee;
+		}
+
+
+
+		#info-box {
+			font-size: 16px;
+			position: absolute;
+			z-index: 100;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+		}
+
+		#info-box .info {
+			width: 220px;
+			/*min-height: 180px;*/
+			position: absolute;
+			color: white;
+			overflow: hidden;
+			padding: 10px;
+			white-space: nowrap;
+			background-color: rgba(0,0,0,0.2);
+			border-radius: 5px;
+			border: 1px solid rgba(0,0,0,0.6);
+			box-shadow: 5px 5px 8px 1px rgba(0,0,0,0.3);
+			transition: opacity 1s ease-out;
+
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+		}
+
+		#info-box .info.faded {
+			opacity: 0.1;
+		}
+
+		#info-box .info:nth-of-type(1) {
+			top: 10px;
+			left: 10px;
+		}
+
+		#info-box .info:nth-of-type(2) {
+			top: 10px;
+			left: 260px;
+		}
+
+		#info-box .info:nth-of-type(3) {
+			top: 10px;
+			left: 510px;
+		}
+
+
+
+
+		#info-box .info > div {
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+		}
+
+		#info-box .info > div:not(:last-child) {
+			padding-bottom: 10px;
+		}
+
+		#info-box .info > div:not(:first-child) {
+			padding-top: 10px;
+			border-top: 1px solid rgba(0,0,0,0.6);
+		}
+
+
+
+
+		#info-box .info.info-shadow {
+			color: rgba(255,166,166,1);
+			background-color: rgba(79,0,0,0.1);
+		}
+
+		#info-box .info.info-shadow,
+		#info-box .info.info-shadow > div:not(:first-child) {
+			border-color: rgba(79,0,0,0.3);
+		}
+
+
+
+
+		.stage {
+			width: 840px;
+			height: 600px;
+			background: #678;
+			margin: 20px auto;
+			box-shadow: inset 2px 2px 6px 1px rgba(0,0,0,0.4);
+		}
+		.stage .size {
+			width: 50px;
+			height: 150px;
+		}
+	</style>
 </head>
 <body>
 
+
+<section class="stage debug-branch">
+	<section id="info-box">
+		<div class="info" id="debug-info-block1">
+			<div id="debug-info-global-mouse">&nbsp;<br/>&nbsp;</div>
+			<div id="debug-info-global-target">&nbsp;</div>
+		</div>
+		<div class="info" id="debug-info-block2">
+			<div id="debug-info-current-init"></div>
+			<div id="debug-info-current-dynamic"></div>
+		</div>
+		<div class="info info-shadow" id="debug-info-block3">
+			<div>&nbsp;<br/>&nbsp;</div>
+			<div id="debug-info-last"></div>
+		</div>
+	</section>
+
+	<i class="locator debug" style="left:50%; top:50%;">
+
+		<i class="size"><i class="symbol pivot debug"			></i></i>
+		<!--
+		<i class="size"><i class="symbol pivot-top"				></i></i>
+		<i class="size"><i class="symbol pivot-top-right"		></i></i>
+		<i class="size"><i class="symbol pivot-left"			></i></i>
+		<i class="size"><i class="symbol pivot"					></i></i>
+		<i class="size"><i class="symbol pivot-right"			></i></i>
+		<i class="size"><i class="symbol pivot-bottom-left"		></i></i>
+		<i class="size"><i class="symbol pivot-bottom"			></i></i>
+		<i class="size"><i class="symbol pivot-bottom-right"	></i></i>
+		-->
+
+	</i>
+
+	<i class="locator" style="left:20%; top:50%;">
+		<i class="size"><i class="symbol pivot-top-right" style="margin: -30% 0 0 30%;"></i></i>
+	</i>
+	<i class="locator" style="left:80%; top:50%;">
+		<i class="size"><i class="symbol pivot-bottom"></i></i>
+	</i>
+</section>
+<script id="script-temp">
+	var mouseDrag = {
+		isDragging: false,
+		startX: NaN,
+		startY: NaN,
+		deltaX: NaN,
+		deltaY: NaN,
+		distance: NaN,
+		newDegree: NaN,
+
+		startDragging: function (e) {
+
+		},
+
+		stopDragging: function (e) {
+
+		},
+	};
+
+	var infoBox = {
+		infoBlock1: document.querySelector('#debug-info-block1'),
+		infoBlock2: document.querySelector('#debug-info-block2'),
+		infoBlock3: document.querySelector('#debug-info-block3'),
+
+		infoGlobalMouse: document.querySelector('#debug-info-global-mouse'),
+		infoGlobalTarget: document.querySelector('#debug-info-global-target'),
+
+		infoCurrentInit: document.querySelector('#debug-info-current-init'),
+		infoCurrentDynamic: document.querySelector('#debug-info-current-dynamic'),
+
+		infoLast: document.querySelector('#debug-info-last'),
+
+		updateGlobalInfo: function (e) {
+			this.infoGlobalMouse.innerHTML =  ''
+				+	'mouse pageX='+e.pageX+'<br/>'
+				+	'mouse pageY='+e.pageY+'<br/>';
+			this.infoGlobalTarget.innerHTML =  ''
+				+	(activeLocator ? ('Selected symbol:\<br\/\>old angle='+Math.round(activeLocator.degreeOnClick)) : '[no symbol selected yet]');
+		},
+
+		updateCurrentInitInfo: function () {
+			this.updateLastInfo();
+			this.fadeInBlock(this.infoBlock2);
+			this.infoCurrentInit.innerHTML = ''
+				+	'startX='+mouseDrag.startX+'<br/>'
+				+	'startY='+mouseDrag.startY;
+		},
+
+		updateCurrentDynamicInfo: function () {
+			this.fadeInBlock(this.infoBlock2);
+			this.infoCurrentDynamic.innerHTML = ''
+				+	'deltaX='+mouseDrag.deltaX+'<br/>'
+				+	'deltaY='+mouseDrag.deltaY+'<br/>'
+				+	'distance='+mouseDrag.distance+'<br/>'
+				+	'degree='+Math.round(mouseDrag.newDegree);
+		},
+
+		updateLastInfo: function () {
+			this.fadeInBlock(this.infoBlock3);
+			this.infoLast.innerHTML = this.infoCurrentDynamic.innerHTML;
+		},
+
+		fadeInBlock: function (block) {
+			$(block).removeClass('faded');
+		},
+
+		fadeOutBlock: function (block) {
+			$(block).addClass('faded');
+		}
+	};
+
+	(function () { // init infoBox
+		this.updateCurrentDynamicInfo();
+		this.updateCurrentInitInfo();
+		this.fadeOutBlock(this.infoBlock2);
+		this.fadeOutBlock(this.infoBlock3);
+	}).call(infoBox);
+
+	var activeLocator = null;
+	var selectedSymbol = null;
+
+
+
+	function deselectSymbol(e) {
+		$(findSymbol(e)).removeClass('selected');
+		activeLocator = null;
+		selectedSymbol = null;
+	}
+
+	function selectSymbol(e) {
+		// l('selectSymbol:',e);
+		var desiredLocator = findSymbolLocator(e);
+		if (!desiredLocator) {
+			deselectSymbol(selectedSymbol);
+			return false;
+		}
+
+		var desiredSymbol = findSymbol(e);
+		if (!desiredSymbol || selectedSymbol===desiredSymbol) {
+			return false;
+		}
+
+		$(selectedSymbol).removeClass('selected');
+
+		activeLocator = desiredLocator;
+		selectedSymbol = desiredSymbol;
+		$(desiredSymbol).addClass('selected');
+	}
+
+	function findSymbolLocator(e) {
+		if (!e) return null;
+		var pN = e;
+		while (pN.className.indexOf('locator')<0 && pN !== document.body) {
+			pN = pN.parentNode;
+		}
+		return (pN.className.indexOf('locator')<0) ? null : pN;
+	}
+
+	function findSymbol(e) {
+		if (!e) return null;
+		var pN = e;
+
+		if (false) {
+			while (pN && pN.className.indexOf('symbol')<0) {
+				pN = pN.firstChild;
+			}
+			return !pN ? null : pN;
+		} else {
+			return (pN.className.indexOf('symbol')<0) ? null : pN;
+		}
+	}
+
+
+	function rotate(degreeDelta) {
+		this.style.transform = 'rotate('+(this.degreeOnClick + degreeDelta)+'deg)';
+		return (this.degreeOnClick + degreeDelta);
+	}
+
+
+	$('.stage')
+
+		.on('mousedown', function (e) {
+			// l('body < on mouse DOWN >. event target:',e.target);
+			if (!activeLocator) {
+				// l('no activeLocator. so i\'ll do nothing.');
+				return true;
+			}
+			// l('start dragging. activeLocator',activeLocator);
+			mouseDrag.isDragging = true;
+			mouseDrag.clickedElement = e.target;
+			mouseDrag.startX = e.pageX;
+			mouseDrag.startY = e.pageY;
+			mouseDrag.deltaX = 0;
+			mouseDrag.deltaY = 0;
+			mouseDrag.distance = 0;
+			activeLocator.degreeOnClick = activeLocator.real2DRotationAngle;
+
+			infoBox.updateCurrentInitInfo();
+		})
+
+		.on('mouseup', function (e) {
+			// l('body < on mouse UP >. event target:',e.target);
+
+			if (!mouseDrag.isDragging || (mouseDrag.isDragging && mouseDrag.distance < 3) ) {
+				// if (!mouseDrag.isDragging) {
+				// 	l('NOT dragging. select something or deselect all.');
+				// } else {
+				// 	l('mouse was nearly moved. action treated as selecting something or deselecting all.');
+				// }
+
+				selectSymbol(e.target);
+
+				// if (selectedSymbol) {
+				// 	l(selectedSymbol, 'selected.');
+				// } else {
+				// 	l('deselect all!');
+				// }
+
+				mouseDrag.isDragging = false;
+				mouseDrag.startX = NaN;
+				mouseDrag.startY = NaN;
+				mouseDrag.deltaX = NaN;
+				mouseDrag.deltaY = NaN;
+				mouseDrag.distance = NaN;
+
+				return true;
+			}
+
+			mouseDrag.isDragging = false;
+			mouseDrag.startX = NaN;
+			mouseDrag.startY = NaN;
+			mouseDrag.deltaX = NaN;
+			mouseDrag.deltaY = NaN;
+			mouseDrag.distance = NaN;
+			// l('dragging stopped.');
+		})
+
+		.on('mousemove.dragging', function (e) {
+			if (!mouseDrag.isDragging) {
+				return true;
+			}
+			mouseDrag.deltaX = e.pageX - mouseDrag.startX;
+			mouseDrag.deltaY = e.pageY - mouseDrag.startY;
+			mouseDrag.distance = Math.round(Math.sqrt(mouseDrag.deltaX*mouseDrag.deltaX+mouseDrag.deltaY*mouseDrag.deltaY)*100)/100;
+
+			if (mouseDrag.distance < 3) {
+				mouseDrag.distance = 0;
+			} else {
+				mouseDrag.newDegree = Math.remapDegreeInto_0_360( rotate.call(activeLocator,mouseDrag.deltaX) );
+				infoBox.updateCurrentDynamicInfo();
+			}
+		})
+
+		.on('mousemove.default', function (e) {
+			infoBox.updateGlobalInfo(e);
+		});
+</script>
 </body>
 </html>

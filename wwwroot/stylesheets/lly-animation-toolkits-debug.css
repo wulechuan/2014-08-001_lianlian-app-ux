@@ -1,0 +1,75 @@
+.locator.debug,
+.debug-branch .locator {
+/*	width: 40px;
+	height: 40px;*/
+}
+
+.locator:before { z-index: 1000; }
+.locator:after  { z-index: 1001; }
+
+.locator:before {
+	display: block;
+	box-sizing: border-box;
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 40px;
+	height: 40px;
+	overflow: hidden;
+	border-top: 2px solid rgba(240,0,0,0.79); 
+	border-left: 2px solid rgba(0,240,0,0.79); 
+	margin: -1px;
+}
+
+.locator:after {
+	display: block;
+	box-sizing: border-box;
+	position: absolute;
+	left: -4px;
+	top: -4px;
+	width: 8px;
+	height: 8px;
+	background-color: white;
+	border: 1px solid black;
+	border-radius: 999px;
+	overflow: hidden;
+}
+
+.locator.selected:before,
+.locator.debug:before,
+.debug-branch.locator:before,
+.debug-branch .locator:before {
+	content: '';
+}
+
+.locator.selected:after,
+.locator.debug:after,
+.debug-branch.locator:after,
+.debug-branch .locator:after {
+	content: '';
+}
+
+
+.debug-branch .show-bbox,
+.debug.show-bbox,
+.symbol.debug,
+*[class|=symbol].debug,
+.debug-branch.symbol,
+.debug-branch .symbol,
+.debug-branch[class|=symbol],
+.debug-branch *[class|=symbol] {
+	outline: 1px solid rgba(255,255,255,0.319);
+	outline-offset: -1px;
+}
+
+.selected
+/*.debug-branch .show-bbox.selected,
+.debug.show-bbox.selected,
+.symbol.debug.selected,
+*[class|=symbol].debug.selected,
+.debug-branch .symbol.selected,
+.debug-branch *[class|=symbol].selected*/ {
+	outline: 3px solid rgba(255,255,255,0.79);
+	outline-offset: -1px;
+}
+
