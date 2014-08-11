@@ -14,10 +14,9 @@ html, body {
 }
 
 
-
 .actress {
-	left: 50%;
-	bottom: 0;
+	left: 790px;
+	bottom: 90px;
 	top: auto!important;
 	/*transform: scale3d(0.5,0.5,0.5);*/
 	}
@@ -46,7 +45,6 @@ html, body {
 	.actress .pants { left: 0; top: 0; }
 		.actress .pants	> .size { width: 87px; height: 47px; }
 		.actress .pants	> .size > .pivot {}
-
 
 
 	.actress .trunk { left: 0; top: -10px; }
@@ -104,113 +102,333 @@ html, body {
 
 
 
-	@-webkit-keyframes wak-actress-walking-arm-l {
-		0% { transform: rotateZ(110deg) scale3d(0.85,0.85,1); }
-		to { transform: rotateZ(-10deg) scale3d(0.85,0.85,1); }
-	}
-
-	@keyframes wak-actress-walking-arm-l {
-		0% { transform: rotateZ(110deg) scale3d(0.85,0.85,1); }
-		to { transform: rotateZ(-10deg) scale3d(0.85,0.85,1); }
-	}
-
-	@-webkit-keyframes wak-actress-walking-arm-r {
-		0% { transform: rotateZ(110deg); }
-		to { transform: rotateZ(-10deg); }
-	}
-
-	@keyframes wak-actress-walking-arm-r {
-		0% { transform: rotateZ(110deg); }
-		to { transform: rotateZ(-10deg); }
-	}
-
-
-
-	@-webkit-keyframes wak-actress-walking-leg {
-		0% { transform: rotateZ(16deg) translate3d(-24px,0,0); }
-		to { transform: rotateZ(-16deg) translate3d(24px,0,0); }
-	}
-
-	@keyframes wak-actress-walking-leg {
-		0% { transform: rotateZ(16deg) translate3d(-24px,0,0); }
-		to { transform: rotateZ(-16deg) translate3d(24px,0,0); }
-	}
-
-
-
-	@-webkit-keyframes wak-actress-walking-pants {
-		0% { transform: rotateZ(2deg) translate3d(0,0,0); }
-		to { transform: rotateZ(-2deg) translate3d(0,0,0); }
-	}
-
-	@keyframes wak-actress-walking-pants {
-		0% { transform: rotateZ(2deg) translate3d(0,0,0); }
-		to { transform: rotateZ(-2deg) translate3d(0,0,0); }
-	}
-
-
-
-	@-webkit-keyframes wak-actress-walking-trunk {
-		0% { transform: rotateZ(3deg) translate3d(-1px,0,0); }
-		to { transform: rotateZ(-3deg) translate3d(1px,0,0); }
-	}
-
-	@keyframes wak-actress-walking-trunk {
-		0% { transform: rotateZ(3deg) translate3d(-1px,0,0); }
-		to { transform: rotateZ(-3deg) translate3d(1px,0,0); }
-	}
-
-
-
 	@-webkit-keyframes wak-actress-walking-head {
 		0% { transform: rotateZ(-2deg) translate3d(0,0,0); }
 		50% { transform: translate3d(0,-1px,0); }
 		to { transform: rotateZ(1deg) translate3d(0,0,0); }
-	}
+		}
 
-	@keyframes wak-actress-walking-head {
-		0% { transform: rotateZ(-2deg) translate3d(0,0,0); }
-		50% { transform: translate3d(0,-1px,0); }
-		to { transform: rotateZ(1deg) translate3d(0,0,0); }
-	}
-
-
+		@keyframes wak-actress-walking-head {
+			0% { transform: rotateZ(-2deg) translate3d(0,0,0); }
+			50% { transform: translate3d(0,-1px,0); }
+			to { transform: rotateZ(1deg) translate3d(0,0,0); }
+		}
 
 
-	.actress.walking .arm.l {
-		-webkit-animation: wak-actress-walking-arm-l 0.5s -0.5s ease-in-out alternate infinite both;
-		animation: wak-actress-walking-arm-l 0.5s -0.5s ease-in-out alternate infinite both;
-	}
-	.actress.walking .arm.r {
-		-webkit-animation: wak-actress-walking-arm-r 0.5s 0s ease-in-out alternate infinite both;
-		animation: wak-actress-walking-arm-r 0.5s 0s ease-in-out alternate infinite both;
-	}
 
-	.actress.walking .leg.l {
-		-webkit-animation: wak-actress-walking-leg 0.5s -0.5s ease-in-out alternate infinite both;
-		animation: wak-actress-walking-leg 0.5s -0.5s ease-in-out alternate infinite both;
-	}
-	.actress.walking .leg.r {
-		-webkit-animation: wak-actress-walking-leg 0.5s 0s ease-in-out alternate infinite both;
-		animation: wak-actress-walking-leg 0.5s 0s ease-in-out alternate infinite both;
-	}
 
-	.actress.walking .pants {
-		-webkit-animation: wak-actress-walking-pants 0.25s 0s ease-in-out alternate infinite both;
-		animation: wak-actress-walking-pants 0.25s 0s ease-in-out alternate infinite both;
-	}
+		@-webkit-keyframes wak-actress-walking-arm-l {
+			0% { transform: rotateZ(110deg) scale3d(0.85,0.85,1); }
+			to { transform: rotateZ(-10deg) scale3d(0.85,0.85,1); }
+		}
 
-	.actress.walking .trunk {
-		-webkit-animation: wak-actress-walking-trunk 0.25s -0.25s ease-in-out alternate infinite both;
-		animation: wak-actress-walking-trunk 0.25s -0.25s ease-in-out alternate infinite both;
-	}
+		@keyframes wak-actress-walking-arm-l {
+			0% { transform: rotateZ(110deg) scale3d(0.85,0.85,1); }
+			to { transform: rotateZ(-10deg) scale3d(0.85,0.85,1); }
+		}
+
+		@-webkit-keyframes wak-actress-walking-arm-r {
+			0% { transform: rotateZ(110deg); }
+			to { transform: rotateZ(-10deg); }
+		}
+
+		@keyframes wak-actress-walking-arm-r {
+			0% { transform: rotateZ(110deg); }
+			to { transform: rotateZ(-10deg); }
+		}
+
+
+
+		@-webkit-keyframes wak-actress-walking-leg {
+			0% { transform: rotateZ(16deg) translate3d(-24px,0,0); }
+			to { transform: rotateZ(-16deg) translate3d(24px,0,0); }
+		}
+
+		@keyframes wak-actress-walking-leg {
+			0% { transform: rotateZ(16deg) translate3d(-24px,0,0); }
+			to { transform: rotateZ(-16deg) translate3d(24px,0,0); }
+		}
+
+
+
+		@-webkit-keyframes wak-actress-walking-pants {
+			0% { transform: rotateZ(2deg) translate3d(0,0,0); }
+			to { transform: rotateZ(-2deg) translate3d(0,0,0); }
+		}
+
+		@keyframes wak-actress-walking-pants {
+			0% { transform: rotateZ(2deg) translate3d(0,0,0); }
+			to { transform: rotateZ(-2deg) translate3d(0,0,0); }
+		}
+
+
+
+		@-webkit-keyframes wak-actress-walking-trunk {
+			0% { transform: rotateZ(3deg) translate3d(-1px,0,0); }
+			to { transform: rotateZ(-3deg) translate3d(1px,0,0); }
+		}
+
+		@keyframes wak-actress-walking-trunk {
+			0% { transform: rotateZ(3deg) translate3d(-1px,0,0); }
+			to { transform: rotateZ(-3deg) translate3d(1px,0,0); }
+		}
 
 	.actress.walking .head {
 		-webkit-animation: wak-actress-walking-head 0.25s -0.125s ease-in-out alternate infinite both;
 		animation: wak-actress-walking-head 0.25s -0.125s ease-in-out alternate infinite both;
-	}
+		}
+
+		.actress.walking .arm.l {
+			-webkit-animation: wak-actress-walking-arm-l 0.5s -0.5s ease-in-out alternate infinite both;
+			animation: wak-actress-walking-arm-l 0.5s -0.5s ease-in-out alternate infinite both;
+		}
+		.actress.walking .arm.r {
+			-webkit-animation: wak-actress-walking-arm-r 0.5s 0s ease-in-out alternate infinite both;
+			animation: wak-actress-walking-arm-r 0.5s 0s ease-in-out alternate infinite both;
+		}
+
+		.actress.walking .leg.l {
+			-webkit-animation: wak-actress-walking-leg 0.5s -0.5s ease-in-out alternate infinite both;
+			animation: wak-actress-walking-leg 0.5s -0.5s ease-in-out alternate infinite both;
+		}
+		.actress.walking .leg.r {
+			-webkit-animation: wak-actress-walking-leg 0.5s 0s ease-in-out alternate infinite both;
+			animation: wak-actress-walking-leg 0.5s 0s ease-in-out alternate infinite both;
+		}
+
+		.actress.walking .pants {
+			-webkit-animation: wak-actress-walking-pants 0.25s 0s ease-in-out alternate infinite both;
+			animation: wak-actress-walking-pants 0.25s 0s ease-in-out alternate infinite both;
+		}
+
+		.actress.walking .trunk {
+			-webkit-animation: wak-actress-walking-trunk 0.25s -0.25s ease-in-out alternate infinite both;
+			animation: wak-actress-walking-trunk 0.25s -0.25s ease-in-out alternate infinite both;
+		}
 
 
+
+
+
+.bg-gradient,
+.bg-buildings,
+.bg-road { left: 0; top: auto !important; bottom: 0; }
+	.bg-gradient	> .size { width: 4480px; height: 717px; }
+	.bg-buildings	> .size { width: 4480px; height: 717px; }
+	.bg-road		> .size { width: 4480px; height: 95px; }
+	.bg-gradient	> .size > .pivot {}
+	.bg-buildings	> .size > .pivot {}
+	.bg-road		> .size > .pivot {}
+
+
+.element-wifi-hotspot { top: auto !important; }
+	.element-wifi-hotspot	> .size { width: 151px; height: 163px; }
+	.element-wifi-hotspot	> .size.small { width: 30px; height: 35px; }
+	.element-wifi-hotspot	> .size			> .pivot {}
+	.element-wifi-hotspot	> .size.small	> .pivot { /*transform: scale3d(0.25,0.25,0.25);*/ }
+
+
+	.element-tree { top: auto !important; }
+		.element-tree	> .size { width: 136px; height: 102px; }
+		.element-tree	> .size > .pivot {}
+
+
+	.element-cloud { top: auto !important; }
+		.element-cloud	> .size { width: 142px; height: 77px; }
+		.element-cloud	> .size > .pivot {}
+
+
+	*[class*='element-vehicle'] { top: auto !important; }
+		*[class*='element-vehicle']	> .size { width: 190px; height: 77px; }
+		*[class*='element-vehicle']	> .size > .pivot {}
+		#car-1 { left: 30px; bottom: 120px; }
+		#car-2 { left: 160px; bottom: 80px; }
+		#car-3 { left: 290px; bottom: 40px; }
+		#car-4 { left: 320px; bottom: 0px; }
+
+
+
+
+
+
+
+.scenario-center { top: auto!important; bottom: 95px; }
+
+
+
+
+	.bus-stop-pole { top: auto!important; }
+	.bus-stop-trash-bin { top: auto!important; }
+		.bus-stop-pole		> .size { width: 547px; height: 631px; }
+		.bus-stop-trash-bin	> .size { width: 148px; height: 169px; }
+
+		.bus-stop-pole		> .size > .pivot {}
+		.bus-stop-trash-bin	> .size > .pivot {}
+
+		#scenario-1 .bus-stop-pole		{ left: 202px; bottom: 0; }
+		#scenario-1 .bus-stop-trash-bin	{ left: 307px; bottom: 0; }
+		#scenario-1 .scenario-center 	{ left: 0; }
+
+		#scenario-1 #bus-stop-cloud-1 { left: 180px; bottom: 490px; }
+		#scenario-1 #bus-stop-cloud-2 { left: 320px; bottom: 420px; }
+		#scenario-1 #bus-stop-cloud-3 { left: 220px; bottom: 450px; }
+		#scenario-1 #bus-stop-cloud-1 > .size > .pivot { transform: scale3d(1,1,0.99); }
+		#scenario-1 #bus-stop-cloud-2 > .size > .pivot { transform: scale3d(0.6,0.56,0.5); }
+		#scenario-1 #bus-stop-cloud-3 > .size > .pivot { transform: scale3d(0.6,0.56,0.5); }
+
+
+
+
+
+
+	.hotel			{ top: auto!important; }
+	.coffee-shop	{ top: auto!important; }
+		.hotel					> .size { width: 262px; height: 396px; }
+		.hotel			.brand	> .size { width: 219px; height: 59px; }
+		.coffee-shop			> .size { width: 317px; height: 295px; }
+		.coffee-shop	.brand	> .size { width: 206px; height: 76px; }
+
+		.hotel					> .size > .pivot {}
+		.hotel			.brand	> .size > .pivot {}
+		.coffee-shop			> .size > .pivot {}
+		.coffee-shop	.brand	> .size > .pivot {}
+
+		.hotel			.brand			{ left: 0px; top: -396px; }
+		.coffee-shop	.brand			{ left: 0px; top: -290px; }
+		
+		#scenario-2 .hotel				{ left: 10px; bottom: 0; }
+		#scenario-2 .coffee-shop		{ left: 210px; bottom: 0; }
+		#scenario-2 .scenario-center	{ left: 600px; }
+
+
+
+
+
+
+	.outdoor-seats					{ top: auto!important; }
+	.outdoor-seats .base			{ top: auto!important; }
+	.outdoor-seats .table			{ top: auto!important; }
+	.outdoor-seats .umbrella		{ top: auto!important; }
+	.outdoor-seats .boy				{ top: auto!important; }
+	.outdoor-seats .girl			{ top: auto!important; }
+	.outdoor-seats .waitress		{ top: auto!important; }
+	.outdoor-seats .waitress .voice	{ top: auto!important; }
+
+		.outdoor-seats .base			> .size { width: 784px; height: 325px; }
+		.outdoor-seats .table			> .size { width: 366px; height:  32px; }
+		.outdoor-seats .umbrella		> .size { width: 488px; height: 147px; }
+		.outdoor-seats .boy				> .size { width: 131px; height: 216px; }
+		.outdoor-seats .girl			> .size { width: 144px; height: 206px; }
+		.outdoor-seats .waitress		> .size { width: 140px; height: 287px; }
+		.outdoor-seats .waitress .voice	> .size { width:  30px; height:  35px; }
+
+		.outdoor-seats .base			> .size > .pivot {}
+		.outdoor-seats .table			> .size > .pivot {}
+		.outdoor-seats .umbrella		> .size > .pivot {}
+		.outdoor-seats .boy				> .size > .pivot {}
+		.outdoor-seats .girl			> .size > .pivot {}
+		.outdoor-seats .waitress		> .size > .pivot {}
+		.outdoor-seats .waitress .voice	> .size > .pivot {}
+
+		.outdoor-seats .base			{ left:   0px; bottom:   0px; }
+		.outdoor-seats .table			{ left:   0px; bottom:  95px; }
+		.outdoor-seats .umbrella		{ left:   0px; bottom: 321px; }
+		.outdoor-seats .boy				{ left: -75px; bottom:  48px; }
+		.outdoor-seats .girl			{ left:  75px; bottom:  48px; }
+		.outdoor-seats .waitress		{ left: 120px; bottom:  -2px; }
+		.outdoor-seats .waitress .voice	{ left: -60px; bottom: 200px; }
+		
+		#scenario-3 .outdoor-seats		{ left: 0; bottom: 0; }
+		#scenario-3 .scenario-center	{ left: 1320px; }
+
+
+
+
+
+	.gigantic-phone			{ top: auto!important; }
+	.gigantic-phone .boy	{ top: auto!important; }
+	.gigantic-phone .girl	{ top: auto!important; }
+
+		.gigantic-phone			> .size { width: 264px; height: 520px; }
+		.gigantic-phone .boy	> .size { width: 234px; height: 333px; }
+		.gigantic-phone .girl	> .size { width: 168px; height: 329px; }
+
+		.gigantic-phone						> .size > .pivot {}
+		.gigantic-phone .boy				> .size > .pivot {}
+		.gigantic-phone .girl				> .size > .pivot {}
+		#scenario-4 #gigantic-phone-tree-1	> .size > .pivot { transform: scale3d(0.5,0.5,0.5); }
+		#scenario-4 #gigantic-phone-tree-2	> .size > .pivot { transform: scale3d(0.6,0.56,0.5); }
+
+
+		.gigantic-phone						{ left:   0; bottom: 0; }
+		.gigantic-phone .boy				{ left:   0px; bottom: 50px; }
+		.gigantic-phone .girl				{ left:   0px; bottom: 50px; }
+
+		#scenario-4 #gigantic-phone-tree-1	{ left: -158px; bottom: 0; }
+		#scenario-4 #gigantic-phone-tree-2	{ left:  162px; bottom: 0; }
+		#scenario-4 .scenario-center		{ left:   1900px; }
+
+
+
+
+
+	.green-land								{ top: auto!important; }
+	.green-land .building-1					{ top: auto!important; }
+	.green-land .building-2					{ top: auto!important; }
+	.green-land .building-twins				{ top: auto!important; }
+	.green-land .building-twins .tower-1	{ top: auto!important; }
+	.green-land .building-twins .tower-2	{ top: auto!important; }
+
+		.green-land								> .size { width: 553px; height:  94px; }
+		.green-land .building-1					> .size { width: 126px; height: 368px; }
+		.green-land .building-2					> .size { width:  79px; height: 367px; }
+		.green-land .building-twins .tower-1	> .size { width:  79px; height: 256px; }
+		.green-land .building-twins .tower-2	> .size { width:  79px; height: 256px; }
+
+		.green-land								> .size > .pivot {}
+		.green-land .building-1					> .size > .pivot {}
+		.green-land .building-2					> .size > .pivot {}
+		.green-land .building-twins .tower-1	> .size > .pivot {}
+		.green-land .building-twins .tower-2	> .size > .pivot {}
+
+		.green-land .building-1					{ left: -130px; bottom: 20px; }
+		.green-land .building-2					{ left:  -18px; bottom: 46px; }
+		.green-land .building-twins				{ left:  140px; bottom: 50px; }
+		.green-land .building-twins .tower-1	{ left:  -44px; bottom: 0; }
+		.green-land .building-twins .tower-2	{ left:   44px; bottom: 0; }
+
+		#green-land-wifi-hero					{ left: 0; bottom: 25px; }
+		#scenario-5 .green-land					{ left: 0; bottom: 0; }
+		#scenario-5 .scenario-center			{ left: 2560px; }
+
+		#scenario-5 #green-land-wifi-1			{ left: -190px; bottom: 270px; }
+		#scenario-5 #green-land-wifi-2			{ left: -83px; bottom: 270px; }
+		#scenario-5 #green-land-wifi-3			{ left: -33px; bottom: 400px; }
+		#scenario-5 #green-land-wifi-4			{ left: 66px; bottom: 228px; }
+		#scenario-5 #green-land-wifi-5			{ left: 87px; bottom: 176px; }
+		#scenario-5 #green-land-wifi-6			{ left: 94px; bottom: 81px; }
+		#scenario-5 #green-land-wifi-7			{ left: 156px; bottom: 221px; }
+		#scenario-5 #green-land-wifi-8			{ left: 190px; bottom: 268px; }
+		#scenario-5 #green-land-wifi-9			{ left: -93px; bottom: 57px; }
+		#scenario-5 #green-land-wifi-10			{ left: 191px; bottom: 54px; }
+
+		#scenario-5 #green-land-tree-1			{ left: -240px; bottom: 20px; }
+		#scenario-5 #green-land-tree-2			{ left: -160px; bottom: 52px; }
+		#scenario-5 #green-land-tree-3			{ left: 150px; bottom: 50px; }
+		#scenario-5 #green-land-tree-4			{ left: 220px; bottom: 16px; }
+
+		#scenario-5 #green-land-tree-1 > .size > .pivot { transform: scale3d(1,1,0.9); }
+		#scenario-5 #green-land-tree-2 > .size > .pivot { transform: scale3d(0.66,0.66,0.66); }
+		#scenario-5 #green-land-tree-3 > .size > .pivot { transform: scale3d(0.5,0.5,0.5); }
+		#scenario-5 #green-land-tree-4 > .size > .pivot { transform: scale3d(0.72,0.72,0.72); }
+
+
+
+
+
+.symbol {
+	background-size: contain;
+}
 
 .actress .face-sweat-droplets 	> .size	> .symbol { background-image: url(../images/app-welcome/actress-char-body-part-head-sweat-droplets.png); }
 	.actress .head.smiling		> .size	> .symbol { background-image: url(../images/app-welcome/actress-char-body-part-head-smiling.png); }
@@ -225,9 +443,9 @@ html, body {
 	.actress .phone-in-hand		> .size	> .symbol { background-image: url(../images/app-welcome/actress-prop-phone-in-hand.png); }
 
 
-	.bg-buildings 		> .size > .symbol { background-image: url(../images/app-welcome/_bg-buildings.png); }
-		.bg-gradient 	> .size > .symbol { background-image: url(../images/app-welcome/_bg-gradient.png); }
-		.bg-road 		> .size > .symbol { background-image: url(../images/app-welcome/_bg-road.png); }
+	.bg-gradient 		> .size > .symbol { background-image: linear-gradient(to bottom, #8bcaf7 0%, #ddd8ff 100%);/*url(../images/app-welcome/_bg-gradient.png);*/ }
+		.bg-buildings 	> .size > .symbol { background-image: url(../images/app-welcome/_bg-buildings.png); background-repeat: repeat-x; }
+		.bg-road 		> .size > .symbol { background-image: url(../images/app-welcome/_bg-road.png); background-repeat: repeat-x; }
 
 
 	.element-cloud 				> .size > .symbol { background-image: url(../images/app-welcome/_element-cloud.png); }
@@ -239,29 +457,29 @@ html, body {
 		.element-wifi-hotspot 	> .size > .symbol { background-image: url(../images/app-welcome/_element-wifi-hotspot.png); }
 
 
-	.bus-stop-prop-pole 		> .size > .symbol { background-image: url(../images/app-welcome/bus-stop-prop-pole.png); }
-		.bus-stop-prop-trash 	> .size > .symbol { background-image: url(../images/app-welcome/bus-stop-prop-trash.png); }
+	.bus-stop-pole 			> .size > .symbol { background-image: url(../images/app-welcome/bus-stop-prop-pole.png); }
+		.bus-stop-trash-bin > .size > .symbol { background-image: url(../images/app-welcome/bus-stop-prop-trash-bin.png); }
 
 
-	.hotel-n-coffee-shop-prop-coffee-shop-brand 	> .size > .symbol { background-image: url(../images/app-welcome/hotel-n-coffee-shop-prop-coffee-shop-brand.png); }
-		.hotel-n-coffee-shop-prop-coffee-shop 		> .size > .symbol { background-image: url(../images/app-welcome/hotel-n-coffee-shop-prop-coffee-shop.png); }
-		.hotel-n-coffee-shop-prop-hotel-brand 		> .size > .symbol { background-image: url(../images/app-welcome/hotel-n-coffee-shop-prop-hotel-brand.png); }
-		.hotel-n-coffee-shop-prop-hotel 			> .size > .symbol { background-image: url(../images/app-welcome/hotel-n-coffee-shop-prop-hotel.png); }
+	.coffee-shop 			> .size > .symbol { background-image: url(../images/app-welcome/hotel-n-coffee-shop-prop-coffee-shop.png); }
+		.coffee-shop .brand	> .size > .symbol { background-image: url(../images/app-welcome/hotel-n-coffee-shop-prop-coffee-shop-brand.png); }
+		.hotel 				> .size > .symbol { background-image: url(../images/app-welcome/hotel-n-coffee-shop-prop-hotel.png); }
+		.hotel .brand 		> .size > .symbol { background-image: url(../images/app-welcome/hotel-n-coffee-shop-prop-hotel-brand.png); }
 
-	.outdoor-seats-prop-base 				> .size > .symbol { background-image: url(../images/app-welcome/outdoor-seats-prop-base.png); }
-		.outdoor-seats-prop-table 			> .size > .symbol { background-image: url(../images/app-welcome/outdoor-seats-prop-table.png); }
-		.outdoor-seats-prop-umbrella 		> .size > .symbol { background-image: url(../images/app-welcome/outdoor-seats-prop-umbrella.png); }
-		.outdoor-seats-char-boy 			> .size > .symbol { background-image: url(../images/app-welcome/outdoor-seats-char-boy.png); }
-		.outdoor-seats-char-girl 			> .size > .symbol { background-image: url(../images/app-welcome/outdoor-seats-char-girl.png); }
-		.outdoor-seats-char-waitress 		> .size > .symbol { background-image: url(../images/app-welcome/outdoor-seats-char-waitress.png); }
-		.outdoor-seats-char-waitress-voice 	> .size > .symbol { background-image: url(../images/app-welcome/outdoor-seats-char-waitress-voice.png); }
+	.outdoor-seats .base 				> .size > .symbol { background-image: url(../images/app-welcome/outdoor-seats-prop-base.png); }
+		.outdoor-seats .table 			> .size > .symbol { background-image: url(../images/app-welcome/outdoor-seats-prop-table.png); }
+		.outdoor-seats .umbrella 		> .size > .symbol { background-image: url(../images/app-welcome/outdoor-seats-prop-umbrella.png); }
+		.outdoor-seats .boy 			> .size > .symbol { background-image: url(../images/app-welcome/outdoor-seats-char-boy.png); }
+		.outdoor-seats .girl 			> .size > .symbol { background-image: url(../images/app-welcome/outdoor-seats-char-girl.png); }
+		.outdoor-seats .waitress 		> .size > .symbol { background-image: url(../images/app-welcome/outdoor-seats-char-waitress.png); }
+		.outdoor-seats .waitress .voice	> .size > .symbol { background-image: url(../images/app-welcome/outdoor-seats-char-waitress-voice.png); }
 
-	.gigantic-phone .lianlian-in-shit-iphone 	> .size > .symbol { background-image: url(../images/app-welcome/lianlian-in-shit-iphone.png); }
-		.gigantic-phone-char-boy 				> .size > .symbol { background-image: url(../images/app-welcome/gigantic-phone-char-boy.png); }
-		.gigantic-phone-char-girl 				> .size > .symbol { background-image: url(../images/app-welcome/gigantic-phone-char-girl.png); }
+	.gigantic-phone 			> .size > .symbol { background-image: url(../images/app-welcome/lianlian-in-shit-iphone.png); }
+		.gigantic-phone .boy 	> .size > .symbol { background-image: url(../images/app-welcome/gigantic-phone-char-boy.png); }
+		.gigantic-phone .girl 	> .size > .symbol { background-image: url(../images/app-welcome/gigantic-phone-char-girl.png); }
 
-	.green-land-prop-building-1 			> .size > .symbol { background-image: url(../images/app-welcome/green-land-prop-building-1.png); }
-		.green-land-prop-building-2 		> .size > .symbol { background-image: url(../images/app-welcome/green-land-prop-building-2.png); }
-		.green-land-prop-building-twins-a 	> .size > .symbol { background-image: url(../images/app-welcome/green-land-prop-building-twins-a.png); }
-		.green-land-prop-building-twins-b 	> .size > .symbol { background-image: url(../images/app-welcome/green-land-prop-building-twins-b.png); }
-		.green-land-prop-sward 				> .size > .symbol { background-image: url(../images/app-welcome/green-land-prop-sward.png); }
+	.green-land 								> .size > .symbol { background-image: url(../images/app-welcome/green-land-prop-sward.png); }
+		.green-land .building-1 				> .size > .symbol { background-image: url(../images/app-welcome/green-land-prop-building-1.png); }
+		.green-land .building-2 				> .size > .symbol { background-image: url(../images/app-welcome/green-land-prop-building-2.png); }
+		.green-land .building-twins .tower-1 	> .size > .symbol { background-image: url(../images/app-welcome/green-land-prop-building-twins-a.png); }
+		.green-land .building-twins .tower-2 	> .size > .symbol { background-image: url(../images/app-welcome/green-land-prop-building-twins-b.png); }

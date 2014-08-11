@@ -130,18 +130,17 @@
 
 		body > h1,
 		.stage {
-			width: 600px;
+			width: 1200px;
 			margin: auto;
 			margin-top: 20px;
 		}
 
 		.stage {
-			height: 600px;
-			background: #678;
-			box-shadow: inset 2px 2px 6px 1px rgba(0,0,0,0.4);
+			height: 717px;
+			/*background: #678;*/
+			/*box-shadow: inset 2px 2px 6px 1px rgba(0,0,0,0.4);*/
 		}
 		.locator {
-			top: -500px;
 		}
 		.size {
 			width: 150px;
@@ -189,36 +188,143 @@
 		</div>
 	</section>
 
-	<i class="locator actress walking">
-		<!-- <i class="size" data-wa-role="fake-bbox" style="width: 185px; height: 357px"><i class="pivot bottom debug show-bbox"></i></i> -->
+	<section id="background-items">
+		<i class="locator bg-gradient"><i class="size"><i class="symbol pivot bottom-left"></i></i></i>
+		<i class="locator bg-buildings"><i class="size"><i class="symbol pivot bottom-left"></i></i></i>
+		<i class="locator bg-road"><i class="size"><i class="symbol pivot bottom-left"></i></i></i>
+	</section>
 
-		<i class="locator" data-wa-role="pelvis" style="left: 7px; top: -57px;">
-			<i class="locator pants">
+	<section id="all-scenarios">
+		<section id="scenario-1">
+			<i class="locator scenario-center">
+				<i class="locator element-cloud"  id="bus-stop-cloud-1"	><i class="size"><i class="symbol pivot bottom"></i></i></i>
+				<i class="locator element-cloud"  id="bus-stop-cloud-2"	><i class="size"><i class="symbol pivot bottom"></i></i></i>
+				<i class="locator element-cloud"  id="bus-stop-cloud-3"	><i class="size"><i class="symbol pivot bottom"></i></i></i>
 
-				<i class="locator leg l default"><i class="size"><i class="symbol pivot top"></i></i></i>
-				<i class="locator leg r default"><i class="size"><i class="symbol pivot top"></i></i></i>
+				<i class="locator bus-stop-pole"						><i class="size"><i class="symbol pivot bottom"></i></i></i>
+				<i class="locator bus-stop-trash-bin"					><i class="size"><i class="symbol pivot bottom"></i></i></i>
+			</i>
+		</section>
 
-				<i class="size"><i class="symbol pivot"></i></i>
+		<section id="scenario-2">
+			<i class="locator scenario-center">
+				<i class="locator hotel">
+					<i class="locator brand"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+					<i class="size"><i class="symbol pivot bottom"></i></i>
+				</i>
+				
+				<i class="locator coffee-shop">
+					<i class="locator brand"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+					<i class="size"><i class="symbol pivot bottom"></i></i>
+				</i>
+			</i>
+			
+		</section>
 
-				<i class="locator trunk">
+		<section id="scenario-3">
+			<i class="locator scenario-center">
+				<i class="locator outdoor-seats">
+					<i class="locator base"		><i class="size"><i class="symbol pivot bottom"></i></i></i>
 
-					<i class="locator arm l walking-front"><i class="size"><i class="symbol pivot top"></i></i></i>
+					<i class="locator boy"		><i class="size"><i class="symbol pivot bottom"></i></i></i>
+					<i class="locator girl"		><i class="size"><i class="symbol pivot bottom"></i></i></i>
+
+					<i class="locator umbrella"	><i class="size"><i class="symbol pivot bottom"></i></i></i>
+					<i class="locator table"	><i class="size"><i class="symbol pivot bottom"></i></i></i>
+
+					<i class="locator waitress">
+						<i class="locator voice"><i class="size"><i class="symbol pivot"></i></i></i>
+						<i class="size"><i class="symbol pivot bottom"></i></i>
+					</i>
+				</i>
+			</i>
+		</section>
+
+		<section id="scenario-4">
+			<i class="locator scenario-center">
+				<i class="locator gigantic-phone">
+					<i class="locator boy"><i class="size"><i class="symbol pivot bottom-right"></i></i></i>
+					<i class="locator girl"><i class="size"><i class="symbol pivot bottom-left"></i></i></i>
+
+					<i class="size"><i class="symbol pivot bottom"></i></i>
+				</i>
+
+				<i class="locator element-tree"  id="gigantic-phone-tree-1"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+				<i class="locator element-tree"  id="gigantic-phone-tree-2"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+			</i>
+		</section>
+
+		<section id="scenario-5">
+			<i class="locator scenario-center">
+				<i class="locator green-land">
+					<i class="locator building-1"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+					<i class="locator building-2"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+					<i class="locator building-twins">
+						<i class="locator tower-1"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+						<i class="locator tower-2"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+					</i>
 
 					<i class="size"><i class="symbol pivot bottom"></i></i>
 
-					<i class="locator head eyes-closeds smiling">
-						<i class="size"><i class="symbol pivot bottom"></i></i>
-						<i class="locator face-sweat-droplets"><i class="size"><i class="symbol pivot"></i></i></i>
-					</i>
+					<i class="locator element-wifi-hotspot"  id="green-land-wifi-1"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+					<i class="locator element-wifi-hotspot"  id="green-land-wifi-2"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+					<i class="locator element-wifi-hotspot"  id="green-land-wifi-3"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+					<i class="locator element-wifi-hotspot"  id="green-land-wifi-4"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+					<i class="locator element-wifi-hotspot"  id="green-land-wifi-5"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+					<i class="locator element-wifi-hotspot"  id="green-land-wifi-6"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+					<i class="locator element-wifi-hotspot"  id="green-land-wifi-7"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+					<i class="locator element-wifi-hotspot"  id="green-land-wifi-8"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+					<i class="locator element-wifi-hotspot"  id="green-land-wifi-9"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+					<i class="locator element-wifi-hotspot"  id="green-land-wifi-10"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
 
-					<i class="locator arm r walking-front">
-						<i class="locator phone-in-hand"><i class="size"><i class="symbol pivot"></i></i></i>
-						<i class="size"><i class="symbol pivot top"></i></i>
+					<i class="locator element-tree"  id="green-land-tree-1"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+					<i class="locator element-tree"  id="green-land-tree-2"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+					<i class="locator element-tree"  id="green-land-tree-3"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+					<i class="locator element-tree"  id="green-land-tree-4"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+
+					<i class="locator element-wifi-hotspot"  id="green-land-wifi-hero"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+				</i>
+			</i>
+		</section>
+	</section>
+
+	<section id="foreground-items">
+		<i class="locator actress walking">
+			<!-- <i class="size" data-wa-role="fake-bbox" style="width: 185px; height: 357px"><i class="pivot bottom debug show-bbox"></i></i> -->
+
+			<i class="locator" data-wa-role="pelvis" style="left: 7px; top: -57px;">
+				<i class="locator pants">
+
+					<i class="locator leg l default"><i class="size"><i class="symbol pivot top"></i></i></i>
+					<i class="locator leg r default"><i class="size"><i class="symbol pivot top"></i></i></i>
+
+					<i class="size"><i class="symbol pivot"></i></i>
+
+					<i class="locator trunk">
+
+						<i class="locator arm l walking-front"><i class="size"><i class="symbol pivot top"></i></i></i>
+
+						<i class="size"><i class="symbol pivot bottom"></i></i>
+
+						<i class="locator head eyes-closeds smiling">
+							<i class="size"><i class="symbol pivot bottom"></i></i>
+							<i class="locator face-sweat-droplets"><i class="size"><i class="symbol pivot"></i></i></i>
+						</i>
+
+						<i class="locator arm r walking-front">
+							<i class="locator phone-in-hand"><i class="size"><i class="symbol pivot"></i></i></i>
+							<i class="size"><i class="symbol pivot top"></i></i>
+						</i>
 					</i>
 				</i>
 			</i>
 		</i>
-	</i>
+
+		<i class="locator element-vehicle-blue" id="car-1"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+		<i class="locator element-vehicle-lime" id="car-2"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+		<i class="locator element-vehicle-pink" id="car-3"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+		<i class="locator element-vehicle-red"  id="car-4"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+	</section>
 
 	<!-- <address>
 		<ul>
@@ -231,6 +337,30 @@
 
 
 <script id="script-stage">
+	function pauseAnimationOf(e) {
+		if (!e) return false;
+		e.animationIsRunning = false;
+		e.style.webkitAnimationPlayState = 'paused';
+		e.style.animationPlayState = 'paused';
+	}
+
+	function resumeAnimationOf(e) {
+		if (!e) return false;
+		e.animationIsRunning = true;
+		e.style.webkitAnimationPlayState = 'running';
+		e.style.animationPlayState = 'running';
+	}
+
+	function toggleAnimationOf(e) {
+		if (!e) return false;
+		if (typeof e.animationIsRunning === 'undefined') e.animationIsRunning = true;
+		if (e.animationIsRunning) {
+			pauseAnimationOf(e);
+		} else {
+			resumeAnimationOf(e);
+		}
+	}
+
 	var tempLastSelectedSymbol = null; // currently this script allows user to operate ONLY ONE symbol at a time.
 
 	var inputPointer = {
@@ -472,6 +602,12 @@
 
 		.on('mouseup', function (e) {
 			// l('body < on mouse UP >. event target:',e.target);
+
+			// $('.actress').toggleClass('walking');
+			$('.actress .locator')
+				.each(function (i) {
+					toggleAnimationOf(this);
+				});
 
 			if (!inputPointer.isDragging || (inputPointer.isDragging && inputPointer.distance < inputPointer.draggingThreshold) ) {
 				// if (!inputPointer.isDragging) {
