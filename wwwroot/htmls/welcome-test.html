@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="utf-8" />
+	<title>lianlian welcome testing</title>
+	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	<link rel="stylesheet" href="../stylesheets/lly-animation-toolkits.css" />
+	<link rel="stylesheet" href="../stylesheets/lly-animation-toolkits-debug.css" />
+	<link rel="stylesheet" href="../stylesheets/app-welcome.css" />
+
+	<script src="../scripts/jquery-1.11.1.min.js"></script>
+	<script src="../scripts/wlc-website.js"></script>
+
+	<style id="style-temp">
+		html, body {
+			margin: 0;
+			padding: 0;
+			background-color: black;
+		}
+
+		#stage-viewport {
+			position: fixed;
+			width: 100%;
+			height: 100%;
+			left: 0;
+			top: 0;
+			margin: 0;
+			padding: 0;
+			overflow-x: auto;
+			overflow-y: hidden;
+		}
+
+		#stage-viewport #stage {
+			position: absolute;
+			height: 100%;
+			overflow: hidden;
+
+			left: 0;
+			bottom: 0;
+			margin: 0;
+			padding: 0;
+		}
+
+		#stage-viewport #stage #stage-content-scaler {
+			width: 4480px;
+			height: 717px;
+			
+			position: absolute;
+			left: 0;
+			bottom: 0;
+			transform-origin: 0 100% 0;
+
+			margin: 0;
+			padding: 0;
+		}
+
+		#info {
+			display: none;
+			position: fixed;
+			left: 0;
+			top: 0;
+			margin: 10px;
+			padding: 10px;
+			z-index: 100;
+			background-color: rgba(255,255,255,0.87);
+			color: black;
+		}
+	</style>
+</head>
+<body>
+<section data-wa-role="resources-loader" id="resources-loader-0">
+	<i class="locator face-sweat-droplets"	><i class="size"><i class="symbol"></i></i></i>
+	<i class="locator head smiling"			><i class="size"><i class="symbol"></i></i></i>
+	<i class="locator head eyes-closed"		><i class="size"><i class="symbol"></i></i></i>
+	<i class="locator arm l default"		><i class="size"><i class="symbol"></i></i></i>
+	<i class="locator arm r default"		><i class="size"><i class="symbol"></i></i></i>
+	<i class="locator arm walking-front"	><i class="size"><i class="symbol"></i></i></i>
+	<i class="locator leg default"			><i class="size"><i class="symbol"></i></i></i>
+	<i class="locator leg walking-rear"		><i class="size"><i class="symbol"></i></i></i>
+	<i class="locator pants"				><i class="size"><i class="symbol"></i></i></i>
+	<i class="locator trunk"				><i class="size"><i class="symbol"></i></i></i>
+	<i class="locator phone-in-hand"		><i class="size"><i class="symbol"></i></i></i>
+</section>
+
+<section id="stage-viewport">
+	<section id="stage">
+		<i id="stage-content-scaler">
+			<section id="background-items">
+				<i class="locator bg-gradient"><i class="size"><i class="symbol pivot bottom-left"></i></i></i>
+				<i class="locator bg-buildings"><i class="size"><i class="symbol pivot bottom-left"></i></i></i>
+				<i class="locator bg-road"><i class="size"><i class="symbol pivot bottom-left"></i></i></i>
+			</section>
+
+			<section id="all-scenarios">
+				<section id="scenario-1">
+					<i class="locator scenario-center">
+						<i class="locator element-cloud"  id="bus-stop-cloud-1"	><i class="size"><i class="symbol pivot bottom"></i></i></i>
+						<i class="locator element-cloud"  id="bus-stop-cloud-2"	><i class="size"><i class="symbol pivot bottom"></i></i></i>
+						<i class="locator element-cloud"  id="bus-stop-cloud-3"	><i class="size"><i class="symbol pivot bottom"></i></i></i>
+
+						<i class="locator bus-stop-pole"						><i class="size"><i class="symbol pivot bottom"></i></i></i>
+						<i class="locator bus-stop-trash-bin"					><i class="size"><i class="symbol pivot bottom"></i></i></i>
+					</i>
+				</section>
+
+				<section id="scenario-2">
+					<i class="locator scenario-center">
+						<i class="locator hotel">
+							<i class="locator brand"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+							<i class="size"><i class="symbol pivot bottom"></i></i>
+						</i>
+						
+						<i class="locator coffee-shop">
+							<i class="locator brand"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+							<i class="size"><i class="symbol pivot bottom"></i></i>
+						</i>
+					</i>
+					
+				</section>
+
+				<section id="scenario-3">
+					<i class="locator scenario-center">
+						<i class="locator outdoor-seats">
+							<i class="locator base"		><i class="size"><i class="symbol pivot bottom"></i></i></i>
+
+							<i class="locator boy"		><i class="size"><i class="symbol pivot bottom"></i></i></i>
+							<i class="locator girl"		><i class="size"><i class="symbol pivot bottom"></i></i></i>
+
+							<i class="locator umbrella"	><i class="size"><i class="symbol pivot bottom"></i></i></i>
+							<i class="locator table"	><i class="size"><i class="symbol pivot bottom"></i></i></i>
+
+							<i class="locator waitress">
+								<i class="locator voice"><i class="size"><i class="symbol pivot"></i></i></i>
+								<i class="size"><i class="symbol pivot bottom"></i></i>
+							</i>
+						</i>
+					</i>
+				</section>
+
+				<section id="scenario-4">
+					<i class="locator scenario-center">
+						<i class="locator gigantic-phone">
+							<i class="locator boy"><i class="size"><i class="symbol pivot bottom-right"></i></i></i>
+							<i class="locator girl"><i class="size"><i class="symbol pivot bottom-left"></i></i></i>
+
+							<i class="size"><i class="symbol pivot bottom"></i></i>
+						</i>
+
+						<i class="locator element-tree"  id="gigantic-phone-tree-1"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+						<i class="locator element-tree"  id="gigantic-phone-tree-2"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+					</i>
+				</section>
+
+				<section id="scenario-5">
+					<i class="locator scenario-center">
+						<i class="locator green-land">
+							<i class="locator building-1"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+							<i class="locator building-2"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+							<i class="locator building-twins">
+								<i class="locator tower-1"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+								<i class="locator tower-2"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+							</i>
+
+							<i class="size"><i class="symbol pivot bottom"></i></i>
+
+							<i class="locator element-wifi-hotspot"  id="green-land-wifi-1"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+							<i class="locator element-wifi-hotspot"  id="green-land-wifi-2"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+							<i class="locator element-wifi-hotspot"  id="green-land-wifi-3"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+							<i class="locator element-wifi-hotspot"  id="green-land-wifi-4"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+							<i class="locator element-wifi-hotspot"  id="green-land-wifi-5"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+							<i class="locator element-wifi-hotspot"  id="green-land-wifi-6"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+							<i class="locator element-wifi-hotspot"  id="green-land-wifi-7"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+							<i class="locator element-wifi-hotspot"  id="green-land-wifi-8"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+							<i class="locator element-wifi-hotspot"  id="green-land-wifi-9"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+							<i class="locator element-wifi-hotspot"  id="green-land-wifi-10"><i class="size small"><i class="symbol pivot bottom"></i></i></i>
+
+							<i class="locator element-tree"  id="green-land-tree-1"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+							<i class="locator element-tree"  id="green-land-tree-2"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+							<i class="locator element-tree"  id="green-land-tree-3"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+							<i class="locator element-tree"  id="green-land-tree-4"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+
+							<i class="locator element-wifi-hotspot"  id="green-land-wifi-hero"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+						</i>
+					</i>
+				</section>
+			</section>
+
+			<section id="foreground-items">
+				<i class="locator actress walking">
+					<!-- <i class="size" data-wa-role="fake-bbox" style="width: 185px; height: 357px"><i class="pivot bottom debug show-bbox"></i></i> -->
+
+					<i class="locator" data-wa-role="pelvis" style="left: 7px; top: -57px;">
+						<i class="locator pants">
+
+							<i class="locator leg l default"><i class="size"><i class="symbol pivot top"></i></i></i>
+							<i class="locator leg r default"><i class="size"><i class="symbol pivot top"></i></i></i>
+
+							<i class="size"><i class="symbol pivot"></i></i>
+
+							<i class="locator trunk">
+
+								<i class="locator arm l walking-front"><i class="size"><i class="symbol pivot top"></i></i></i>
+
+								<i class="size"><i class="symbol pivot bottom"></i></i>
+
+								<i class="locator head eyes-closeds smiling">
+									<i class="size"><i class="symbol pivot bottom"></i></i>
+									<i class="locator face-sweat-droplets"><i class="size"><i class="symbol pivot"></i></i></i>
+								</i>
+
+								<i class="locator arm r walking-front">
+									<i class="locator phone-in-hand"><i class="size"><i class="symbol pivot"></i></i></i>
+									<i class="size"><i class="symbol pivot top"></i></i>
+								</i>
+							</i>
+						</i>
+					</i>
+				</i>
+
+				<i class="locator element-vehicle-blue" id="car-1"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+				<i class="locator element-vehicle-lime" id="car-2"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+				<i class="locator element-vehicle-pink" id="car-3"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+				<i class="locator element-vehicle-red"  id="car-4"><i class="size"><i class="symbol pivot bottom"></i></i></i>
+			</section>
+		</i>
+	</section>
+</section>
+
+<script id="script-definitions">
+	if (!window.console) { // IE8 does NOT init console object until the F12 tool is activated.
+		window.console = {};
+		window.console.log = function () {};
+		window.console.warn = function () {};
+		window.console.error = function () {};
+	}
+
+	window.l = window.console.log.bind(window.console);
+	window.w = window.console.warn.bind(window.console);
+	window.e = window.console.error.bind(window.console);
+
+	window.qS = document.body.querySelector.bind(document.body);
+	window.qSA = document.body.querySelectorAll.bind(document.body);
+
+	var inputPointer = {
+		// draggingThreshold: 3,
+		// isDragging: false,
+		// startX: NaN,
+		// startY: NaN,
+		// deltaX: NaN,
+		// deltaY: NaN,
+		// distance: NaN,
+
+		// startDragging: function (e) {
+		// 	// e = e.originalEvent;
+		// 	// console.log('start dragging. pageX =', e.pageX, ' pageY =', e.pageY);
+		// 	this.isDragging = true;
+		// 	this.startX = e.pageX;
+		// 	this.startY = e.pageY;
+		// 	this.deltaX = 0;
+		// 	this.deltaY = 0;
+		// 	this.distance = 0;
+
+		// 	cacheLeft.call(stage);
+		// },
+
+		// stopDragging: function (e) {
+		// 	// console.log('stop dragging.');
+		// 	if (1) {
+		// 		this.isDragging = false;
+		// 		this.startX = NaN;
+		// 		this.startY = NaN;
+		// 		this.deltaX = NaN;
+		// 		this.deltaY = NaN;
+		// 		this.distance = NaN;
+		// 	}
+		// },
+
+		// onDragging: function (e) {
+		// 	// console.log('mouse or finger moving. pageX =', e.pageX);
+		// 	// console.log(this);
+		// 	if (!this.isDragging) {
+		// 		return true;
+		// 	}
+
+		// 	this.deltaX = e.pageX - this.startX;
+		// 	this.deltaY = e.pageY - this.startY;
+		// 	// _distance = Math.round(Math.sqrt(this.deltaX*this.deltaX+this.deltaY*this.deltaY)*100)/100;
+		// 	_distance = Math.abs(this.deltaX);
+
+		// 	if (_distance < this.draggingThreshold) {
+		// 		this.distance = 0;
+		// 	} else {
+		// 		this.distance = _distance;
+		// 		// console.log(this.deltaX);
+		// 		moveHorizontally.call(stage, this.deltaX);
+		// 	}
+
+
+		// }
+	};
+
+
+
+	function Stage (options) {
+		// --- provided values -------------------
+		this.viewport =						null;
+		this.stageElement =					null;
+		this.stageContentScaler =			null;
+
+		this.viewportWidth =				NaN;
+		this.viewportHeight =				NaN;
+
+		this.stageWidthAtFullScale =		NaN;
+		this.stageHeightAtFullScale =		NaN;
+		
+
+		// --- derived values --------------------
+		this.useCssZoom =					false;
+		this.stageContentScale =			1;
+		this.stageWidthForScaledContent =	NaN;
+		this.stageHeightForScaledContent =	NaN;
+		this.viewportWidthRemapped =		NaN; // remapped back to unscaled stage content
+		this.stageScrollingWidth =			NaN;
+		this.stageScrollingWidthRemapped =	NaN;
+
+		this.elapsed = 0;
+		this.elapsedRemapped = 0;
+		this.elapsedRemappedMiddle = NaN;
+		this.elapsedRemappedRight = NaN;
+		this.elapsedRatio = 0;
+
+
+		this.config = function (options) {
+			var _ok = true;
+			var _ = options || {};
+
+			var _viewport = 			document.getElementById(_.viewportId);
+			var _stageElement = 		document.getElementById(_.stageId);
+			var _stageContentScaler = 	document.getElementById(_.stageContentScalerId);
+
+			if (_viewport)				{ this.viewport = 			document.getElementById(_.viewportId); }
+			if (_stageElement)			{ this.stageElement = 		document.getElementById(_.stageId); }
+			if (_stageContentScaler)	{ this.stageContentScaler =	document.getElementById(_.stageContentScalerId); }
+
+			var _w = Number(_.stageWidthAtFullScale);
+			var _h = Number(_.stageHeightAtFullScale);
+
+			if (!this.viewport) {
+				_ok = false;
+				e('Invalid html id for Stage.viewport.', '\n\tThe html id provided:', _.viewportId);
+				// return false;
+			}
+
+			if (!this.stageElement) {
+				_ok = false;
+				e('Invalid html id for Stage.stageElement.', '\n\tThe html id provided:', _.stageId);
+				// return false;
+			}
+
+			if (!this.stageContentScaler) {
+				_ok = false;
+				e('Invalid html id for Stage.stageContentScaler.', '\n\tThe html id provided:', _.stageContentScalerId);
+				// return false;
+			}
+
+			if (!this.stageWidthAtFullScale && !_w) {
+				_ok = false;
+				e('Invalid stage width.', '\n\tThe width value provided:', _.stageWidthAtFullScale);
+				// return false;
+			}
+
+			if (!this.stageHeightAtFullScale && !_h) {
+				_ok = false;
+				e('Invalid stage height.', '\n\tThe height value provided:', _.stageHeightAtFullScale);
+				// return false;
+			}
+
+			if (!_ok) {
+				return false;
+			}
+
+
+
+
+			if (_w) { this.stageWidthAtFullScale = _w; }
+			if (_h) { this.stageHeightAtFullScale = _h; }
+
+
+
+
+			_w = Number(_.viewportWidth);
+			_h = Number(_.viewportHeight);
+
+			this.viewportWidth =	!_w ? document.documentElement.clientWidth  : Math.min(document.documentElement.clientWidth, _w);
+			this.viewportHeight =	!_h ? document.documentElement.clientHeight : Math.min(document.documentElement.clientHeight, _h);
+
+			if (_w) {
+				this.viewport.style.width = this.viewportWidth + 'px';
+			}
+			if (_h) {
+				this.viewport.style.height = this.viewportHeight + 'px';
+			}
+
+			this.stageHeightForScaledContent = this.viewportHeight;
+
+			var _hasHorizontalScrollBar = website.env.mode.desktop;
+
+			if (_hasHorizontalScrollBar) {
+				this.stageHeightForScaledContent = this.stageHeightForScaledContent - getScrollBarDimension().hScrollBarHeight;
+			}
+
+
+
+			this.stageContentScale = this.stageHeightForScaledContent / this.stageHeightAtFullScale;
+			this.stageWidthForScaledContent = Math.floor( this.stageWidthAtFullScale * this.stageContentScale );
+			
+			this.viewportWidthRemapped = this.viewportWidth / this.stageContentScale;
+
+			this.stageScrollingWidth = Math.max(0, this.stageWidthForScaledContent - this.viewportWidth);
+			this.stageScrollingWidthRemapped = this.stageScrollingWidth / this.stageContentScale;
+
+
+
+
+			this.useCssZoom = (website.env.os.ios || website.env.ua.safari) && !website.env.os.wp;
+
+			if (this.useCssZoom) {
+				this.stageContentScaler.style.zoom = this.stageContentScale;
+			} else {
+				this.stageContentScaler.style.transform = 		'scale3d('+this.stageContentScale+', '+this.stageContentScale+', '+0.999+')';
+				this.stageContentScaler.style.webkitTransform =	'scale3d('+this.stageContentScale+', '+this.stageContentScale+', '+0.999+')';
+
+				// this.stageContentScaler.style.transform = 		'scale('+this.stageContentScale+', '+this.stageContentScale+')';
+				// this.stageContentScaler.style.webkitTransform =	'scale('+this.stageContentScale+', '+this.stageContentScale+')';
+			}
+
+			this.stageElement.style.width = this.stageWidthForScaledContent + 'px';
+		}
+
+		this.playTo = function (elapsed) {
+			if (!isNaN(Number(elapsed))) { this.elapsed = Number(elapsed); }
+			this.elapsedRemapped = this.elapsed / this.stageContentScale;
+			this.elapsedRemappedMiddle = this.elapsedRemapped + this.viewportWidthRemapped * 0.5;
+			this.elapsedRemappedRight = this.elapsedRemapped + this.viewportWidthRemapped;
+			this.elapsedRatio = this.elapsedRemapped / this.stageScrollingWidthRemapped;
+
+			l(this.elapsedRatio, '\t', this.elapsed + this.viewportWidthRemapped);
+
+			return this.elapsedRatio;
+		}
+
+		this.play = function () {
+			return this.playTo(this.viewport.scrollLeft);
+		}
+
+		this.config(options);
+	} // CLASS:Stage
+
+
+
+
+	function getScrollBarDimension() {
+		var _s1 = 123;
+		var _s2 = 234;
+		var w1=NaN,w2=NaN,h1=NaN,h2=NaN;
+
+		var outer = document.createElement('div');
+		var inner = document.createElement('div');
+
+		outer.appendChild(inner);
+		document.body.appendChild(outer);
+
+		outer.style.visibility = 'hidden';
+		outer.style.position = 'absolute';
+		outer.style.top = '0';
+		outer.style.left = '0';
+		outer.style.overflow = 'scroll';
+
+		outer.style.width = _s1+'px';
+		outer.style.height = _s1+'px';
+
+		inner.style.width = _s2+'px';
+		inner.style.height = _s2+'px';
+
+		w1 = outer.clientWidth;
+		h1 = outer.clientHeight;
+		w2 = outer.offsetWidth;
+		h2 = outer.offsetHeight;
+
+		outer.removeChild(inner);
+		document.body.removeChild(outer);
+		delete inner;
+		delete outer;
+
+		return {
+			vScrollBarWidth: w2 - w1,
+			hScrollBarHeight: h2 - h1
+		};
+	}
+
+	function getRealStyleOf(e) {
+		return document.defaultView.getComputedStyle(e,null);
+	}
+
+
+
+
+
+	function pauseAnimationOf(e) {
+		if (!e) return false;
+		e.animationIsRunning = false;
+		e.style.webkitAnimationPlayState = 'paused';
+		e.style.animationPlayState = 'paused';
+	}
+
+	function resumeAnimationOf(e) {
+		if (!e) return false;
+		e.animationIsRunning = true;
+		e.style.webkitAnimationPlayState = 'running';
+		e.style.animationPlayState = 'running';
+	}
+
+	function toggleAnimationOf(e) {
+		if (!e) return false;
+		if (typeof e.animationIsRunning === 'undefined') e.animationIsRunning = true;
+		if (e.animationIsRunning) {
+			pauseAnimationOf(e);
+		} else {
+			resumeAnimationOf(e);
+		}
+	}
+
+	function cacheLeft() {
+		// if (typeof this.cacheOnDraggingStart==='undefined') this.cacheOnDraggingStart = {};
+
+		// var targetComputedStyle = getRealStyleOf(this);
+		// this.cacheOnDraggingStart.left = parseInt(targetComputedStyle.left);
+		// this.newLeft = this.cacheOnDraggingStart.left;
+		// // console.log(this, 'left:', this.cacheOnDraggingStart.left);
+	}
+
+	function moveHorizontally(deltaX) {
+		// this.newLeft = Math.max(-stageScrollingWidth, Math.min(0, this.cacheOnDraggingStart.left + inputPointer.deltaX) );
+		// this.style.left = this.newLeft+'px';
+		// printDebugInfo.call(this);
+	}
+</script>
+
+<script id="script-init">
+	var welcomeStage = new Stage({
+		viewportId:				'stage-viewport',
+		stageId:				'stage',
+		stageContentScalerId:	'stage-content-scaler',
+
+		// viewportWidth:			320,
+		// viewportHeight:			480,
+
+		stageWidthAtFullScale:	4480,
+		stageHeightAtFullScale:	717
+	});
+</script>
+
+<script id="script-test-and-debug">
+	if (website.env.mode.desktop && !website.env.os.wp) {
+		welcomeStage.config({
+			viewportWidth:			320,
+			viewportHeight:			500,
+		});
+		welcomeStage.viewport.style.position = 'relative';
+		welcomeStage.viewport.style.marginLeft = 'auto';
+		welcomeStage.viewport.style.marginRight = 'auto';
+		welcomeStage.viewport.style.marginTop = '200px';
+	}
+
+	if (1) {
+		var info = document.createElement('H3');
+			info.id = 'info';
+		document.body.appendChild(info);
+
+		printDebugInfo.call(welcomeStage);
+
+		function printDebugInfo() {
+			info.innerHTML = ''
+				+ 'screen: ' + screen.availWidth + ' x ' + screen.availHeight
+				+ '<br/>window: ' + window.innerWidth + ' x ' + window.innerHeight
+				+ '<br/>html: ' + document.documentElement.clientWidth + ' x ' + document.documentElement.clientHeight
+				+ '<br/>body: ' + document.body.clientWidth + ' x ' + document.body.clientHeight
+				+ '<br/>container: ' + getRealStyleOf(this.viewport).width + ' x ' + getRealStyleOf(this.viewport).height
+				+ '<br/>'
+				+ '<br/>stage dimensions:'
+				+ '<br/>&nbsp;&nbsp;&nbsp;&nbsp;desired: ' + this.stageWidthForScaledContent + 'px x ' + this.viewportHeight + 'px'
+				+ '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;actual: ' + getRealStyleOf(this.stageElement).width + ' x ' + getRealStyleOf(this.stageElement).height
+				+ '<br/>stageScrollingWidth: ' + this.stageScrollingWidth
+				+ '<br/>'
+				+ '<br/>stageContentScale: ' + Math.round(this.stageContentScale*1000)/1000
+				+ '<br/>stageContentScalerInlineStyle:<br/>' + (this.useCssZoom ? ('zoom: '+this.stageContentScaler.style.zoom) : this.stageContentScaler.style.transform)
+				;
+			info.style.display = 'block';
+		}
+
+		function printDynamicInfo() {
+			info.innerHTML = ''
+				+ 'stage elapsed:'
+				+ '<br/>&nbsp;&nbsp;raw = ' + Math.round(this.elapsed*1000)/1000
+				+ '<br/>&nbsp;&nbsp;Remapped = ' + Math.round(this.elapsedRemapped*1000)/1000
+				+ '<br/>&nbsp;&nbsp;RemappedMiddle = ' + Math.round(this.elapsedRemappedMiddle*1000)/1000
+				+ '<br/>&nbsp;&nbsp;RemappedRight = ' + Math.round(this.elapsedRemappedRight*1000)/1000
+				+ '<br/>&nbsp;&nbsp;Ratio = ' + Math.round(this.elapsedRatio*1000)/1000
+				;
+			info.style.display = 'block';
+		}
+	}
+</script>
+
+<script id="script-story-teller">
+	var tempResLoader = document.getElementById('resources-loader-0');
+	if (tempResLoader) {
+		tempResLoader.innerHTML = '';
+		tempResLoader.parentNode.removeChild(tempResLoader);
+	}
+	delete tempResLoader;
+
+	function Movie(stage, options) {
+		this.stage = null;
+		this.elapsedRatio = 0;
+
+		this.triggeredActions = [
+			// { triggerElapsed: { forward: 123, backward: NaN }, target: null, cssClassToAdd: '' },
+		];
+
+
+		this.stageScrollLeft = 0;
+
+
+		this.config = function (stage, options) {
+			if (!stage && !stage.stageElement && !stage.viewportWidth) {
+				e('Invalid stage object.');
+				return false;
+			}
+
+			this.stage = stage;
+			this.stageWidth = this.stage.stageScrollingWidthRemapped;
+			var _ = options || {};
+
+		} // this.config method
+
+
+		this.addTriggeredAction = function (options) {
+			// options.target:						<html element>
+			// options.cssClassToAdd:				<string>;
+			//
+			// options.triggerElapsed.forward:		<Valid Number>;
+			//
+			// options.triggerElapsed.backward:		NaN|'auto'|'disabled'|'no'|<Valid Number>;
+			//										NaN:			disable backward trigger
+			//										'disabled':		disable backward trigger
+			//										'no':			disable backward trigger
+			//										'auto':			forward - viewportWidthRemapped
+			//										<Valid Number>:	the number value
+
+			var _ok = true;
+			var _ = options || {};
+				_.triggerElapsed = _.triggerElapsed || {};
+
+			if (!_.target) {
+				_ok = false;
+				e('Invalid target for a triggeredAction of movie.', '\n\tProvided target:', _.target);
+			}
+
+			if (!_.cssClassToAdd || typeof _.cssClassToAdd !== 'string') {
+				_ok = false;
+				e('Invalid cssClassToAdd for a triggeredAction of movie.', '\n\tProvided cssClassToAdd:', _.cssClassToAdd);
+			}
+
+			if (!Number(_.triggerElapsed.forward)) {
+				_ok = false;
+				e('Invalid trigger.forward elapsed for a triggeredAction of movie.', '\n\tProvided trigger.forward:', _.triggerElapsed.forward);
+			}
+
+			if (!_ok) {
+				return false;
+			}
+
+
+
+			var _bEnabled = false;
+			var _b = Number(_.triggerElapsed.backward);
+			var _bS = String(_.triggerElapsed.backward).toLowerCase();
+
+			if (_bS=='auto') {
+
+				_bEnabled = true;
+				_b = _.triggerElapsed.forward - this.stage.viewportWidthRemapped;
+
+			} else {
+
+				_bEnabled = !isNaN(_b) || _bS=='disabled' || _bS=='no';
+
+				if (_bEnabled) {
+					_b = Math.min(_b, _.triggerElapsed.forward);
+				} else {
+					_b = NaN; // just for sure
+				}
+			}
+
+			var _a = {
+				target: _.target,
+				cssClassToAdd: _.cssClassToAdd,
+				triggerForward: _.triggerElapsed.forward,
+				triggerBackwardEnabled: _bEnabled,
+				triggerBackward: _b
+			};
+
+			this.triggeredActions.push(_a);
+			return _a;
+		}
+
+
+		this.play = function() {
+			this.elapsedRatio = this.stage.play();
+			l('Elapsed',Math.round(this.elapsedRatio*100)+'%');
+			printDynamicInfo.call(this.stage);
+		} // this.play method
+
+		this.config(stage, options);
+	} // CLASS:Movie
+
+
+
+	var welcomeMovie = new Movie(welcomeStage, {
+	});
+
+	welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 1234, backward: 'auto' }, target: qS('#bus-stop-cloud-1'), cssClassToAdd: 'go' });
+	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
+	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
+	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
+	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
+	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
+	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
+	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
+	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
+	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
+	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
+
+
+	welcomeMovie.play(0);
+	welcomeStage.viewport.addEventListener('scroll', function (e) {
+		welcomeMovie.play();
+	});
+
+</script>
+</body>
+</html>
