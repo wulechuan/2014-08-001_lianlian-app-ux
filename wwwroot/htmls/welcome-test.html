@@ -6,7 +6,8 @@
 	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 	<link rel="stylesheet" href="../stylesheets/lly-animation-toolkits.css" />
 	<link rel="stylesheet" href="../stylesheets/lly-animation-toolkits-debug.css" />
-	<link rel="stylesheet" href="../stylesheets/app-welcome.css" />
+	<link rel="stylesheet" href="../stylesheets/app-welcome-stage.css" />
+	<link rel="stylesheet" href="../stylesheets/app-welcome-movie.css" />
 
 	<script src="../scripts/jquery-1.11.1.min.js"></script>
 	<script src="../scripts/wlc-website.js"></script>
@@ -94,9 +95,9 @@
 			<section id="all-scenarios">
 				<section id="scenario-1">
 					<i class="locator scenario-center">
-						<i class="locator element-cloud"  id="bus-stop-cloud-1"	><i class="size"><i class="symbol pivot bottom"></i></i></i>
-						<i class="locator element-cloud"  id="bus-stop-cloud-2"	><i class="size"><i class="symbol pivot bottom"></i></i></i>
-						<i class="locator element-cloud"  id="bus-stop-cloud-3"	><i class="size"><i class="symbol pivot bottom"></i></i></i>
+						<i class="locator element-cloud"  id="cloud-1"	><i class="size"><i class="symbol pivot bottom"></i></i></i>
+						<i class="locator element-cloud"  id="cloud-2"	><i class="size"><i class="symbol pivot bottom"></i></i></i>
+						<i class="locator element-cloud"  id="cloud-3"	><i class="size"><i class="symbol pivot bottom"></i></i></i>
 
 						<i class="locator bus-stop-pole"						><i class="size"><i class="symbol pivot bottom"></i></i></i>
 						<i class="locator bus-stop-trash-bin"					><i class="size"><i class="symbol pivot bottom"></i></i></i>
@@ -241,63 +242,75 @@
 	window.qS = document.body.querySelector.bind(document.body);
 	window.qSA = document.body.querySelectorAll.bind(document.body);
 
-	var inputPointer = {
-		// draggingThreshold: 3,
-		// isDragging: false,
-		// startX: NaN,
-		// startY: NaN,
-		// deltaX: NaN,
-		// deltaY: NaN,
-		// distance: NaN,
 
-		// startDragging: function (e) {
-		// 	// e = e.originalEvent;
-		// 	// console.log('start dragging. pageX =', e.pageX, ' pageY =', e.pageY);
-		// 	this.isDragging = true;
-		// 	this.startX = e.pageX;
-		// 	this.startY = e.pageY;
-		// 	this.deltaX = 0;
-		// 	this.deltaY = 0;
-		// 	this.distance = 0;
+	function getScrollBarDimension() {
+		var _s1 = 123;
+		var _s2 = 234;
+		var w1=NaN,w2=NaN,h1=NaN,h2=NaN;
 
-		// 	cacheLeft.call(stage);
-		// },
+		var outer = document.createElement('div');
+		var inner = document.createElement('div');
 
-		// stopDragging: function (e) {
-		// 	// console.log('stop dragging.');
-		// 	if (1) {
-		// 		this.isDragging = false;
-		// 		this.startX = NaN;
-		// 		this.startY = NaN;
-		// 		this.deltaX = NaN;
-		// 		this.deltaY = NaN;
-		// 		this.distance = NaN;
-		// 	}
-		// },
+		outer.appendChild(inner);
+		document.body.appendChild(outer);
 
-		// onDragging: function (e) {
-		// 	// console.log('mouse or finger moving. pageX =', e.pageX);
-		// 	// console.log(this);
-		// 	if (!this.isDragging) {
-		// 		return true;
-		// 	}
+		outer.style.visibility = 'hidden';
+		outer.style.position = 'absolute';
+		outer.style.top = '0';
+		outer.style.left = '0';
+		outer.style.overflow = 'scroll';
 
-		// 	this.deltaX = e.pageX - this.startX;
-		// 	this.deltaY = e.pageY - this.startY;
-		// 	// _distance = Math.round(Math.sqrt(this.deltaX*this.deltaX+this.deltaY*this.deltaY)*100)/100;
-		// 	_distance = Math.abs(this.deltaX);
+		outer.style.width = _s1+'px';
+		outer.style.height = _s1+'px';
 
-		// 	if (_distance < this.draggingThreshold) {
-		// 		this.distance = 0;
-		// 	} else {
-		// 		this.distance = _distance;
-		// 		// console.log(this.deltaX);
-		// 		moveHorizontally.call(stage, this.deltaX);
-		// 	}
+		inner.style.width = _s2+'px';
+		inner.style.height = _s2+'px';
+
+		w1 = outer.clientWidth;
+		h1 = outer.clientHeight;
+		w2 = outer.offsetWidth;
+		h2 = outer.offsetHeight;
+
+		outer.removeChild(inner);
+		document.body.removeChild(outer);
+		delete inner;
+		delete outer;
+
+		return {
+			vScrollBarWidth: w2 - w1,
+			hScrollBarHeight: h2 - h1
+		};
+	}
+
+	function getRealStyleOf(e) {
+		return document.defaultView.getComputedStyle(e,null);
+	}
+
+	function pauseAnimationOf(e) {
+		if (!e) return false;
+		e.animationIsRunning = false;
+		e.style.webkitAnimationPlayState = 'paused';
+		e.style.animationPlayState = 'paused';
+	}
+
+	function resumeAnimationOf(e) {
+		if (!e) return false;
+		e.animationIsRunning = true;
+		e.style.webkitAnimationPlayState = 'running';
+		e.style.animationPlayState = 'running';
+	}
+
+	function toggleAnimationOf(e) {
+		if (!e) return false;
+		if (typeof e.animationIsRunning === 'undefined') e.animationIsRunning = true;
+		if (e.animationIsRunning) {
+			pauseAnimationOf(e);
+		} else {
+			resumeAnimationOf(e);
+		}
+	}
 
 
-		// }
-	};
 
 
 
@@ -437,6 +450,11 @@
 			this.stageElement.style.width = this.stageWidthForScaledContent + 'px';
 		}
 
+		this.reset = function () {
+			this.playTo(0);
+			this.viewport.scrollLeft = 0;
+		}
+
 		this.playTo = function (elapsed) {
 			if (!isNaN(Number(elapsed))) { this.elapsed = Number(elapsed); }
 			this.elapsedRemapped = this.elapsed / this.stageContentScale;
@@ -444,7 +462,7 @@
 			this.elapsedRemappedRight = this.elapsedRemapped + this.viewportWidthRemapped;
 			this.elapsedRatio = this.elapsedRemapped / this.stageScrollingWidthRemapped;
 
-			l(this.elapsedRatio, '\t', this.elapsed + this.viewportWidthRemapped);
+			// l(this.elapsedRatio, '\t', this.elapsed + this.viewportWidthRemapped);
 
 			return this.elapsedRatio;
 		}
@@ -459,91 +477,312 @@
 
 
 
-	function getScrollBarDimension() {
-		var _s1 = 123;
-		var _s2 = 234;
-		var w1=NaN,w2=NaN,h1=NaN,h2=NaN;
-
-		var outer = document.createElement('div');
-		var inner = document.createElement('div');
-
-		outer.appendChild(inner);
-		document.body.appendChild(outer);
-
-		outer.style.visibility = 'hidden';
-		outer.style.position = 'absolute';
-		outer.style.top = '0';
-		outer.style.left = '0';
-		outer.style.overflow = 'scroll';
-
-		outer.style.width = _s1+'px';
-		outer.style.height = _s1+'px';
-
-		inner.style.width = _s2+'px';
-		inner.style.height = _s2+'px';
-
-		w1 = outer.clientWidth;
-		h1 = outer.clientHeight;
-		w2 = outer.offsetWidth;
-		h2 = outer.offsetHeight;
-
-		outer.removeChild(inner);
-		document.body.removeChild(outer);
-		delete inner;
-		delete outer;
-
-		return {
-			vScrollBarWidth: w2 - w1,
-			hScrollBarHeight: h2 - h1
-		};
-	}
-
-	function getRealStyleOf(e) {
-		return document.defaultView.getComputedStyle(e,null);
-	}
-
-
-
-
-
-	function pauseAnimationOf(e) {
-		if (!e) return false;
-		e.animationIsRunning = false;
-		e.style.webkitAnimationPlayState = 'paused';
-		e.style.animationPlayState = 'paused';
-	}
-
-	function resumeAnimationOf(e) {
-		if (!e) return false;
-		e.animationIsRunning = true;
-		e.style.webkitAnimationPlayState = 'running';
-		e.style.animationPlayState = 'running';
-	}
-
-	function toggleAnimationOf(e) {
-		if (!e) return false;
-		if (typeof e.animationIsRunning === 'undefined') e.animationIsRunning = true;
-		if (e.animationIsRunning) {
-			pauseAnimationOf(e);
-		} else {
-			resumeAnimationOf(e);
+	function Actor (locator, options) {
+		this.status = 0;
+		if (!locator || !locator.className || !locator.className.toLowerCase().indexOf('locator')<0) {
+			e('Invalid locator element for new Actor. Actor NOT created.');
+			return false;
 		}
-	}
 
-	function cacheLeft() {
-		// if (typeof this.cacheOnDraggingStart==='undefined') this.cacheOnDraggingStart = {};
+		this.locator = locator;
+		this.actions = [];
 
-		// var targetComputedStyle = getRealStyleOf(this);
-		// this.cacheOnDraggingStart.left = parseInt(targetComputedStyle.left);
-		// this.newLeft = this.cacheOnDraggingStart.left;
-		// // console.log(this, 'left:', this.cacheOnDraggingStart.left);
-	}
+		this.reset = function () {
+			this.status = 0;
+		}
 
-	function moveHorizontally(deltaX) {
-		// this.newLeft = Math.max(-stageScrollingWidth, Math.min(0, this.cacheOnDraggingStart.left + inputPointer.deltaX) );
-		// this.style.left = this.newLeft+'px';
-		// printDebugInfo.call(this);
-	}
+		this.doAction = function (actionId) {
+			this.actions[actionId].call(this);
+			this.status = 1;
+		}
+
+		this.defineAction = function (actionId, action) {
+			if (typeof action != 'function') {
+				e('Invalid function provided when trying defining an action of actor', this.locator);
+				return false;
+			}
+			this.actions[actionId] = action;
+		}
+	} // CLASS:Actor
+
+
+
+
+	function MovieTriggerdAction(movie, actor, options) {
+		// movie:						<object of CLASS:Movie>
+		// actor:						<object of CLASS:Actor>
+
+		if (!movie) {
+			e('Invalid movie for a MovieTriggerdAction.', '\n\tProvided movie:', movie);
+			return false;
+		}
+
+		if (!actor) {
+			e('Invalid actor for a MovieTriggerdAction.', '\n\tProvided actor:', actor);
+			return false;
+		}
+
+		this.actor = actor;
+
+		this.triggerForward = {
+			triggered: false,
+			enabled: false,
+			elapsed: NaN,
+			actionId: '',
+		};
+
+		this.triggerBackward = {
+			triggered: true,
+			enabled: false,
+			elapsed: NaN,
+			actionId: '',
+		};
+
+		this.onTrigger = function (trigger) {}
+		this.onTriggerForward = function () {}
+		this.onTriggerBackward = function () {}
+
+
+		this.config = function(options) {
+			// options.triggerForward:		'disabled'|'no'|NaN|'enabled'|'yes'|'auto'|<Valid Number>;
+			// options.triggerBackward:		'disabled'|'no'|NaN|'enabled'|'yes'|'auto'|<Valid Number>;
+			//
+			//								'disabled':		disable backward trigger
+			//								'no':			disable backward trigger
+			//								NaN:			disable backward trigger
+			//
+			//								'enabled':		triggerForward + viewportWidthRemapped/2 | triggerBackward - viewportWidthRemapped/2
+			//								'yes':			triggerForward + viewportWidthRemapped/2 | triggerBackward - viewportWidthRemapped/2
+			//								'auto':			triggerForward + viewportWidthRemapped/2 | triggerBackward - viewportWidthRemapped/2
+			//
+			//								<Valid Number>:	the number value
+			//
+			// options.forwardActionId:		<string>;
+			// options.backwardActionId:	<string>;
+			//
+			var _ok = true;
+			var _ = options || {};
+
+			var _fEnabled = false;
+			var _bEnabled = false;
+
+			var _f = Number(_.triggerForward);
+			var _fS = String(_.triggerForward).toLowerCase();
+
+			var _b = Number(_.triggerBackward);
+			var _bS = String(_.triggerBackward).toLowerCase();
+
+			var _fValid = !isNaN(_f);
+			var _bValid = !isNaN(_b);
+
+			if (!_fValid && !_bValid) {
+				_ok = false;
+				e(this.actor, 'Neither triggerForward nor triggerBackward is provided specifically.','\n\tProvided triggerForward:', _.triggerForward,'\n\tProvided triggerBackward:', _.triggerBackward);
+			} else {
+
+				var _viewportWidth = movie.stage.viewportWidthRemapped;
+
+				if (_fValid) {
+					_fEnabled = true;
+				}
+
+				if (_fValid && !_bValid) {
+					var _bSValid = _bS === 'auto' || _bS === 'yes' || _bS === 'enabled';
+					if (_bSValid) {
+						_bEnabled = true;
+						_b = _f + _viewportWidth/2;
+					}
+				}
+
+				if (!_fValid && _bValid) {
+					var _fSValid = _fS === 'auto' || _fS === 'yes' || _bS === 'enabled';
+					if (_fSValid) {
+						_fEnabled = true;
+						_f = _d - _viewportWidth/2;
+					}
+				}
+
+				if (_bValid) {
+					_bEnabled = true;
+					if (_fValid && _b<=_f) {
+						w(this.actor, 'TriggerBackward is less than or equals to triggerForward.','\n\tProvided triggerForward:', _.triggerForward,'\n\tProvided triggerBackward:', _.triggerBackward);
+					}
+				}
+
+			}
+
+
+			if (_fEnabled && (!_.forwardActionId || typeof _.forwardActionId !== 'string')) {
+				_ok = false;
+				e('Invalid forwardActionId for a MovieTriggerdAction.', '\n\tProvided forwardActionId:', _.forwardActionId);
+			}
+
+			if (_fEnabled && (!_.backwardActionId || typeof _.backwardActionId !== 'string')) {
+				_ok = false;
+				e('Invalid backwardActionId for a MovieTriggerdAction.', '\n\tProvided backwardActionId:', _.backwardActionId);
+			}
+
+			if (!_ok) {
+				return false;
+			}
+
+
+			if (!_fEnabled) { _f = NaN; _.forwardActionId = ''; }	// just for sure
+			if (!_bEnabled) { _b = NaN; _.backwardActionId = ''; }	// just for sure
+
+			this.triggerForward.enabled = _fEnabled;
+			this.triggerForward.elapsed = _f;
+			this.triggerForward.actionId = _.forwardActionId;
+
+			this.triggerBackward.enabled = _bEnabled;
+			this.triggerBackward.elapsed = _b;
+			this.triggerBackward.actionId = _.backwardActionId;
+
+			return this;
+		}
+
+		this.tryTrigger = function(moviePlayingForward, movieElapsed) {
+			var _t = moviePlayingForward ? this.triggerForward : this.triggerBackward;
+			var _tOpp = moviePlayingForward ? this.triggerBackward : this.triggerForward;
+
+			if (_t.enabled && !_t.triggered) {
+				var _triggered = moviePlayingForward ? (_t.elapsed <= movieElapsed) : (_t.elapsed >= movieElapsed);
+
+				if (_triggered) {
+					// l('"'+this.actor.symbol.id+'"', moviePlayingForward ? 'forward' : 'backward', trigger.elapsed, movieElapsed);
+					_t.triggered = true;
+					_tOpp.triggered = false;
+
+					this.onTrigger(_t);
+					this.actor.doAction(_t.actionId);
+
+					if (moviePlayingForward) {
+						this.onTriggerForward(_t);
+					} else {
+						this.onTriggerBackward(_t);
+					}
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		this.tryTriggerForward = function(moviePlayingForward, movieElapsed) {
+			return this.tryTrigger(moviePlayingForward, movieElapsed);
+		}
+
+		this.tryTriggerBackward = function(moviePlayingForward, movieElapsed) {
+			return this.tryTrigger(moviePlayingForward, movieElapsed);
+		}
+		
+		return this.config(options);
+	} // CLASS:MovieTriggerdAction
+
+
+
+
+	function Movie(stage, options) {
+		this.stage = null;
+		this.isPlaying = false;
+		this.isPlayingForward = false;
+		this.isPaused = false;
+		this.elapsedRatio = 0;
+		this.elapsedRatioLastTime = 0;
+		this.actors = [];
+		this.triggeredActions = [];
+
+		this.onStop = function() {};
+		this.onPause = function() {};
+		this.onResume = function() {};
+		this.onPlay = function() {};
+
+		this.config = function (stage, options) {
+			if (!stage && !stage.stageElement && !stage.viewportWidth) {
+				e('Invalid stage object.');
+				return false;
+			}
+
+			this.stage = stage;
+			this.stageWidth = this.stage.stageScrollingWidthRemapped;
+			var _ = options || {};
+		}
+
+		this.addActor = function(actorName, locator, options) {
+			var _actor = new Actor(locator, options);
+			if (_actor) {
+				this.actors[actorName] = _actor;
+			}
+		}
+
+		this.addTriggeredAction = function (actorName, options) {
+			var _a = new MovieTriggerdAction(this, this.actors[actorName], options);
+			if (_a) {
+				this.triggeredActions.push(_a);
+				return _a;
+			}
+		}
+
+		this.stop = function() {
+			this.stage.reset();
+
+			for (var i=0; i<this.actors.length;i++) {
+				this.actors[i].reset();
+			}
+
+			this.isPlaying = false;
+			this.isPlayingForward = false;
+			this.isPaused = false;
+
+			this.onStop();
+		}
+
+		this.pause = function() {
+			// if (!this.isPlaying) {
+			// 	return false;
+			// }
+			// this.isPlaying = false;
+			// this.isPlayingForward = false;
+			// this.isPaused = true;
+
+			this.onPause();
+		}
+
+		this.resume = function() {
+			// if (!this.isPaused) {
+			// 	return false;
+			// }
+			// this.isPlaying = true;
+			// this.isPaused = false;
+
+			this.onResume();
+		}
+
+		this.play = function() {
+			if (this.isPaused) {
+				return false;
+			}
+
+			this.onPlay();
+
+			this.isPlaying = true;
+			this.isPaused = false;
+			this.elapsedRatio = this.stage.play();
+			var _elapsed = this.stage.elapsedRemapped;
+
+			this.isPlayingForward = this.elapsedRatio > this.elapsedRatioLastTime;
+			// l('isPlayingForward = '+this.isPlayingForward);
+			this.elapsedRatioLastTime = this.elapsedRatio;
+
+			for (var i=0; i<this.triggeredActions.length;i++) {
+				var _a = this.triggeredActions[i];
+				_a.tryTriggerForward(this.isPlayingForward, _elapsed);
+				_a.tryTriggerBackward(this.isPlayingForward ,_elapsed);
+			}
+		}
+
+		this.config(stage, options);
+	} // CLASS:Movie
 </script>
 
 <script id="script-init">
@@ -558,61 +797,121 @@
 		stageWidthAtFullScale:	4480,
 		stageHeightAtFullScale:	717
 	});
+
+	var welcomeMovie = new Movie(welcomeStage);
 </script>
 
-<script id="script-test-and-debug">
+<script id="script-test-and-debug-1">
 	if (website.env.mode.desktop && !website.env.os.wp) {
 		welcomeStage.config({
-			viewportWidth:			320,
-			viewportHeight:			500,
+			viewportWidth: 500-17,
+			viewportHeight: 500,
 		});
 		welcomeStage.viewport.style.position = 'relative';
 		welcomeStage.viewport.style.marginLeft = 'auto';
 		welcomeStage.viewport.style.marginRight = 'auto';
 		welcomeStage.viewport.style.marginTop = '200px';
 	}
+</script>
 
+<script id="script-story-teller">
+	welcomeMovie.addActor('cloud-1', qS('#cloud-1'));
+	welcomeMovie.addActor('cloud-2', qS('#cloud-2'));
+	welcomeMovie.addActor('cloud-3', qS('#cloud-3'));
+
+	var actorActionsLib = {
+		cloudFlyForward: function () {
+			l(this.locator.id, 'cloudFlyForward');
+			var _cssAni = 'wak-cloud-fly 2s ease-in-out 0s 1 normal forwards';
+			this.locator.style.webkitAnimation = '';
+			this.locator.style.animation = '';
+			this.locator.style.webkitAnimation = _cssAni;
+			this.locator.style.animation = _cssAni;
+			// this.locator.classList.remove('fly-backward');
+			// this.locator.classList.add('fly-forward');
+		},
+		cloudFlyBackward: function () {
+			l(this.locator.id, 'cloudFlyBackward');
+			var _cssAni = 'wak-cloud-fly 2s ease-in-out 0s 1 reverse backwards';
+			this.locator.style.webkitAnimation = '';
+			this.locator.style.animation = '';
+			this.locator.style.webkitAnimation = _cssAni;
+			this.locator.style.animation = _cssAni;
+			// this.locator.classList.remove('fly-forward');
+			// this.locator.classList.add('fly-backward');
+		},
+	}
+
+	welcomeMovie.actors['cloud-1'].defineAction('fly-forward', actorActionsLib.cloudFlyForward);
+	welcomeMovie.actors['cloud-2'].defineAction('fly-forward', actorActionsLib.cloudFlyForward);
+	welcomeMovie.actors['cloud-3'].defineAction('fly-forward', actorActionsLib.cloudFlyForward);
+
+	welcomeMovie.actors['cloud-1'].defineAction('fly-backward', actorActionsLib.cloudFlyBackward);
+	welcomeMovie.actors['cloud-2'].defineAction('fly-backward', actorActionsLib.cloudFlyBackward);
+	welcomeMovie.actors['cloud-3'].defineAction('fly-backward', actorActionsLib.cloudFlyBackward);
+
+	welcomeMovie.addTriggeredAction( 'cloud-1', { triggerForward:   40, triggerBackward:  150, forwardActionId: 'fly-forward', backwardActionId: 'fly-backward' } );
+	welcomeMovie.addTriggeredAction( 'cloud-2', { triggerForward:  100, triggerBackward:  210, forwardActionId: 'fly-forward', backwardActionId: 'fly-backward' } );
+	welcomeMovie.addTriggeredAction( 'cloud-3', { triggerForward:   70, triggerBackward:  180, forwardActionId: 'fly-forward', backwardActionId: 'fly-backward' } );
+</script>
+
+<script id="script-test-and-debug-2">
 	if (1) {
+		var _indent = '<br/>&nbsp;&nbsp;';
 		var info = document.createElement('H3');
 			info.id = 'info';
 		document.body.appendChild(info);
 
-		printDebugInfo.call(welcomeStage);
+		// welcomeMovie.onStop = function () { printDynamicInfo2.call(this.stage); }
+		// welcomeMovie.onPlay = function () { printDynamicInfo2.call(this.stage); }
+		welcomeMovie.triggeredActions[0].onTrigger = function(trigger) { printTriggeredActionInfo.call(this, trigger) };
+	}
 
-		function printDebugInfo() {
-			info.innerHTML = ''
-				+ 'screen: ' + screen.availWidth + ' x ' + screen.availHeight
-				+ '<br/>window: ' + window.innerWidth + ' x ' + window.innerHeight
-				+ '<br/>html: ' + document.documentElement.clientWidth + ' x ' + document.documentElement.clientHeight
-				+ '<br/>body: ' + document.body.clientWidth + ' x ' + document.body.clientHeight
-				+ '<br/>container: ' + getRealStyleOf(this.viewport).width + ' x ' + getRealStyleOf(this.viewport).height
-				+ '<br/>'
-				+ '<br/>stage dimensions:'
-				+ '<br/>&nbsp;&nbsp;&nbsp;&nbsp;desired: ' + this.stageWidthForScaledContent + 'px x ' + this.viewportHeight + 'px'
-				+ '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;actual: ' + getRealStyleOf(this.stageElement).width + ' x ' + getRealStyleOf(this.stageElement).height
-				+ '<br/>stageScrollingWidth: ' + this.stageScrollingWidth
-				+ '<br/>'
-				+ '<br/>stageContentScale: ' + Math.round(this.stageContentScale*1000)/1000
-				+ '<br/>stageContentScalerInlineStyle:<br/>' + (this.useCssZoom ? ('zoom: '+this.stageContentScaler.style.zoom) : this.stageContentScaler.style.transform)
-				;
-			info.style.display = 'block';
-		}
+	function printDebugInfo() {
+		info.innerHTML = ''
+			+ 'screen: ' + screen.availWidth + ' x ' + screen.availHeight
+			+ '<br/>window: ' + window.innerWidth + ' x ' + window.innerHeight
+			+ '<br/>html: ' + document.documentElement.clientWidth + ' x ' + document.documentElement.clientHeight
+			+ '<br/>body: ' + document.body.clientWidth + ' x ' + document.body.clientHeight
+			+ '<br/>container: ' + getRealStyleOf(this.viewport).width + ' x ' + getRealStyleOf(this.viewport).height
+			+ '<br/>'
+			+ '<br/>stage dimensions:'
+			+ '<br/>&nbsp;&nbsp;&nbsp;&nbsp;desired: ' + this.stageWidthForScaledContent + 'px x ' + this.viewportHeight + 'px'
+			+ '<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;actual: ' + getRealStyleOf(this.stageElement).width + ' x ' + getRealStyleOf(this.stageElement).height
+			+ '<br/>stageScrollingWidth: ' + this.stageScrollingWidth
+			+ '<br/>'
+			+ '<br/>stageContentScale: ' + Math.round(this.stageContentScale*1000)/1000
+			+ '<br/>stageContentScalerInlineStyle:<br/>' + (this.useCssZoom ? ('zoom: '+this.stageContentScaler.style.zoom) : this.stageContentScaler.style.transform)
+			;
+		info.style.display = 'block';
+	}
 
-		function printDynamicInfo() {
-			info.innerHTML = ''
-				+ 'stage elapsed:'
-				+ '<br/>&nbsp;&nbsp;raw = ' + Math.round(this.elapsed*1000)/1000
-				+ '<br/>&nbsp;&nbsp;Remapped = ' + Math.round(this.elapsedRemapped*1000)/1000
-				+ '<br/>&nbsp;&nbsp;RemappedMiddle = ' + Math.round(this.elapsedRemappedMiddle*1000)/1000
-				+ '<br/>&nbsp;&nbsp;RemappedRight = ' + Math.round(this.elapsedRemappedRight*1000)/1000
-				+ '<br/>&nbsp;&nbsp;Ratio = ' + Math.round(this.elapsedRatio*1000)/1000
-				;
-			info.style.display = 'block';
-		}
+	function printDynamicInfo(innerHTML) {
+		info.innerHTML = innerHTML;
+		info.style.display = 'block';
+	}
+
+	function printDynamicInfo2() {
+		info.innerHTML = ''
+			+ 'stage elapsed:'
+			+ _indent + 'raw = ' + Math.round(this.elapsed*1000)/1000
+			+ _indent + 'Remapped = ' + Math.round(this.elapsedRemapped*1000)/1000
+			+ _indent + 'RemappedMiddle = ' + Math.round(this.elapsedRemappedMiddle*1000)/1000
+			+ _indent + 'RemappedRight = ' + Math.round(this.elapsedRemappedRight*1000)/1000
+			+ _indent + 'Ratio = ' + Math.round(this.elapsedRatio*1000)/1000
+			+ '<br/>Movie:'
+			+ _indent + 'isPlayingForward = ' + welcomeMovie.isPlayingForward
+			;
+		info.style.display = 'block';
+	}
+
+	function printTriggeredActionInfo(trigger) {
+		// l(this.actor.locator);
+		printDynamicInfo( this.actor.locator.id+'<br/>'+trigger.actionId+'<br/>elapsed = '+trigger.elapsed+'/'+welcomeMovie.stage.elapsedRemapped );
 	}
 </script>
 
-<script id="script-story-teller">
+<script id="script-play-movie">
 	var tempResLoader = document.getElementById('resources-loader-0');
 	if (tempResLoader) {
 		tempResLoader.innerHTML = '';
@@ -620,134 +919,8 @@
 	}
 	delete tempResLoader;
 
-	function Movie(stage, options) {
-		this.stage = null;
-		this.elapsedRatio = 0;
-
-		this.triggeredActions = [
-			// { triggerElapsed: { forward: 123, backward: NaN }, target: null, cssClassToAdd: '' },
-		];
-
-
-		this.stageScrollLeft = 0;
-
-
-		this.config = function (stage, options) {
-			if (!stage && !stage.stageElement && !stage.viewportWidth) {
-				e('Invalid stage object.');
-				return false;
-			}
-
-			this.stage = stage;
-			this.stageWidth = this.stage.stageScrollingWidthRemapped;
-			var _ = options || {};
-
-		} // this.config method
-
-
-		this.addTriggeredAction = function (options) {
-			// options.target:						<html element>
-			// options.cssClassToAdd:				<string>;
-			//
-			// options.triggerElapsed.forward:		<Valid Number>;
-			//
-			// options.triggerElapsed.backward:		NaN|'auto'|'disabled'|'no'|<Valid Number>;
-			//										NaN:			disable backward trigger
-			//										'disabled':		disable backward trigger
-			//										'no':			disable backward trigger
-			//										'auto':			forward - viewportWidthRemapped
-			//										<Valid Number>:	the number value
-
-			var _ok = true;
-			var _ = options || {};
-				_.triggerElapsed = _.triggerElapsed || {};
-
-			if (!_.target) {
-				_ok = false;
-				e('Invalid target for a triggeredAction of movie.', '\n\tProvided target:', _.target);
-			}
-
-			if (!_.cssClassToAdd || typeof _.cssClassToAdd !== 'string') {
-				_ok = false;
-				e('Invalid cssClassToAdd for a triggeredAction of movie.', '\n\tProvided cssClassToAdd:', _.cssClassToAdd);
-			}
-
-			if (!Number(_.triggerElapsed.forward)) {
-				_ok = false;
-				e('Invalid trigger.forward elapsed for a triggeredAction of movie.', '\n\tProvided trigger.forward:', _.triggerElapsed.forward);
-			}
-
-			if (!_ok) {
-				return false;
-			}
-
-
-
-			var _bEnabled = false;
-			var _b = Number(_.triggerElapsed.backward);
-			var _bS = String(_.triggerElapsed.backward).toLowerCase();
-
-			if (_bS=='auto') {
-
-				_bEnabled = true;
-				_b = _.triggerElapsed.forward - this.stage.viewportWidthRemapped;
-
-			} else {
-
-				_bEnabled = !isNaN(_b) || _bS=='disabled' || _bS=='no';
-
-				if (_bEnabled) {
-					_b = Math.min(_b, _.triggerElapsed.forward);
-				} else {
-					_b = NaN; // just for sure
-				}
-			}
-
-			var _a = {
-				target: _.target,
-				cssClassToAdd: _.cssClassToAdd,
-				triggerForward: _.triggerElapsed.forward,
-				triggerBackwardEnabled: _bEnabled,
-				triggerBackward: _b
-			};
-
-			this.triggeredActions.push(_a);
-			return _a;
-		}
-
-
-		this.play = function() {
-			this.elapsedRatio = this.stage.play();
-			l('Elapsed',Math.round(this.elapsedRatio*100)+'%');
-			printDynamicInfo.call(this.stage);
-		} // this.play method
-
-		this.config(stage, options);
-	} // CLASS:Movie
-
-
-
-	var welcomeMovie = new Movie(welcomeStage, {
-	});
-
-	welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 1234, backward: 'auto' }, target: qS('#bus-stop-cloud-1'), cssClassToAdd: 'go' });
-	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
-	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
-	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
-	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
-	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
-	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
-	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
-	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
-	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
-	// welcomeMovie.addTriggeredAction({ triggerElapsed: { forward: 555, backward: 'auto' }, target: null, cssClassToAdd: '' });
-
-
-	welcomeMovie.play(0);
-	welcomeStage.viewport.addEventListener('scroll', function (e) {
-		welcomeMovie.play();
-	});
-
+	welcomeMovie.stop();
+	welcomeStage.viewport.addEventListener('scroll', function (e) { welcomeMovie.play(); });
 </script>
 </body>
 </html>

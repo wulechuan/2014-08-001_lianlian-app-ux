@@ -1,0 +1,131 @@
+
+@-webkit-keyframes wak-actress-walking-head {
+	0% { transform: rotateZ(-2deg) translate3d(0,0,0); }
+	50% { transform: translate3d(0,-1px,0); }
+	to { transform: rotateZ(1deg) translate3d(0,0,0); }
+	}
+
+	@keyframes wak-actress-walking-head {
+		0% { transform: rotateZ(-2deg) translate3d(0,0,0); }
+		50% { transform: translate3d(0,-1px,0); }
+		to { transform: rotateZ(1deg) translate3d(0,0,0); }
+	}
+
+
+
+
+	@-webkit-keyframes wak-actress-walking-arm-l {
+		0% { transform: rotateZ(110deg) scale3d(0.85,0.85,1); }
+		to { transform: rotateZ(-10deg) scale3d(0.85,0.85,1); }
+	}
+
+	@keyframes wak-actress-walking-arm-l {
+		0% { transform: rotateZ(110deg) scale3d(0.85,0.85,1); }
+		to { transform: rotateZ(-10deg) scale3d(0.85,0.85,1); }
+	}
+
+	@-webkit-keyframes wak-actress-walking-arm-r {
+		0% { transform: rotateZ(110deg); }
+		to { transform: rotateZ(-10deg); }
+	}
+
+	@keyframes wak-actress-walking-arm-r {
+		0% { transform: rotateZ(110deg); }
+		to { transform: rotateZ(-10deg); }
+	}
+
+
+
+	@-webkit-keyframes wak-actress-walking-leg {
+		0% { transform: rotateZ(16deg) translate3d(-24px,0,0); }
+		to { transform: rotateZ(-16deg) translate3d(24px,0,0); }
+	}
+
+	@keyframes wak-actress-walking-leg {
+		0% { transform: rotateZ(16deg) translate3d(-24px,0,0); }
+		to { transform: rotateZ(-16deg) translate3d(24px,0,0); }
+	}
+
+
+
+	@-webkit-keyframes wak-actress-walking-pants {
+		0% { transform: rotateZ(2deg) translate3d(0,0,0); }
+		to { transform: rotateZ(-2deg) translate3d(0,0,0); }
+	}
+
+	@keyframes wak-actress-walking-pants {
+		0% { transform: rotateZ(2deg) translate3d(0,0,0); }
+		to { transform: rotateZ(-2deg) translate3d(0,0,0); }
+	}
+
+
+
+	@-webkit-keyframes wak-actress-walking-trunk {
+		0% { transform: rotateZ(3deg) translate3d(-1px,0,0); }
+		to { transform: rotateZ(-3deg) translate3d(1px,0,0); }
+	}
+
+	@keyframes wak-actress-walking-trunk {
+		0% { transform: rotateZ(3deg) translate3d(-1px,0,0); }
+		to { transform: rotateZ(-3deg) translate3d(1px,0,0); }
+	}
+
+.actress.walking .head {
+	-webkit-animation: wak-actress-walking-head 0.25s -0.125s ease-in-out alternate infinite both;
+	animation: wak-actress-walking-head 0.25s -0.125s ease-in-out alternate infinite both;
+	}
+
+	.actress.walking .arm.l {
+		-webkit-animation: wak-actress-walking-arm-l 0.5s -0.5s ease-in-out alternate infinite both;
+		animation: wak-actress-walking-arm-l 0.5s -0.5s ease-in-out alternate infinite both;
+	}
+	.actress.walking .arm.r {
+		-webkit-animation: wak-actress-walking-arm-r 0.5s 0s ease-in-out alternate infinite both;
+		animation: wak-actress-walking-arm-r 0.5s 0s ease-in-out alternate infinite both;
+	}
+
+	.actress.walking .leg.l {
+		-webkit-animation: wak-actress-walking-leg 0.5s -0.5s ease-in-out alternate infinite both;
+		animation: wak-actress-walking-leg 0.5s -0.5s ease-in-out alternate infinite both;
+	}
+	.actress.walking .leg.r {
+		-webkit-animation: wak-actress-walking-leg 0.5s 0s ease-in-out alternate infinite both;
+		animation: wak-actress-walking-leg 0.5s 0s ease-in-out alternate infinite both;
+	}
+
+	.actress.walking .pants {
+		-webkit-animation: wak-actress-walking-pants 0.25s 0s ease-in-out alternate infinite both;
+		animation: wak-actress-walking-pants 0.25s 0s ease-in-out alternate infinite both;
+	}
+
+	.actress.walking .trunk {
+		-webkit-animation: wak-actress-walking-trunk 0.25s -0.25s ease-in-out alternate infinite both;
+		animation: wak-actress-walking-trunk 0.25s -0.25s ease-in-out alternate infinite both;
+	}
+
+
+
+
+@-webkit-keyframes wak-cloud-fly {
+	0% { transform: translateX(0); }
+	to { transform: translateX(600px); }
+	}
+
+	@keyframes wak-cloud-fly {
+		0% { transform: translateX(0); }
+		to { transform: translateX(600px); }
+	}
+
+.element-cloud {
+	transition: left 0.6s ease-in-out 0s;
+}
+
+.element-cloud.fly-forward {
+	-webkit-animation: wak-cloud-fly 2s ease-in-out 0s 1 normal forwards;
+	animation: wak-cloud-fly 2s ease-in-out 0s 1 normal forwards;
+}
+
+.element-cloud.fly-backward {
+	-webkit-animation: wak-cloud-fly 2s ease-in-out 0s 1 reverse forwards;
+	animation: wak-cloud-fly 2s ease-in-out 0s 1 reverse forwards;
+}

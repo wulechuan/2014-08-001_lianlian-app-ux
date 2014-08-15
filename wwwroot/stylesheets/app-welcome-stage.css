@@ -99,117 +99,6 @@ html, body {
 
 
 
-
-
-
-	@-webkit-keyframes wak-actress-walking-head {
-		0% { transform: rotateZ(-2deg) translate3d(0,0,0); }
-		50% { transform: translate3d(0,-1px,0); }
-		to { transform: rotateZ(1deg) translate3d(0,0,0); }
-		}
-
-		@keyframes wak-actress-walking-head {
-			0% { transform: rotateZ(-2deg) translate3d(0,0,0); }
-			50% { transform: translate3d(0,-1px,0); }
-			to { transform: rotateZ(1deg) translate3d(0,0,0); }
-		}
-
-
-
-
-		@-webkit-keyframes wak-actress-walking-arm-l {
-			0% { transform: rotateZ(110deg) scale3d(0.85,0.85,1); }
-			to { transform: rotateZ(-10deg) scale3d(0.85,0.85,1); }
-		}
-
-		@keyframes wak-actress-walking-arm-l {
-			0% { transform: rotateZ(110deg) scale3d(0.85,0.85,1); }
-			to { transform: rotateZ(-10deg) scale3d(0.85,0.85,1); }
-		}
-
-		@-webkit-keyframes wak-actress-walking-arm-r {
-			0% { transform: rotateZ(110deg); }
-			to { transform: rotateZ(-10deg); }
-		}
-
-		@keyframes wak-actress-walking-arm-r {
-			0% { transform: rotateZ(110deg); }
-			to { transform: rotateZ(-10deg); }
-		}
-
-
-
-		@-webkit-keyframes wak-actress-walking-leg {
-			0% { transform: rotateZ(16deg) translate3d(-24px,0,0); }
-			to { transform: rotateZ(-16deg) translate3d(24px,0,0); }
-		}
-
-		@keyframes wak-actress-walking-leg {
-			0% { transform: rotateZ(16deg) translate3d(-24px,0,0); }
-			to { transform: rotateZ(-16deg) translate3d(24px,0,0); }
-		}
-
-
-
-		@-webkit-keyframes wak-actress-walking-pants {
-			0% { transform: rotateZ(2deg) translate3d(0,0,0); }
-			to { transform: rotateZ(-2deg) translate3d(0,0,0); }
-		}
-
-		@keyframes wak-actress-walking-pants {
-			0% { transform: rotateZ(2deg) translate3d(0,0,0); }
-			to { transform: rotateZ(-2deg) translate3d(0,0,0); }
-		}
-
-
-
-		@-webkit-keyframes wak-actress-walking-trunk {
-			0% { transform: rotateZ(3deg) translate3d(-1px,0,0); }
-			to { transform: rotateZ(-3deg) translate3d(1px,0,0); }
-		}
-
-		@keyframes wak-actress-walking-trunk {
-			0% { transform: rotateZ(3deg) translate3d(-1px,0,0); }
-			to { transform: rotateZ(-3deg) translate3d(1px,0,0); }
-		}
-
-	.actress.walking .head {
-		-webkit-animation: wak-actress-walking-head 0.25s -0.125s ease-in-out alternate infinite both;
-		animation: wak-actress-walking-head 0.25s -0.125s ease-in-out alternate infinite both;
-		}
-
-		.actress.walking .arm.l {
-			-webkit-animation: wak-actress-walking-arm-l 0.5s -0.5s ease-in-out alternate infinite both;
-			animation: wak-actress-walking-arm-l 0.5s -0.5s ease-in-out alternate infinite both;
-		}
-		.actress.walking .arm.r {
-			-webkit-animation: wak-actress-walking-arm-r 0.5s 0s ease-in-out alternate infinite both;
-			animation: wak-actress-walking-arm-r 0.5s 0s ease-in-out alternate infinite both;
-		}
-
-		.actress.walking .leg.l {
-			-webkit-animation: wak-actress-walking-leg 0.5s -0.5s ease-in-out alternate infinite both;
-			animation: wak-actress-walking-leg 0.5s -0.5s ease-in-out alternate infinite both;
-		}
-		.actress.walking .leg.r {
-			-webkit-animation: wak-actress-walking-leg 0.5s 0s ease-in-out alternate infinite both;
-			animation: wak-actress-walking-leg 0.5s 0s ease-in-out alternate infinite both;
-		}
-
-		.actress.walking .pants {
-			-webkit-animation: wak-actress-walking-pants 0.25s 0s ease-in-out alternate infinite both;
-			animation: wak-actress-walking-pants 0.25s 0s ease-in-out alternate infinite both;
-		}
-
-		.actress.walking .trunk {
-			-webkit-animation: wak-actress-walking-trunk 0.25s -0.25s ease-in-out alternate infinite both;
-			animation: wak-actress-walking-trunk 0.25s -0.25s ease-in-out alternate infinite both;
-		}
-
-
-
-
-
 .bg-gradient,
 .bg-buildings,
 .bg-road { left: 0; top: auto !important; bottom: 0; }
@@ -236,6 +125,13 @@ html, body {
 	.element-cloud { top: auto !important; }
 		.element-cloud	> .size { width: 142px; height: 77px; }
 		.element-cloud	> .size > .pivot {}
+		#cloud-1 { left: 180px; bottom: 490px; }
+		#cloud-2 { left: 320px; bottom: 420px; }
+		#cloud-3 { left: 220px; bottom: 450px; }
+		#cloud-1 > .size > .pivot { transform: scale3d(1,1,0.99); }
+		#cloud-2 > .size > .pivot { transform: scale3d(0.6,0.56,0.5); }
+		#cloud-3 > .size > .pivot { transform: scale3d(0.6,0.56,0.5); }
+
 
 
 	*[class*='element-vehicle'] { top: auto !important; }
@@ -256,7 +152,6 @@ html, body {
 
 
 
-
 	.bus-stop-pole { top: auto!important; }
 	.bus-stop-trash-bin { top: auto!important; }
 		.bus-stop-pole		> .size { width: 547px; height: 631px; }
@@ -269,12 +164,6 @@ html, body {
 		#scenario-1 .bus-stop-trash-bin	{ left: 307px; bottom: 0; }
 		#scenario-1 .scenario-center 	{ left: 0; }
 
-		#scenario-1 #bus-stop-cloud-1 { left: 180px; bottom: 490px; }
-		#scenario-1 #bus-stop-cloud-2 { left: 320px; bottom: 420px; }
-		#scenario-1 #bus-stop-cloud-3 { left: 220px; bottom: 450px; }
-		#scenario-1 #bus-stop-cloud-1 > .size > .pivot { transform: scale3d(1,1,0.99); }
-		#scenario-1 #bus-stop-cloud-2 > .size > .pivot { transform: scale3d(0.6,0.56,0.5); }
-		#scenario-1 #bus-stop-cloud-3 > .size > .pivot { transform: scale3d(0.6,0.56,0.5); }
 
 
 
@@ -335,7 +224,7 @@ html, body {
 		.outdoor-seats .umbrella		{ left:   0px; bottom: 321px; }
 		.outdoor-seats .boy				{ left: -75px; bottom:  48px; }
 		.outdoor-seats .girl			{ left:  75px; bottom:  48px; }
-		.outdoor-seats .waitress		{ left: 120px; bottom:  -2px; }
+		.outdoor-seats .waitress		{ left: 240px; bottom:  -2px; }
 		.outdoor-seats .waitress .voice	{ left: -60px; bottom: 200px; }
 		
 		#scenario-3 .outdoor-seats		{ left: 0; bottom: 0; }
