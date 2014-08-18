@@ -76,6 +76,8 @@ var website = new (function WLCWebsite() {
 		var isIE9 =  uaHas('MSIE 9.');
 		var isIE10 = uaHas('MSIE 10.');
 		var isIE11 = uaHas('rv:11.');// || uaHas('Trident/7.0');
+		
+		var isIE8OrOlder = isIE8 || isIE7 || isIE6;
 		var isIE11orLater = isIE11;
 
 		var isEngineTrident = uaHas('Trident');
@@ -134,6 +136,7 @@ var website = new (function WLCWebsite() {
 				ie6:			isIE6,
 				ie7:			isIE7,
 				ie8:			isIE8,
+				ie8OrOlder:		isIE8OrOlder,
 				ie9:			isIE9,
 				ie10:			isIE10,
 				ieMorden:		isIE11orLater,

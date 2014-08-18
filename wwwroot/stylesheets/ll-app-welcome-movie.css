@@ -1,8 +1,8 @@
 
 @-webkit-keyframes wak-actress-walking-head {
-	0% { transform: rotateZ(-2deg) translate3d(0,0,0); }
-	50% { transform: translate3d(0,-1px,0); }
-	to { transform: rotateZ(1deg) translate3d(0,0,0); }
+	0% { -webkit-transform: rotateZ(-2deg) translate3d(0,0,0); }
+	50% { -webkit-transform: translate3d(0,-1px,0); }
+	to { -webkit-transform: rotateZ(1deg) translate3d(0,0,0); }
 	}
 
 	@keyframes wak-actress-walking-head {
@@ -15,8 +15,8 @@
 
 
 	@-webkit-keyframes wak-actress-walking-arm-l {
-		0% { transform: rotateZ(110deg) scale3d(0.85,0.85,1); }
-		to { transform: rotateZ(-10deg) scale3d(0.85,0.85,1); }
+		0% { -webkit-transform: rotateZ(110deg) scale3d(0.85,0.85,1); }
+		to { -webkit-transform: rotateZ(-10deg) scale3d(0.85,0.85,1); }
 	}
 
 	@keyframes wak-actress-walking-arm-l {
@@ -25,8 +25,8 @@
 	}
 
 	@-webkit-keyframes wak-actress-walking-arm-r {
-		0% { transform: rotateZ(110deg); }
-		to { transform: rotateZ(-10deg); }
+		0% { -webkit-transform: rotateZ(110deg); }
+		to { -webkit-transform: rotateZ(-10deg); }
 	}
 
 	@keyframes wak-actress-walking-arm-r {
@@ -37,8 +37,8 @@
 
 
 	@-webkit-keyframes wak-actress-walking-leg {
-		0% { transform: rotateZ(16deg) translate3d(-24px,0,0); }
-		to { transform: rotateZ(-16deg) translate3d(24px,0,0); }
+		0% { -webkit-transform: rotateZ(16deg) translate3d(-24px,0,0); }
+		to { -webkit-transform: rotateZ(-16deg) translate3d(24px,0,0); }
 	}
 
 	@keyframes wak-actress-walking-leg {
@@ -49,8 +49,8 @@
 
 
 	@-webkit-keyframes wak-actress-walking-pants {
-		0% { transform: rotateZ(2deg) translate3d(0,0,0); }
-		to { transform: rotateZ(-2deg) translate3d(0,0,0); }
+		0% { -webkit-transform: rotateZ(2deg) translate3d(0,0,0); }
+		to { -webkit-transform: rotateZ(-2deg) translate3d(0,0,0); }
 	}
 
 	@keyframes wak-actress-walking-pants {
@@ -61,8 +61,8 @@
 
 
 	@-webkit-keyframes wak-actress-walking-trunk {
-		0% { transform: rotateZ(3deg) translate3d(-1px,0,0); }
-		to { transform: rotateZ(-3deg) translate3d(1px,0,0); }
+		0% { -webkit-transform: rotateZ(3deg) translate3d(-1px,0,0); }
+		to { -webkit-transform: rotateZ(-3deg) translate3d(1px,0,0); }
 	}
 
 	@keyframes wak-actress-walking-trunk {
@@ -107,13 +107,23 @@
 
 
 @-webkit-keyframes wak-cloud-fly {
-	0% { transform: translateX(0); }
-	to { transform: translateX(600px); }
+	0% { -webkit-transform: translateX(0px); }
+	to { -webkit-transform: translateX(600px); }
 	}
 
 	@keyframes wak-cloud-fly {
-		0% { transform: translateX(0); }
+		0% { transform: translateX(0px); }
 		to { transform: translateX(600px); }
+	}
+
+@-webkit-keyframes wak-cloud-fly-back {
+	0% { -webkit-transform: translateX(600px); }
+	to { -webkit-transform: translateX(0px); }
+	}
+
+	@keyframes wak-cloud-fly-back {
+		0% { transform: translateX(600px); }
+		to { transform: translateX(0px); }
 	}
 
 .element-cloud {
@@ -121,11 +131,16 @@
 }
 
 .element-cloud.fly-forward {
-	-webkit-animation: wak-cloud-fly 2s ease-in-out 0s 1 normal forwards;
-	animation: wak-cloud-fly 2s ease-in-out 0s 1 normal forwards;
+	-webkit-animation: wak-cloud-fly 2s ease-in-out 0s 1 normal both;
+	animation: wak-cloud-fly 2s ease-in-out 0s 1 normal both;
 }
 
 .element-cloud.fly-backward {
-	-webkit-animation: wak-cloud-fly 2s ease-in-out 0s 1 reverse forwards;
-	animation: wak-cloud-fly 2s ease-in-out 0s 1 reverse forwards;
+	-webkit-animation: wak-cloud-fly-back 2s ease-in-out 0s 1 normal both;
+	animation: wak-cloud-fly-back 2s ease-in-out 0s 1 normal both;
 }
+/*.element-cloud.fly-backward {
+	-webkit-animation: wak-cloud-fly 2s ease-in-out 0s 1 reverse both;
+	animation: wak-cloud-fly 2s ease-in-out 0s 1 reverse both;
+}
+*/

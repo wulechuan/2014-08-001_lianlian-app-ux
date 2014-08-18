@@ -13,6 +13,45 @@ html, body {
 	padding: 0;
 }
 
+#stage-viewport {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	margin: 0;
+	padding: 0;
+	overflow-x: auto;
+	overflow-y: hidden;
+	}
+
+	#stage-viewport #stage {
+		position: absolute;
+		height: 100%;
+		overflow: hidden;
+
+		left: 0;
+		bottom: 0;
+		margin: 0;
+		padding: 0;
+	}
+
+	#stage-viewport #stage #stage-content-scaler {
+		width: 4480px;
+		height: 717px;
+		
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		transform-origin: 0 100% 0;
+
+		margin: 0;
+		padding: 0;
+	}
+
+
+
+
 
 .actress {
 	left: 790px;
