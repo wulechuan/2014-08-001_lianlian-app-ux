@@ -1,18 +1,3 @@
-// if (!window.console) { // IE8 does NOT init console object until the F12 tool is activated.
-// 	window.console = {};
-// 	window.console.log = function () {};
-// 	window.console.warn = function () {};
-// 	window.console.error = function () {};
-// }
-
-// window.l = window.console.log.bind(window.console);
-// window.w = window.console.warn.bind(window.console);
-// window.e = window.console.error.bind(window.console);
-
-// window.qS = document.body.querySelector.bind(document.body);
-// window.qSA = document.body.querySelectorAll.bind(document.body);
-
-
 function getScrollBarDimension() {
 	var _s1 = 123;
 	var _s2 = 234;
@@ -485,11 +470,41 @@ function Movie(stage, options) {
 		if (_actor) {
 			this.actors[actorName] = _actor;
 			this.actorsCount++;
+			return _actor;
 		}
+		return undefined;
+	}
+
+	this.easyAddActor = function(actorName, locatorQueryString, options) {
+		var _l = qS(locatorQueryString);
+		var _s = qS(locatorQueryString + ' > .size > .symbol');
+		return this.addActor(actorName, _l, _s, options);
 	}
 
 	this.actor = function(actorName) {
 		return this.actors[actorName];
+	}
+
+	this.forEachActor = function (func) {
+		if (typeof func != 'function') {
+			return 0;
+		}
+		var _i = 0;
+		var _r = undefined;
+		for (var _actorName in this.actors) {
+			_r = func.call(this.actors[_actorName], _i);
+			if (typeof _r === 'undefined' || !!_r) {
+				_i++;
+			}
+		}
+		return _i;
+	}
+
+	this.logActors = function() {
+		return this.forEachActor(
+			function (i) {
+				l(i, this);
+			}) + ' of ' + this.actorsCount + ' actors printed.';
 	}
 
 	this.addTriggeredAction = function (actorName, options) {
@@ -558,14 +573,6 @@ function Movie(stage, options) {
 		}
 	}
 
-	this.logActors = function() {
-		var _i = 0;
-		for (var _actor in this.actors) {
-			l(_actor);
-			_i++;
-		}
-		return this.actorsCount + '=' + _i
-	}
 
 	this.config(stage, options);
 } // CLASS:Movie

@@ -1,8 +1,8 @@
 //////// IE8 begin ////////////////////////////////////////////////////////////////////////////////
 var _isVeryOldIE =
 		navigator.userAgent.indexOf('MSIE 8.')>0
-	||	navigator.userAgent.indexOf('MSIE 7.')<0
-	||	navigator.userAgent.indexOf('MSIE 6.')<0
+	||	navigator.userAgent.indexOf('MSIE 7.')>0
+	||	navigator.userAgent.indexOf('MSIE 6.')>0
 	;
 
 var fakeBind = !Function.prototype.bind || _isVeryOldIE;
