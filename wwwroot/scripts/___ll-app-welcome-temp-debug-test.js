@@ -99,3 +99,13 @@ if (1) {
 	}
 }
 
+
+
+
+
+
+
+
+var actorTempWifi = welcomeMovie.easyAddActor('temp-wifi', '#temp-wifi-0');
+WAT.applyKeyframesTo(actorTempWifi.locator, 'wak-things-pop-out');
+

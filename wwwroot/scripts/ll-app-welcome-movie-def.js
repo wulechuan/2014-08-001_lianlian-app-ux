@@ -22,10 +22,11 @@ var welcomeMovie = new Movie(welcomeStage);
 
 
 // ----- Story teller: build actorsLib ---------------------------------------
-var scenarioIdPrefix = 'scenario-';
-var actorNamePrefixOfSenario = 's';
-
 function easyAddActorForScene(scenarioIndex, queryString) {
+
+	var scenarioIdPrefix = 'scenario-';
+	var actorNamePrefixOfSenario = 's';
+
 	var _scenarioId,_actorName;
 
 	_scenarioId	= '#'+scenarioIdPrefix+scenarioIndex;
@@ -84,8 +85,6 @@ easyAddActorForScene(5, '#green-land-tree-1');
 easyAddActorForScene(5, '#green-land-tree-2');
 easyAddActorForScene(5, '#green-land-tree-3');
 easyAddActorForScene(5, '#green-land-tree-4');
-
-
 
 
 

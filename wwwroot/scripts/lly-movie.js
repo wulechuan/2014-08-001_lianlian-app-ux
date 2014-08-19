@@ -41,30 +41,79 @@ function getRealStyleOf(e) {
 	return document.defaultView.getComputedStyle(e,null);
 }
 
-function pauseAnimationOf(e) {
-	if (!e) return false;
-	e.animationIsRunning = false;
-	e.style.webkitAnimationPlayState = 'paused';
-	e.style.animationPlayState = 'paused';
-}
 
-function resumeAnimationOf(e) {
-	if (!e) return false;
-	e.animationIsRunning = true;
-	e.style.webkitAnimationPlayState = 'running';
-	e.style.animationPlayState = 'running';
-}
+var WAT = new (function AnimationToolkits() {
 
-function toggleAnimationOf(e) {
-	if (!e) return false;
-	if (typeof e.animationIsRunning === 'undefined') e.animationIsRunning = true;
-	if (e.animationIsRunning) {
-		pauseAnimationOf(e);
-	} else {
-		resumeAnimationOf(e);
+	this.pauseAnimationOf = function(e) {
+		if (!e) return false;
+		e.animationIsRunning = false;
+		e.style.webkitAnimationPlayState = 'paused';
+		e.style.animationPlayState = 'paused';
 	}
-}
 
+	this.resumeAnimationOf = function(e) {
+		if (!e) return false;
+		e.animationIsRunning = true;
+		e.style.webkitAnimationPlayState = 'running';
+		e.style.animationPlayState = 'running';
+	}
+
+	this.toggleAnimationOf = function(e) {
+		if (!e) return false;
+		if (typeof e.animationIsRunning === 'undefined') e.animationIsRunning = true;
+		if (e.animationIsRunning) {
+			pauseAnimationOf(e);
+		} else {
+			resumeAnimationOf(e);
+		}
+	}
+
+	this.applyKeyframesTo = function(element, keyframesName, duration, delay, iterationCount, direction, timingFunction, fillMode) {
+		if (!isDomElement(element)) {
+			return false;
+		}
+
+		keyframesName = String(keyframesName);
+		if (keyframesName.length < 1) {
+			return false;
+		}
+
+		duration = Number(duration);
+		duration = isNaN(duration) ? '0.6s' : (Math.max(0.05, duration)+'s');
+
+		delay = Number(delay);
+		delay = isNaN(delay) ? '0s' : (delay+'s');
+
+		iterationCount = isNaN(Number(iterationCount)) ? (String(iterationCount).toLowerCase()==='infinite' ? 'infinite' : '1' ) : String(Number(iterationCount)); // don't care integer or not
+
+		direction = String(direction);
+		direction = (direction==='normal' || direction==='alternate' || direction==='reverse' || direction==='alternate-reverse') ? direction : 'normal';
+
+		timingFunction = timingFunction ? String(timingFunction) : 'ease-in-out'; // be careful
+
+		fillMode = String(fillMode);
+		fillMode = (fillMode==='forwards' || fillMode==='backwards' || fillMode==='both') ? fillMode : 'both';
+
+		var _cssAnimation = [
+			keyframesName,
+			duration,
+			timingFunction,
+			iterationCount,
+			delay,
+			direction,
+			fillMode
+		].join(' ');
+
+		if (typeof element.style.webkitAnimation != 'undefined') {
+			element.style.webkitAnimation = _cssAnimation;
+		} else {
+			element.style.animation = _cssAnimation;
+		}
+
+		// l(element, '\n', _cssAnimation);
+	}
+
+});
 
 
 
@@ -470,6 +519,7 @@ function Movie(stage, options) {
 		if (_actor) {
 			this.actors[actorName] = _actor;
 			this.actorsCount++;
+			l('Actor\t\t'+actorName+''+(new Array(48-actorName.length)).join(' ')+'has been created.');
 			return _actor;
 		}
 		return undefined;
