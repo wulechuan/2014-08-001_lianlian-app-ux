@@ -95,12 +95,10 @@ easyAddActorForScene(5, '#green-land-tree-4');
 
 var actorActionsLib = {
 	cloudFlyForward: function () {
-		l(this.locator.id, 'cloudFlyForward');
 		this.locator.classList.remove('fly-backward');
 		this.locator.classList.add('fly-forward');
 	},
 	cloudFlyBackward: function () {
-		l(this.locator.id, 'cloudFlyBackward');
 		this.locator.classList.remove('fly-forward');
 		this.locator.classList.add('fly-backward');
 	}

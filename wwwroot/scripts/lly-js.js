@@ -74,7 +74,7 @@ var wlcJS = new (function () {
 
 
 
-	this.domTools = new WLC_DOMTools();
+	this.domTools = new WLCDOMTools();
 	this.setNumberIfSafe = setNumberIfSafe;
 
 
@@ -163,11 +163,9 @@ var wlcJS = new (function () {
 		return -1;
 	}
 
-
 	Array.prototype.has = function () {
 		return this.indexOfValue( arguments[0], 0 ) >= 0;
 	}
-
 
 	Array.prototype.hasAll = function () {
 		var found = true;
@@ -178,7 +176,6 @@ var wlcJS = new (function () {
 		return found;
 	}
 
-
 	Array.prototype.hasAny = function () {
 		var found = false;
 		for (var i=0; i<arguments.length; i++) {
@@ -187,7 +184,6 @@ var wlcJS = new (function () {
 		}
 		return found;
 	}
-
 
 	Array.prototype.hasNo = function () {
 		var found = false;
@@ -198,7 +194,6 @@ var wlcJS = new (function () {
 		return !found;
 	}
 
-
 	Array.prototype.countOf = function () {
 		var count = 0;
 		for (var i=0; i<this.length; i++)
@@ -206,7 +201,6 @@ var wlcJS = new (function () {
 				count++;
 		return count;
 	}
-
 
 	Array.prototype.pushIfHasNo = function () {
 		if ( this.has( arguments[0] ) ) 
@@ -252,7 +246,7 @@ var wlcJS = new (function () {
 
 
 	//////// IE8 begin ////////////////////////////////////////////////////////////////////////////////
-	if (typeof Object.defineProperty === 'function' && _isVeryOldIE ) {
+	if (typeof Object.defineProperty === 'function' && !_isVeryOldIE ) {
 		// IE8 DOES support Object.defineProperty BUT CAN NOT define property for String.prototype
 	//////// IE8 end //////////////////////////////////////////////////////////////////////////////////
 
@@ -272,11 +266,6 @@ var wlcJS = new (function () {
 	}
 	//////// IE8 end //////////////////////////////////////////////////////////////////////////////////
 
-	String.prototype.randomizeUrl = function (in_allowed) {
-		if (!in_allowed) return String(this);
-		return this + ((this.indexOf('?')>=0) ? '&' : '?') + 'wRandom=' + Math.round( Math.random() * 100000 );
-	}
-
 	function setNumberIfSafe(input, target) {
 		var result = Number(input);
 		if (!isNaN(result)) {
@@ -284,9 +273,9 @@ var wlcJS = new (function () {
 		}
 	}
 
-	function WLC_DOMTools() {
+	function WLCDOMTools() {
 
-		window.doc = document;				// doc or window.doc
+		window.doc = document; // doc or window.doc
 		//////// IE8 begin ////////////////////////////////////////////////////////////////////////////////
 		if (document.querySelector) {
 			if (typeof document.querySelector === 'function') {
@@ -344,11 +333,28 @@ var wlcJS = new (function () {
 		window.isDomNode = _isDomNode;
 		window.isDomElement = _isDomElement;
 		window.isDom = _isDom;
+		window.prepare = _prepare;
 
 
 		this.isDomNode = _isDomNode;
 		this.isDomElement = _isDomElement;
 		this.isDom = _isDom;
+		this.prepare = _prepare;
+
+		if (window.jQuery || window.Zepto) {
+		} else {
+			window.$ = function(e) {
+				if (typeof e === 'string') {
+					e = qS(e);
+				}
+				if (isDom(e)) {
+					_prepare(e);
+					return e;
+				}
+				return undefined;
+			}
+		}
+
 
 		function _isDomNode (o){
 			// http://stackoverflow.com/questions/384286/javascript-isdom-how-do-you-check-if-a-javascript-object-is-a-dom-object
@@ -421,17 +427,118 @@ var wlcJS = new (function () {
 			return dom_new;
 		}
 
+		function display(toShow, duration) {
+			if ( window.jQuery || window.Zepto ) {
+				(function($) {
+					// duration = (duration || duration == 0 ) ? duration : null;
+					if (toShow) {
+						$(this).fadeIn(duration);
+					} else {
+						$(this).fadeOut(duration);
+					}
+				}).call(this, window.jQuery || window.Zepto );
+			} else {
+
+				var _safeDelay = 80;
+				var _oldInlineTransitionDefinition = this.style.transition;
+				this.style.transition = 'opacity ' + ( ((duration-_safeDelay)/1000)+'s' ) + ' ease-in-out';
+
+				if (toShow) {
+
+					this.on('transitionend', function(e) {
+						this.style.transition = '';
+						this.style.opacity = '';
+						this.style.display = ''; //in case user quickly clicks hideButton during fading in.
+						this.off('transitionend');
+						this.style.transition = _oldInlineTransitionDefinition;
+					});
+
+					this.style.opacity = 0;
+					this.style.display = '';
+					setTimeout(
+						(function () {
+							this.style.opacity = 1;
+						}).bind(this),
+						_safeDelay
+					);
+
+				} else {
+
+					this.on('transitionend', function(e) {
+						this.style.transition = '';
+						this.style.opacity = '';
+						this.style.display = 'none';
+						this.off('transitionend');
+						this.style.transition = _oldInlineTransitionDefinition;
+					});
+
+					this.style.opacity = 1;
+					setTimeout(
+						(function () {
+							this.style.opacity = 0;
+						}).bind(this),
+						_safeDelay
+					);
+				
+				}
+			}
+		}
+
+		// function show(duration) {
+		// 	display.call(this, true, duration);
+		// }
+
+		// function hide(duration) {
+		// 	display.call(this, false, duration);
+		// }
+
+		function _prepare(element) {
+			if (!isDomElement(element)) {
+				return undefined;
+			}
+
+			if (element.isPrepared) {
+				return element;
+			}
+
+			if (typeof element.eventTokens != 'object') element.eventTokens = {};
+
+			var _supportedTypes = [
+				'click',
+				'mousedown',
+				'mouseup',
+				'mousemove',
+				'touchstart',
+				'touchend',
+				'touchmove',
+				'keydown',
+				'webkitTransitionEnd', // http://gotofritz.net/blog/howto/css3-transitions-callbacks/
+				'transitionend',
+				'animationstart',
+				'animationend'
+			];
+
+			for (var _i=0; _i<_supportedTypes.length;_i++) {
+				var _type = _supportedTypes[_i];
+				if (typeof element.eventTokens[_type] != 'object') element.eventTokens[_type] = {};
+				if (!Array.isArray(element.eventTokens[_type].__default__)) element.eventTokens[_type].__default__ = [];
+			}
+
+			element.isPrepared = true;
+			return element;
+		}
+
 
 
 		//////// IE8 begin ////////////////////////////////////////////////////////////////////////////////
-		var _elementIsPublic = (typeof Element === 'function');
+		var _elementIsPublic = (typeof Element === 'function' || !_isVeryOldIE);
 		if (_elementIsPublic) {
 		//////// IE8 end //////////////////////////////////////////////////////////////////////////////////
 
 
 
-			Element.prototype.qS = function () { return this.querySelector.call(this, arguments); }
-			Element.prototype.qSA = function () { return this.querySelectorAll.call(this, arguments); }
+			Element.prototype.qS = function () { return this.querySelector.apply(this, arguments); }
+			Element.prototype.qSA = function () { return this.querySelectorAll.apply(this, arguments); }
 
 			Element.prototype.take = function ( dom ) {
 				this.appendChild( dom );
@@ -448,6 +555,107 @@ var wlcJS = new (function () {
 				this.parentNode.removeChild(this);
 			}
 
+			function _getTokensFromEventName(eventName) {
+				var _i = eventName.indexOf('.');
+				var _eventType = _i<0 ? eventName : eventName.slice(0,_i);
+				var _token = '';
+				if (_i>=0) {
+					_token = eventName.slice(_i+1);
+				}
+
+				return {
+					eventType: _eventType,
+					token: _token
+				}
+
+			}
+
+
+
+			Element.prototype.on = function(eventName, eventHandler, useCapture) {
+				if (typeof eventHandler != 'function') {
+					e('Invalid eventHandler!');
+				}
+
+				_prepare(this);
+				var _t = _getTokensFromEventName(eventName);
+
+				if (!this.eventTokens[_t.eventType]) {
+					e('Event Type: "'+_t.eventType+'" is NOT supported.');
+				} else {
+					if (_t.token) {
+						this.eventTokens[_t.eventType][_t.token] = eventHandler;
+					} else {
+						this.eventTokens[_t.eventType]['__default__'].push(eventHandler);
+					}
+					this.addEventListener(_t.eventType, eventHandler, useCapture);
+				}
+			}
+
+			Element.prototype.off = function(eventName, eventHandler, useCapture) {
+				_prepare(this);
+				var _t = _getTokensFromEventName(eventName);
+
+				if (!this.eventTokens[_t.eventType]) {
+					e('Event Type: "'+_t.eventType+'" is NOT supported.');
+				} else {
+
+
+
+					if (_t.token) {
+
+						var _fetchedHandler = this.eventTokens[_t.eventType][_t.token];
+
+						if (_fetchedHandler === eventHandler || typeof eventHandler != 'function') {
+
+							this.removeEventListener(_t.eventType, _fetchedHandler, useCapture);
+							this.eventTokens[_t.eventType][_t.token] = undefined;
+							delete this.eventTokens[_t.eventType][_t.token];
+
+						} else {
+							// Strange
+							e('When tyring removing an event handler, user provides an event handler, as well as a token to fetch an event handler. But they are NOT equal.');
+							return;
+						}
+
+					} else {
+
+						for (var _liToken in this.eventTokens[_t.eventType]) {
+
+							var _handler = this.eventTokens[_t.eventType][_liToken];
+							var _matched = false;
+							
+							if (_handler === this.eventTokens[_t.eventType].__default__) {
+
+								for (var _liDefault = 0; _liDefault < this.eventTokens[_t.eventType].__default__.length; _liDefault++) {
+									var _defaulthandler = this.eventTokens[_t.eventType].__default__[ _liDefault ];
+
+									_matched = typeof eventHandler !== 'function' || _defaulthandler === eventHandler;
+									if (_matched) {
+										this.removeEventListener(_t.eventType, _defaulthandler, useCapture);
+										this.eventTokens[_t.eventType].__default__.splice(_liDefault, 1);
+										_liDefault--;
+									}
+
+								}
+
+							} else {
+
+								_matched = typeof eventHandler !== 'function' || _handler === eventHandler;
+								if (_matched) {
+									this.removeEventListener(_t.eventType, _handler, useCapture);
+									this.eventTokens[_t.eventType][_liToken] = undefined;
+									delete this.eventTokens[_t.eventType][_liToken];
+								}
+
+							}
+						}
+					}
+
+
+				}
+			}
+
 			Element.prototype.isChildOf = function (in_dom_pseudoParentNode, in_recursive) {
 				var recursive = !in_recursive ? false : true;
 				var isChild = false;
@@ -462,6 +670,14 @@ var wlcJS = new (function () {
 				}
 
 				return isChild;
+			}
+
+			Element.prototype.show = function(duration) {
+				display.call(this, true, duration);
+			}
+
+			Element.prototype.hide = function(duration) {
+				display.call(this, false, duration);
 			}
 
 			Element.prototype.centerTo = function (options) {
@@ -655,42 +871,6 @@ var wlcJS = new (function () {
 					return angle;
 				}
 			});
-		}
-
-
-
-		this.decideFontSizeRem = _decideFontSizeRem;
-
-		function _decideFontSizeRem(charsCountPerLine, minFontSizeInPixel, forceInteger) {
-			var _domStyleId = 'wlc-style-root-font-size';
-			var _safeValueCharsCountPerLine = 20; // 20 chars per line
-			var _safeValueMinFontSizeInPixel = 12; // 12px
-			var _forceInteger = (typeof forceInteger === 'undefined' || forceInteger == null) ? true : !!forceInteger;
-
-			var _c = parseInt(charsCountPerLine) || _safeValueCharsCountPerLine;
-			var _m = Number(minFontSizeInPixel) || _safeValueMinFontSizeInPixel;
-			var _px = Math.max(
-				_m,
-				_forceInteger ? Math.floor(window.innerWidth / _c) : (window.innerWidth / _c)
-			);
-
-			if (1) {
-				console.log(
-					'window size:', window.innerWidth, '*', window.innerHeight,
-					'\t where devicePixelRatio:', window.devicePixelRatio, '\n'+
-					'chars per line:', _c, '\n'+
-					'REM:', _px,'px'
-				);
-			}
-
-			var _domStyle = document.getElementById(_domStyleId);
-			if (!_domStyle) {
-				_domStyle = document.createElement('style');
-				_domStyle.id = _domStyleId;
-				document.head.appendChild(_domStyle);   
-			}
-
-			_domStyle.innerHTML = 'html, body { font-size: ' + _px + 'px; }';
 		}
 	} // Class: WLC_DOM ()
 }); // new operator

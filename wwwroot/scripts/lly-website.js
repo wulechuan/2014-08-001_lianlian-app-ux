@@ -1,4 +1,6 @@
-var website = new (function WLCWebsite() {
+var website = new WLCWebsite(wlcJS);
+
+function WLCWebsite(wlcJS) {
 	this.env = (function () {
 
 		// wulechuan@live.com
@@ -168,32 +170,47 @@ var website = new (function WLCWebsite() {
 		};
 	})();
 
-	function __showOrHideElement(show, element, duration) {
-		if ( window.jQuery || window.Zepto ) {
-			(function($) {
-				// duration = (duration || duration == 0 ) ? duration : null;
-				if (show) {
-					$(element).fadeIn(duration);
-				} else {
-					$(element).fadeOut(duration);
-				}
-			})(window.jQuery || window.Zepto );
-		} else {
-			if (show) {
-				this.backplate.style.display = '';
-			} else {
-				this.backplate.style.display = 'none';
-			}
+	this.decideFontSizeRem = function(charsCountPerLine, minFontSizeInPixel, forceInteger) {
+		if (this.env.ua.ie8OrOlder) {
+			return false;
 		}
+
+		var _domStyleId = 'wlc-style-root-font-size';
+		var _safeValueCharsCountPerLine = 20; // 20 chars per line
+		var _safeValueMinFontSizeInPixel = 12; // 12px
+		var _forceInteger = (typeof forceInteger === 'undefined' || forceInteger == null) ? true : !!forceInteger;
+
+		var _c = parseInt(charsCountPerLine) || _safeValueCharsCountPerLine;
+		var _m = Number(minFontSizeInPixel) || _safeValueMinFontSizeInPixel;
+		var _px = Math.max(
+			_m,
+			_forceInteger ? Math.floor(window.innerWidth / _c) : (window.innerWidth / _c)
+		);
+
+		if (1) {
+			console.log(
+				'window size:', window.innerWidth, '*', window.innerHeight,
+				'\t where devicePixelRatio:', window.devicePixelRatio, '\n'+
+				'chars per line:', _c, '\n'+
+				'REM:', _px,'px'
+			);
+		}
+
+		var _domStyle = document.getElementById(_domStyleId);
+		if (!_domStyle) {
+			_domStyle = document.createElement('style');
+			_domStyle.id = _domStyleId;
+			document.head.appendChild(_domStyle);   
+		}
+
+		_domStyle.innerHTML = 'html, body { font-size: ' + _px + 'px; }';
 	}
 
-	function _showElement(element, duration) {
-		__showOrHideElement(true, element, duration);
+	String.prototype.uriRandomized = function (allowed) {
+		if (!allowed) return String(this);
+		return this + ((this.indexOf('?')>=0) ? '&' : '?') + 'wlcRandom=' + Math.round( Math.random() * 100000 );
 	}
 
-	function _hideElement(element, duration) {
-		__showOrHideElement(false, element, duration);
-	}
 
 	this.popupWindowsService = new (function () {
 
@@ -203,7 +220,7 @@ var website = new (function WLCWebsite() {
 		this.backplate = null;
 		this.backplateIsShown = false;
 		this.windows = [];
-		this.showingWindows = [];
+		this.shownWindows = [];
 
 		this.PopupWindow = PopupWindow; // a CLASS
 
@@ -225,7 +242,6 @@ var website = new (function WLCWebsite() {
 		}
 
 		_tryCreatingBackplate = function (){
-
 			_tryCreatingPopupWindowsContainer.call(this);
 
 			if (!this.backplate) {
@@ -252,29 +268,29 @@ var website = new (function WLCWebsite() {
 
 		this.showBackplate = function() {
 			if (!this.backplateIsShown) {
-				_showElement(this.backplate, this.options.backplateShowingDuration);
+				this.backplate.show(this.options.backplateShowingDuration);
 				this.backplateIsShown = true;
 			}
 		}
 
 		this.hideBackplate = function() {
 			if (this.backplateIsShown) {
-				_hideElement(this.backplate, this.options.backplateHidingDuration);
+				this.backplate.hide(this.options.backplateHidingDuration);
 				this.backplateIsShown = false;
 			}
 		}
 
-		this.showPopupWindow = function(popupWindow, showBackplate) {
-			if (!this.showingWindows.has(popupWindow)) {
-				this.showingWindows.push(popupWindow);
+		this.prepareShowingPopupWindow = function(popupWindow, showBackplate) {
+			if (!this.shownWindows.has(popupWindow)) {
+				this.shownWindows.push(popupWindow);
 			}
 			if (showBackplate) {
 				this.showBackplate();
 			}
 		}
 
-		this.hidePopupWindow = function(popupWindow) {
-			this.showingWindows.del(popupWindow);
+		this.prepareHidingPopupWindow = function(popupWindow) {
+			this.shownWindows.del(popupWindow);
 			this.hideBackplate();
 		}
 
@@ -295,8 +311,8 @@ var website = new (function WLCWebsite() {
 			//		offsetX:				Number		<default=0, unit=px>, ONLY takes effects when centered is true
 			//		offsetY:				Number		<default=0, unit=px>, ONLY takes effects when centered is true
 			//
-			//		showingDuration:		Number		<default=333, unit=ms>, NEED jQuery or Zepto
-			//		hidingDuration:	 		Number		<default=333, unit=ms>, NEED jQuery or Zepto
+			//		showingDuration:		Number		<default=333, unit=ms>
+			//		hidingDuration:	 		Number		<default=333, unit=ms>
 			//
 			//		autoHide:				boolean		<default=false>
 			//		autoHideDelayDuration:	Number		<default=1500, unit=ms>, ONLY takes effects when autoHide is true
@@ -377,8 +393,8 @@ var website = new (function WLCWebsite() {
 				}
 				this.rootElement = rootElement;
 				this.logName = 'popupwindow "'+this.rootElement.id+'"';
-				_refresh.call(this);
 			}
+
 			function _config(options, _allowWarning) {
 
 				var _ = options || {};
@@ -469,6 +485,7 @@ var website = new (function WLCWebsite() {
 					w('The array "'+arrayName+'" of '+this.logName+' has been cleared! From now on, there is nothing inside this array.');
 				}
 			}
+
 			function _addButtonsToArray(elementOrArrayToAdd, targetArray, _allowWarning) {
 				var addedElements = [];
 				_allowWarning = (typeof _allowWarning === 'undefined') || !!_allowWarning;
@@ -477,10 +494,11 @@ var website = new (function WLCWebsite() {
 					return addedElements;
 				}
 
-				var elementsArray = [];
+				var elementsArray = undefined;
 				if (Array.isArray(elementOrArrayToAdd)) {
 					elementsArray = elementOrArrayToAdd;
 				} else {
+					elementsArray = [];
 					elementsArray.push(elementOrArrayToAdd);
 				}
 
@@ -490,9 +508,8 @@ var website = new (function WLCWebsite() {
 				if (targetArray===this.options.toggleButtons) targetArrayName = '"toggleButtons"';
 
 				for (var i = 0; i < elementsArray.length; i++) {
-					var element = elementsArray[ i ];
+					var element = elementsArray[i];
 					if ( wlcJS.domTools.isDom(element) ) {
-
 						var elementAlreadyInOneOfTheArrays = false;
 						var elementAlreadyInArrayName = '';
 
@@ -542,6 +559,7 @@ var website = new (function WLCWebsite() {
 
 				return addedElements;
 			}
+
 			function _removeButtonsFromArray(elementOrArrayToAdd, targetArray) {
 				var removedElements = [];
 
@@ -577,58 +595,74 @@ var website = new (function WLCWebsite() {
 			function _wireUpShowButtons(elementsArray) {
 				for (var i = 0; i < elementsArray.length; i++) {
 					var element = elementsArray[i];
-					var popupWindow = this;
-					$(element).on('click.showPopupWindow-'+popupWindow.rootElement.id, function (e) {
-						e.preventDefault();
-						e.stopPropagation();
-						popupWindow.show();
-					});
+					var thePopupWindow = this;
+
+					$(element).on('click'+'.showPopupWindow-'+thePopupWindow.rootElement.id,
+						function (e) {
+							e.preventDefault();
+							e.stopPropagation();
+							thePopupWindow.show();
+						}
+					);
 				};
 			}
+
 			function _wireUpHideButtons(elementsArray) {
 				for (var i = 0; i < elementsArray.length; i++) {
 					var element = elementsArray[i];
-					var popupWindow = this;
-					$(element).on('click.hidePopupWindow-'+popupWindow.rootElement.id, function (e) {
-						e.preventDefault();
-						e.stopPropagation();
-						popupWindow.hide();
-					});
+					var thePopupWindow = this;
+
+					$(element).on('click'+'.hidePopupWindow-'+thePopupWindow.rootElement.id,
+						function (e) {
+							e.preventDefault();
+							e.stopPropagation();
+							thePopupWindow.hide();
+						}
+					);
 				};
 			}
+
 			function _wireUpToggleButtons(elementsArray) {
 				for (var i = 0; i < elementsArray.length; i++) {
 					var element = elementsArray[i];
-					var popupWindow = this;
-					$(element).on('click.togglePopupWindow-'+popupWindow.rootElement.id, function (e) {
-						e.preventDefault();
-						e.stopPropagation();
-						popupWindow.toggle();
-					});
+					var thePopupWindow = this;
+
+					$(element).on('click'+'.togglePopupWindow-'+thePopupWindow.rootElement.id,
+						function (e) {
+							e.preventDefault();
+							e.stopPropagation();
+							thePopupWindow.toggle();
+						}
+					);
 				};
 			}
 
 
 
 			function _detachOneShowButton(showButton) {
-				$(showButton).off('click.showPopupWindow-'+this.rootElement.id);
+				$(showButton).off('click'+'.showPopupWindow-'+this.rootElement.id);
 			}
+
 			function _detachOneHideButton(hideButton) {
-				$(hideButton).off('click.hidePopupWindow-'+this.rootElement.id);
+				$(hideButton).off('click'+'.hidePopupWindow-'+this.rootElement.id);
 			}
+
 			function _detachOneToggleButton(toggleButton) {
-				$(toggleButton).off('click.togglePopupWindow-'+this.rootElement.id);
+				$(toggleButton).off('click'+'.togglePopupWindow-'+this.rootElement.id);
 			}
+
 			function _detachAllShowButtons() {
 				for (var i = 0; i < this.options.showButtons.length; i++) {
 					_detachOneShowButton.call(this, this.options.showButtons[i]);
 				};
 			}
+
 			function _detachAllHideButtons() {
 				for (var i = 0; i < this.options.hideButtons.length; i++) {
 					_detachOneHideButton.call(this, this.options.hideButtons[i]);
 				};
 			}
+
 			function _detachAllToggleButtons() {
 				for (var i = 0; i < this.options.toggleButtons.length; i++) {
 					_detachOneToggleButton.call(this, this.options.toggleButtons[i]);
@@ -651,9 +685,9 @@ var website = new (function WLCWebsite() {
 				// }
 
 				this.onshow();
-				_popupWindowsService.showPopupWindow(this, _.showBackplate);
+				_popupWindowsService.prepareShowingPopupWindow(this, _.showBackplate);
 
-				_showElement(this.rootElement, this.options.showingDuration);
+				this.rootElement.show(this.options.showingDuration);
 
 				if (this.options.centered) {
 					this.rootElement.centerTo({
@@ -669,16 +703,14 @@ var website = new (function WLCWebsite() {
 				// l(this.logName+'this.options.autoHide:', this.options.autoHide, '\nthis.options:', this.options)
 				if (this.options.autoHide) {
 					var thisPopupWindow = this;
-					var _duration =
-						( window.jQuery || window.Zepto ) ?
-							(this.options.autoHideDelayDuration + this.options.showingDuration)
-						:	this.options.autoHideDelayDuration;
+					var _duration = this.options.autoHideDelayDuration + this.options.showingDuration;
 					l(this.logName+' will close automatically in about '+Math.round(_duration/1000)+' seconds.');
 					window.setTimeout(function () {
 						thisPopupWindow.hide();
 					}, _duration);
 				}
 			}
+
 			function _hide() {
 				if (!this.isShown) {
 					// l(this.logName+' has already been closed. Skipped.');
@@ -688,9 +720,10 @@ var website = new (function WLCWebsite() {
 
 				if (typeof this.onhide === 'function') this.onhide();
 
-				_popupWindowsService.hidePopupWindow(this);
-				_hideElement(this.rootElement, this.options.hidingDuration);
+				_popupWindowsService.prepareHidingPopupWindow(this);
+				this.rootElement.hide(this.options.hidingDuration);
 			}
+
 			function _toggle() {
 				if (this.isShown) {
 					this.hide();
@@ -735,7 +768,7 @@ var website = new (function WLCWebsite() {
 				_popupWindowsService.windows.push(this);
 			}
 
-			return
+			return true;
 		} // CLASS:PopupWindow
 	});
-}); // CLASS:WLCWebsite
+} // CLASS:WLCWebsite
