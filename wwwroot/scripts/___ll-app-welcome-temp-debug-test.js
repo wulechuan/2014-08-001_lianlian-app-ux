@@ -106,6 +106,41 @@ if (1) {
 
 
 
-var actorTempWifi = welcomeMovie.easyAddActor('temp-wifi', '#temp-wifi-0');
-WAT.applyKeyframesTo(actorTempWifi.locator, 'wak-things-pop-out');
+var actorTempWifi0 = welcomeMovie.easyAddActor('temp-wifi-0', '#temp-wifi-0');
+WAT.applyKeyframesTo(actorTempWifi0.locator, 'wak-things-pop-out-1', true, 0.36, 0.3);
 
+var actorTempWifi1 = welcomeMovie.easyAddActor('temp-wifi-1', '#temp-wifi-1');
+WAT.applyKeyframesTo(actorTempWifi1.locator, 'wak-things-pop-out-3', true, 0.36, 1.3);
+
+
+
+var wifiLocators = Array.prototype.slice.call(qSA('[id*=green-land-wifi-]'));
+popOutStuffsOneByOne(wifiLocators, true);
+welcomeStage.viewport.scrollLeft = 2200;
+doc.body.on('click.show-wifi-spots', function() {
+	wifiLocators.forEach(function (locator, i, locatorsArray){
+		WAT.resumeAnimationOf(locator);
+	});
+});
+
+
+
+function popOutStuffsOneByOne(locatorsArray, paused, wakVarianceId) {
+	wakVarianceId = Number(wakVarianceId);
+	wakVarianceId = isNaN(wakVarianceId) ? 3 : wakVarianceId;
+
+	var duraionExp = 0.4;
+	var duraionVar = 0.03;
+	var globalDelay = 1;
+	var delayMin = 0.15;
+	var delayMax = 0.32;
+
+
+	var durationCurrent = NaN;
+	var delayCurrent = globalDelay;
+	for (var i = 0; i < wifiLocators.length; i++) {
+		durationCurrent = Math.randomAround(duraionExp, duraionVar);
+		delayCurrent += Math.randomBetween(delayMin, delayMax);
+		WAT.applyKeyframesTo(wifiLocators[i], 'wak-things-pop-out-'+wakVarianceId, !paused, durationCurrent, delayCurrent);
+	};
+}

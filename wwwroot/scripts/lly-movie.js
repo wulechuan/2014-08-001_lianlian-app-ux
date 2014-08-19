@@ -68,7 +68,7 @@ var WAT = new (function AnimationToolkits() {
 		}
 	}
 
-	this.applyKeyframesTo = function(element, keyframesName, duration, delay, iterationCount, direction, timingFunction, fillMode) {
+	this.applyKeyframesTo = function(element, keyframesName, playState, duration, delay, iterationCount, direction, timingFunction, fillMode) {
 		if (!isDomElement(element)) {
 			return false;
 		}
@@ -77,6 +77,8 @@ var WAT = new (function AnimationToolkits() {
 		if (keyframesName.length < 1) {
 			return false;
 		}
+
+		playState = (typeof playState === 'undefined' || (!!playState && String(playState).toLowerCase()!='paused')) ? 'running' : 'paused';
 
 		duration = Number(duration);
 		duration = isNaN(duration) ? '0.6s' : (Math.max(0.05, duration)+'s');
@@ -101,7 +103,8 @@ var WAT = new (function AnimationToolkits() {
 			iterationCount,
 			delay,
 			direction,
-			fillMode
+			fillMode,
+			playState
 		].join(' ');
 
 		if (typeof element.style.webkitAnimation != 'undefined') {
