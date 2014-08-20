@@ -22,8 +22,8 @@ var welcomeMovie = new Movie(welcomeStage);
 
 
 // ----- Story teller: build actorsLib ---------------------------------------
-function easyAddActorForScene(scenarioIndex, queryString) {
 
+function easyAddActorForScene(scenarioIndex, queryString) {
 	var scenarioIdPrefix = 'scenario-';
 	var actorNamePrefixOfSenario = 's';
 
@@ -86,22 +86,46 @@ easyAddActorForScene(5, '#green-land-tree-2');
 easyAddActorForScene(5, '#green-land-tree-3');
 easyAddActorForScene(5, '#green-land-tree-4');
 
+welcomeMovie.addVirtualActor('s5-all-wifi-spots', Array.prototype.slice.call(qSA('[id*=green-land-wifi-]')) );
 
 
 
 
 // ----- Story teller: build actionsLib --------------------------------------
 
-var actorActionsLib = {
-	cloudFlyForward: function () {
+var actorActionsLib = new (function () {
+	function _clearAnimationsForActorOfAnyType () {
+		var _targets = (this instanceof Actor) ? this.locator : this.targets;
+		WAT.clearAnimationsOf(_targets);
+	}
+
+	this.cloudFlyForward = function () {
 		this.locator.classList.remove('fly-backward');
 		this.locator.classList.add('fly-forward');
-	},
-	cloudFlyBackward: function () {
+	}
+
+	this.cloudFlyBackward = function () {
 		this.locator.classList.remove('fly-forward');
 		this.locator.classList.add('fly-backward');
 	}
-}
+
+	this.clearAnimations = function () {
+		_clearAnimationsForActorOfAnyType.call( this );
+	}
+
+	this.s5_allWifiSpotsReset = function () {
+		_clearAnimationsForActorOfAnyType.call( this );
+		WAT.setScales(this.targets, 0.01);
+	}
+
+	this.s5_allWifiSpotsPrepareForJumpingOut = function () {
+		WAT.oneByOneJumpOut(this.targets, 'paused', 3, { delayGlobal: 0.5 });
+	}
+
+	this.s5_allWifiSpotsJumpOut = function () {
+		WAT.resumeAnimationsOf(this.targets);
+	}
+});
 
 
 
@@ -111,13 +135,18 @@ var actorActionsLib = {
 
 // ----- Story teller: associate actions to actors --------------------------------------
 
-welcomeMovie.actors['cloud-1'].defineAction('fly-forward', actorActionsLib.cloudFlyForward);
-welcomeMovie.actors['cloud-2'].defineAction('fly-forward', actorActionsLib.cloudFlyForward);
-welcomeMovie.actors['cloud-3'].defineAction('fly-forward', actorActionsLib.cloudFlyForward);
+welcomeMovie.actor('cloud-1').defineAction('fly-forward', actorActionsLib.cloudFlyForward);
+welcomeMovie.actor('cloud-2').defineAction('fly-forward', actorActionsLib.cloudFlyForward);
+welcomeMovie.actor('cloud-3').defineAction('fly-forward', actorActionsLib.cloudFlyForward);
 
-welcomeMovie.actors['cloud-1'].defineAction('fly-backward', actorActionsLib.cloudFlyBackward);
-welcomeMovie.actors['cloud-2'].defineAction('fly-backward', actorActionsLib.cloudFlyBackward);
-welcomeMovie.actors['cloud-3'].defineAction('fly-backward', actorActionsLib.cloudFlyBackward);
+welcomeMovie.actor('cloud-1').defineAction('fly-backward', actorActionsLib.cloudFlyBackward);
+welcomeMovie.actor('cloud-2').defineAction('fly-backward', actorActionsLib.cloudFlyBackward);
+welcomeMovie.actor('cloud-3').defineAction('fly-backward', actorActionsLib.cloudFlyBackward);
+
+welcomeMovie.virtualActor('s5-all-wifi-spots').defineAction('reset', actorActionsLib.s5_allWifiSpotsReset);
+welcomeMovie.virtualActor('s5-all-wifi-spots').defineAction('prepare-to-jump-out-one-by-one', actorActionsLib.s5_allWifiSpotsPrepareForJumpingOut);
+welcomeMovie.virtualActor('s5-all-wifi-spots').defineAction('jump-out-one-by-one', actorActionsLib.s5_allWifiSpotsJumpOut);
+
 
 
 
@@ -125,6 +154,10 @@ welcomeMovie.actors['cloud-3'].defineAction('fly-backward', actorActionsLib.clou
 
 // ----- Story teller: decide when actions of actors should be triggered --------------------------------------
 
-welcomeMovie.addTriggeredAction( 'cloud-1', { triggerForward:   70, triggerBackward:  210, forwardActionId: 'fly-forward', backwardActionId: 'fly-backward' } );
-welcomeMovie.addTriggeredAction( 'cloud-2', { triggerForward:  130, triggerBackward:  240, forwardActionId: 'fly-forward', backwardActionId: 'fly-backward' } );
-welcomeMovie.addTriggeredAction( 'cloud-3', { triggerForward:  100, triggerBackward:  230, forwardActionId: 'fly-forward', backwardActionId: 'fly-backward' } );
+welcomeMovie.addTriggerAction( 'cloud-1', { forward: { onElapsed:   70, actionId: 'fly-forward' }, backward: { onElapsed: 210,  actionId: 'fly-backward' } } );
+welcomeMovie.addTriggerAction( 'cloud-2', { forward: { onElapsed:  130, actionId: 'fly-forward' }, backward: { onElapsed: 240,  actionId: 'fly-backward' } } );
+welcomeMovie.addTriggerAction( 'cloud-3', { forward: { onElapsed:  100, actionId: 'fly-forward' }, backward: { onElapsed: 230,  actionId: 'fly-backward' } } );
+
+welcomeMovie.addTriggerAction( 's5-all-wifi-spots', { backward: { onElapsed: 2580, actionId: 'reset' } } );
+welcomeMovie.addTriggerAction( 's5-all-wifi-spots', { forward:  { onElapsed: 2560, actionId: 'prepare-to-jump-out-one-by-one' } } );
+welcomeMovie.addTriggerAction( 's5-all-wifi-spots', { forward:  { onElapsed: 3333, actionId: 'jump-out-one-by-one' } } );

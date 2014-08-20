@@ -37,38 +37,77 @@ function getScrollBarDimension() {
 	};
 }
 
-function getRealStyleOf(e) {
-	return document.defaultView.getComputedStyle(e,null);
-}
+// function getRealStyleOf(e) {
+// 	return document.defaultView.getComputedStyle(e,null);
+// }
 
 
 var WAT = new (function AnimationToolkits() {
 
-	this.pauseAnimationOf = function(e) {
-		if (!e) return false;
-		e.animationIsRunning = false;
-		e.style.webkitAnimationPlayState = 'paused';
-		e.style.animationPlayState = 'paused';
-	}
-
-	this.resumeAnimationOf = function(e) {
-		if (!e) return false;
-		e.animationIsRunning = true;
-		e.style.webkitAnimationPlayState = 'running';
-		e.style.animationPlayState = 'running';
-	}
-
-	this.toggleAnimationOf = function(e) {
-		if (!e) return false;
-		if (typeof e.animationIsRunning === 'undefined') e.animationIsRunning = true;
-		if (e.animationIsRunning) {
-			pauseAnimationOf(e);
+	function safeArray(input) {
+		var _arr = undefined;
+		if (Array.isArray(input)) {
+			_arr = input;
 		} else {
-			resumeAnimationOf(e);
+			_arr = [];
+			_arr.push(input);
 		}
+		return _arr;
 	}
 
-	this.applyKeyframesTo = function(element, keyframesName, playState, duration, delay, iterationCount, direction, timingFunction, fillMode) {
+	this.setScales = function(elements, scaleX, scaleY, scaleZ) {
+		var _sX = wlcJS.getSafeNumber(scaleX, 1);
+		var _sY = wlcJS.getSafeNumber(scaleY, _sX);
+		var _sZ = wlcJS.getSafeNumber(scaleZ, _sX);
+		safeArray(elements).forEach(function (element, i, _elements) {
+			element.style.transform = 'scale3d('+_sX+','+_sY+','+_sZ+')';
+		});
+	}
+
+	this.pauseAnimationsOf = function(elements) {
+		safeArray(elements).forEach(function (element, i, _elements) {
+			if (!isDomElement(element)) return undefined;
+			element.animationIsRunning = false;
+			element.style.webkitAnimationPlayState = 'paused';
+			element.style.animationPlayState = 'paused';
+		});
+	}
+
+	this.resumeAnimationsOf = function(elements) {
+		safeArray(elements).forEach(function (element, i, _elements) {
+			if (!isDomElement(element)) return undefined;
+			element.animationIsRunning = true;
+			element.style.webkitAnimationPlayState = 'running';
+			element.style.animationPlayState = 'running';
+		});
+	}
+
+	this.toggleAnimationsOf = function(elements) {
+		safeArray(elements).forEach(function (element, i, _elements) {
+			if (!isDomElement(element)) return undefined;
+			if (typeof element.animationIsRunning === 'undefined') element.animationIsRunning = true;
+			if (element.animationIsRunning) {
+				element.animationIsRunning = false;
+				element.style.webkitAnimationPlayState = 'paused';
+				element.style.animationPlayState = 'paused';
+			} else {
+				element.animationIsRunning = true;
+				element.style.webkitAnimationPlayState = 'running';
+				element.style.animationPlayState = 'running';
+			}
+		});
+	}
+
+	this.clearAnimationsOf = function(elements) {
+		safeArray(elements).forEach(function (element, i, _elements) {
+			if (!isDomElement(element)) return undefined;
+			element.animationIsRunning = false;
+			element.style.webkitAnimation = '';
+			element.style.animation = '';
+		});
+	}
+
+	this.applyAnimationTo = function(element, keyframesName, playState, duration, delay, iterationCount, direction, timingFunction, fillMode) {
 		if (!isDomElement(element)) {
 			return false;
 		}
@@ -116,6 +155,92 @@ var WAT = new (function AnimationToolkits() {
 		// l(element, '\n', _cssAnimation);
 	}
 
+	this.batchApplyAnimationsTo = function(locatorsArray, keyframesName, playState, options) {
+		// options {
+		//		durationExp:		Number, <default = 0.4>
+		//		durationVar:		Number, <default = 0>
+		//		delayGlobal:		Number, <default = 0>
+		//		delayEachStepExp:	Number, <default = 0>
+		//		delayEachStepVar:	Number, <default = 0>
+		//
+		//		oneByOne:			boolean, <default = false>
+		//							// Here oneByOne means extending delay accumulately
+		//
+		//		oneAfterOne:		boolean, <default = false>
+		//							// oneAfterOne ONLY take effects when oneByOne is set true
+		//							// Here oneAfterOne means extending delay further more,
+		//							// so that the next animation won't even start counting its delay(fake)
+		//							// until the previous animation running completely.
+		// }
+
+		_ = options || {};
+
+		_.duraionExp = wlcJS.getSafeNumber(_.duraionExp, 0.4);
+		_.duraionVar = wlcJS.getSafeNumber(_.duraionVar, 0);
+
+		_.delayGlobal = wlcJS.getSafeNumber(_.delayGlobal, 0);
+
+		_.delayEachStepExp = wlcJS.getSafeNumber(_.delayEachStepExp, 0);
+		_.delayEachStepVar = wlcJS.getSafeNumber(_.delayEachStepVar, 0);
+
+		_.oneByOne =	!!_.oneByOne;
+		_.oneAfterOne =	_.oneByOne && !!_.oneAfterOne;
+
+
+
+		var _durationCurrent = NaN;
+
+		var _delayGap = NaN;
+		var _delayCurrent = _.delayGlobal;
+
+		for (var i = 0; i < locatorsArray.length; i++) {
+			_durationCurrent =	Math.randomAround(_.duraionExp, _.duraionVar);
+			_delayGap =			Math.randomAround(_.delayEachStepExp, _.delayEachStepVar);
+
+			if (_.oneByOne) {
+				_delayCurrent += _delayGap;
+			} else {
+				_delayCurrent = _delayGap;
+			}
+
+			WAT.applyAnimationTo(locatorsArray[i], keyframesName, playState, _durationCurrent, _delayCurrent);
+
+			_delayCurrent += (_.oneAfterOne ? _durationCurrent : 0);
+			// l(_durationCurrent, _delayGap, _delayCurrent);
+		};
+	}
+
+	this.batchApplyOneByOneAnimationsTo = function(locatorsArray, keyframesName, playState, options) {
+		// options {
+		//		durationExp:		Number, <default = 0.4>
+		//		durationVar:		Number, <default = 0.05>
+		//		delayGlobal:		Number, <default = 0>
+		//		delayEachStepExp:	Number, <default = 0.25>
+		//		delayEachStepVar:	Number, <default = 0.08>
+		// }
+
+		_ = options || {};
+
+		_.duraionExp = wlcJS.getSafeNumber(_.duraionExp, 0.4);
+		_.duraionVar = wlcJS.getSafeNumber(_.duraionVar, 0.05);
+
+		_.delayGlobal = wlcJS.getSafeNumber(_.delayGlobal, 0);
+
+		_.delayEachStepExp = wlcJS.getSafeNumber(_.delayEachStepExp, 0.25);
+		_.delayEachStepVar = wlcJS.getSafeNumber(_.delayEachStepVar, 0.08);
+
+		_.oneByOne =	true;
+		_.oneAfterOne =	_.oneByOne && !!_.oneAfterOne;
+
+		this.batchApplyAnimationsTo(locatorsArray, keyframesName, playState, _);
+	}
+
+	this.oneByOneJumpOut = function(locatorsArray, playState, wakVarianceId, options) {
+		//	wakVarianceId:		<allowed: 1 or 2 or 3 or '1' or '2' or '3'>, <default = 3>
+		//						// there 3 types of keyframes available currently (2014-08-20)
+		wakVarianceId = wlcJS.getSafeNumber(wakVarianceId, 3);
+		this.batchApplyOneByOneAnimationsTo(locatorsArray, 'wak-things-pop-out-'+wakVarianceId, playState, options);
+	}
 });
 
 
@@ -284,16 +409,20 @@ function Stage (options) {
 
 
 
-function Actor (locator, symbol, options) {
-	this.status = 0;
-	if (!locator || !locator.className || !locator.className.toLowerCase().indexOf('locator')<0) {
-		e('Invalid locator element for new Actor. Actor NOT created.');
+function Actor (name, locator, symbol, options) {
+	if (!isDomElement(locator) || !locator.className.toLowerCase().indexOf('locator')<0) {
+		e('Invalid locator element for new Actor. Actor NOT created. Try creating a VirtualActor instead, which does NOT require a locator object.');
 		return false;
 	}
 
 	this.locator =	locator;
 	this.symbol =	symbol;
-	this.actions =	[];
+
+	this.name = name ? name : 'anonymous';
+	this.status = 0;
+	this.actions =	{};
+
+	l('Actor\t\t\t'+name+''+(new Array(48-name.length)).join(' ')+'created.');
 
 	this.reset = function () {
 		this.status = 0;
@@ -316,34 +445,80 @@ function Actor (locator, symbol, options) {
 
 
 
-function MovieTriggerdAction(movie, actor, options) {
-	// movie:						<object of CLASS:Movie>
-	// actor:						<object of CLASS:Actor>
-
-	if (!(movie instanceof Movie) ) {
-		e('Invalid movie for a MovieTriggerdAction.', '\n\tProvided movie:', movie);
+function VirtualActor (name, targets, options) {
+	if (typeof targets != 'object') {
+		e('Invalid targets for new VirtualActor. VirtualActor NOT created.');
 		return false;
 	}
 
-	if (!(actor instanceof Actor) ) {
-		e('Invalid actor for a MovieTriggerdAction.', '\n\tProvided actor:', actor);
+	var _targets = undefined;
+	if (Array.isArray(targets)) {
+		_targets = targets;
+	} else {
+		_targets = [];
+		_targets.push(targets);
+	}
+
+	this.targets = _targets;
+
+	this.name = name ? name : 'anonymous';
+	this.status = 0;
+	this.actions =	{};
+
+	l('VirtualActor\t'+name+''+(new Array(48-name.length)).join(' ')+'created.');
+
+	this.reset = function () {
+		this.status = 0;
+	}
+
+	this.doAction = function (actionId) {
+		this.actions[actionId].call(this);
+		this.status = 1;
+	}
+
+	this.defineAction = function (actionId, action) {
+		if (typeof action != 'function') {
+			e('Invalid function provided when trying defining an action of VirtualActor');
+			return false;
+		}
+		this.actions[actionId] = action;
+	}
+} // CLASS:Actor
+
+
+
+
+function MovieTriggerAction(movie, actor, options) {
+	// movie:						<object of CLASS:Movie>
+	// actor:						<object of CLASS:Actor or CLASS:VirtualActor>
+
+	if (!(movie instanceof Movie) ) {
+		e('Invalid movie for a MovieTriggerAction.', '\n\tProvided movie:', movie);
+		return false;
+	}
+
+	if (!(actor instanceof Actor) && !(actor instanceof VirtualActor) ) {
+		e('Invalid Actor\/VirtualActor for a MovieTriggerAction.', '\n\tProvided Actor/VirtualActor:', actor);
 		return false;
 	}
 
 	this.actor = actor;
+	this.isPaired = false;
 
-	this.triggerForward = {
-		triggered: false,
-		enabled: false,
-		elapsed: NaN,
-		actionId: ''
+	this.forward = {
+		isForwardTrigger:	true, // read-only
+		enabled:			false,
+		hasBeenTriggered:	false,
+		onElapsed:			NaN,
+		actionId:			''
 	};
 
-	this.triggerBackward = {
-		triggered: true,
-		enabled: false,
-		elapsed: NaN,
-		actionId: ''
+	this.backward = {
+		isBackwardTrigger:	false, // read-only
+		enabled:			false,
+		hasBeenTriggered:	false,
+		onElapsed:			NaN,
+		actionId:			''
 	};
 
 	this.onTrigger = function (trigger) {}
@@ -351,141 +526,197 @@ function MovieTriggerdAction(movie, actor, options) {
 	this.onTriggerBackward = function () {}
 
 
-	this.config = function(options) {
-		// options.triggerForward:		'disabled'|'no'|NaN|'enabled'|'yes'|'auto'|<Valid Number>;
-		// options.triggerBackward:		'disabled'|'no'|NaN|'enabled'|'yes'|'auto'|<Valid Number>;
+	this.config = function (options) {
+		// options.forward.onElapsed:			'disabled'|'no'|NaN|'enabled'|'yes'|'auto'|<Valid Number>;
+		// options.backward.onElapsed:		'disabled'|'no'|NaN|'enabled'|'yes'|'auto'|<Valid Number>;
 		//
-		//								'disabled':		disable backward trigger
-		//								'no':			disable backward trigger
-		//								NaN:			disable backward trigger
+		//									'disabled':		disable backward trigger
+		//									'no':			disable backward trigger
+		//									NaN:			disable backward trigger
 		//
-		//								'enabled':		triggerForward + viewportWidthRemapped/2 | triggerBackward - viewportWidthRemapped/2
-		//								'yes':			triggerForward + viewportWidthRemapped/2 | triggerBackward - viewportWidthRemapped/2
-		//								'auto':			triggerForward + viewportWidthRemapped/2 | triggerBackward - viewportWidthRemapped/2
+		//									'enabled':		forward.onElapsed + viewportWidthRemapped/2 | backward.onElapsed - viewportWidthRemapped/2
+		//									'yes':			forward.onElapsed + viewportWidthRemapped/2 | backward.onElapsed - viewportWidthRemapped/2
+		//									'auto':			forward.onElapsed + viewportWidthRemapped/2 | backward.onElapsed - viewportWidthRemapped/2
 		//
-		//								<Valid Number>:	the number value
+		//									<Valid Number>:	the number value
 		//
-		// options.forwardActionId:		<string>;
-		// options.backwardActionId:	<string>;
-		//
+		// options.forward.actionId:		<string>; default: '';
+		// options.backward.actionId:		<string>; default: '';
+
 		var _ok = true;
+		var _o = { isPaired: false, f: {}, b: {} };
+
 		var _ = options || {};
+			_.forward  = _.forward  || {};
+			_.backward = _.backward || {};
 
-		var _fEnabled = false;
-		var _bEnabled = false;
 
-		var _f = Number(_.triggerForward);
-		var _fS = String(_.triggerForward).toLowerCase();
+		_o.f.number = _.forward.onElapsed  === null ? NaN : Number(_.forward.onElapsed);
+		_o.f.string = String( _.forward.onElapsed).toLowerCase();
 
-		var _b = Number(_.triggerBackward);
-		var _bS = String(_.triggerBackward).toLowerCase();
+		_o.b.number = _.backward.onElapsed === null ? NaN : Number(_.backward.onElapsed);
+		_o.b.string = String(_.backward.onElapsed).toLowerCase();
 
-		var _fValid = !isNaN(_f);
-		var _bValid = !isNaN(_b);
+		// _o.f.stringValid = _o.f.string === 'auto' || _o.f.string === 'yes' || _o.f.string === 'no' || _o.f.string === 'enabled' || _o.f.string === 'disabled' || _o.f.string === 'null';
+		// _o.b.stringValid = _o.b.string === 'auto' || _o.b.string === 'yes' || _o.b.string === 'no' || _o.b.string === 'enabled' || _o.b.string === 'disabled' || _o.b.string === 'null';
+		_o.f.enabledByString = _o.f.string === 'auto' || _o.f.string === 'yes' || _o.f.string === 'enabled';
+		_o.b.enabledByString = _o.b.string === 'auto' || _o.b.string === 'yes' || _o.b.string === 'enabled';
 
-		if (!_fValid && !_bValid) {
+		_o.f.specified = !isNaN(_o.f.number);
+		_o.b.specified = !isNaN(_o.b.number);
+
+		_o.f.enabled = _o.f.specified || _o.f.enabledByString;
+		_o.b.enabled = _o.b.specified || _o.b.enabledByString;
+
+		if (!_o.f.specified && !_o.b.specified) {
+
 			_ok = false;
-			e(this.actor, 'Neither triggerForward nor triggerBackward is provided specifically.','\n\tProvided triggerForward:', _.triggerForward,'\n\tProvided triggerBackward:', _.triggerBackward);
+			e(
+				this.actor,
+				'\n\tNeither forward trigger nor backward trigger is provided specifically.',
+				'\n\tProvided forward.onElapsed :', _.forward.onElapsed,
+				'\n\tProvided backward.onElapsed:', _.backward.onElapsed
+			);
+
 		} else {
 
 			var _viewportWidth = movie.stage.viewportWidthRemapped;
 
-			if (_fValid) {
-				_fEnabled = true;
+			if (_o.f.specified && _o.b.enabledByString) {
+				_o.b.number = _o.f.number + _viewportWidth/2;
 			}
 
-			if (_fValid && !_bValid) {
-				var _bSValid = _bS === 'auto' || _bS === 'yes' || _bS === 'enabled';
-				if (_bSValid) {
-					_bEnabled = true;
-					_b = _f + _viewportWidth/2;
-				}
+			if (_o.f.enabledByString && _o.b.specified) {
+				_o.f.number = _o.b.number - _viewportWidth/2;
 			}
 
-			if (!_fValid && _bValid) {
-				var _fSValid = _fS === 'auto' || _fS === 'yes' || _bS === 'enabled';
-				if (_fSValid) {
-					_fEnabled = true;
-					_f = _d - _viewportWidth/2;
-				}
-			}
-
-			if (_bValid) {
-				_bEnabled = true;
-				if (_fValid && _b<=_f) {
-					w(this.actor, 'TriggerBackward is less than or equals to triggerForward.','\n\tProvided triggerForward:', _.triggerForward,'\n\tProvided triggerBackward:', _.triggerBackward);
-				}
-			}
+			// if (_o.f.specified && _o.b.specified) {
+			// 	if (_o.b.number > _o.f.number) {
+			// 		w(
+			// 			this.actor,
+			// 			'\n\tThe backward trigger comes later than the forward trigger.',
+			// 			'\n\tProvided forward.onElapsed :', _.forward.onElapsed,
+			// 			'\n\tProvided backward.onElapsed:', _.backward.onElapsed
+			// 		);
+			// 	}
+			// }
 
 		}
 
 
-		if (_fEnabled && (!_.forwardActionId || typeof _.forwardActionId !== 'string')) {
+		if (_o.f.enabled && (!_.forward.actionId || typeof _.forward.actionId !== 'string')) {
 			_ok = false;
-			e('Invalid forwardActionId for a MovieTriggerdAction.', '\n\tProvided forwardActionId:', _.forwardActionId);
+			e(
+				'Invalid forward actionId for a MovieTriggerAction.',
+				'\n\tProvided forward.actionId :', _.forward.actionId
+			);
 		}
 
-		if (_fEnabled && (!_.backwardActionId || typeof _.backwardActionId !== 'string')) {
+		if (_o.b.enabled && (!_.backward.actionId || typeof _.backward.actionId !== 'string')) {
 			_ok = false;
-			e('Invalid backwardActionId for a MovieTriggerdAction.', '\n\tProvided backwardActionId:', _.backwardActionId);
+			e(
+				'Invalid backward actionId for a MovieTriggerAction.',
+				'\n\tProvided backward.actionId:', _.backward.actionId
+			);
 		}
 
 		if (!_ok) {
 			return false;
 		}
 
+		_o.isPaired = _o.f.enabled && _o.b.enabled;
 
-		if (!_fEnabled) { _f = NaN; _.forwardActionId = ''; }	// just for sure
-		if (!_bEnabled) { _b = NaN; _.backwardActionId = ''; }	// just for sure
 
-		this.triggerForward.enabled = _fEnabled;
-		this.triggerForward.elapsed = _f;
-		this.triggerForward.actionId = _.forwardActionId;
+		if (!_o.f.enabled) { _o.f.number = NaN; _.forward.actionId = ''; }	// just for sure
+		if (!_o.b.enabled) { _o.b.number = NaN; _.backward.actionId = ''; }	// just for sure
 
-		this.triggerBackward.enabled = _bEnabled;
-		this.triggerBackward.elapsed = _b;
-		this.triggerBackward.actionId = _.backwardActionId;
+		// l(_o);
+
+		this.isPaired = _o.isPaired;
+
+		this.forward.enabled		= _o.f.enabled;
+		this.forward.onElapsed		= _o.f.number;
+		this.forward.actionId		= _.forward.actionId;
+		this.forward.hasBeenTriggered		= false; // !_o.f.enabled;
+
+		this.backward.enabled		= _o.b.enabled;
+		this.backward.onElapsed		= _o.b.number;
+		this.backward.actionId		= _.backward.actionId;
+		this.backward.hasBeenTriggered		= false; // !_o.b.enabled || _o.f.enabled;
+
+		this.forward.opposite		= this.isPaired ? this.backward : undefined;
+		this.backward.opposite		= this.isPaired ? this.forward  : undefined;
 
 		return this;
 	}
 
-	this.tryTrigger = function(moviePlayingForward, movieElapsed) {
-		var _t = moviePlayingForward ? this.triggerForward : this.triggerBackward;
-		var _tOpp = moviePlayingForward ? this.triggerBackward : this.triggerForward;
+	this.tryTrigger = function (trigger, moviePlayingInMyTriggerDirection, movieElapsed) {
+		var _triggerOpp = undefined;
 
-		if (_t.enabled && !_t.triggered) {
-			var _triggered = moviePlayingForward ? (_t.elapsed <= movieElapsed) : (_t.elapsed >= movieElapsed);
+		if (this.isPaired) {
+			_triggerOpp = trigger.opposite; // moviePlayingForward ? this.backward : this.forward;
+		}
 
-			if (_triggered) {
-				// l('"'+this.actor.symbol.id+'"', moviePlayingForward ? 'forward' : 'backward', trigger.elapsed, movieElapsed);
-				_t.triggered = true;
-				_tOpp.triggered = false;
+		if (trigger.enabled) {
+			var _nowTriggered =
+					!trigger.hasBeenTriggered
+				&&	moviePlayingInMyTriggerDirection
+				&&	(trigger.isForwardTrigger
+						?	(movieElapsed >= trigger.onElapsed)
+						:	(movieElapsed <= trigger.onElapsed)
+					);
 
-				this.onTrigger(_t);
-				this.actor.doAction(_t.actionId);
+			var _shouldReset =
+					trigger.hasBeenTriggered
+				&&	!moviePlayingInMyTriggerDirection
+				&&	(trigger.isForwardTrigger
+						?	(movieElapsed < trigger.onElapsed)
+						:	(movieElapsed > trigger.onElapsed)
+					)
+				;
 
-				if (moviePlayingForward) {
-					this.onTriggerForward(_t);
-				} else {
-					this.onTriggerBackward(_t);
+			if (_nowTriggered) {
+				trigger.hasBeenTriggered = true;
+
+				if (this.isPaired) {
+					_triggerOpp.hasBeenTriggered = false;
 				}
+
+				this.onTrigger(trigger);
+
+				if (trigger.isForwardTrigger) {
+					this.onTriggerForward();
+				} else {
+					this.onTriggerBackward();
+				}
+
+				this.actor.doAction(trigger.actionId);
+
 				return true;
 			}
+
+			if (_shouldReset) {
+				trigger.hasBeenTriggered = false;
+				// l('Actor: "'+this.actor.name+'": '+'actionId: '+'"'+trigger.actionId+'"\t\t<'+(trigger.isForwardTrigger ? 'Forward' : 'Backward')+'> trigger has been reset.');
+			}
+
+		} else {
+			// do nothing
 		}
 
 		return false;
 	}
 
 	this.tryTriggerForward = function(moviePlayingForward, movieElapsed) {
-		return this.tryTrigger(moviePlayingForward, movieElapsed);
+		return this.tryTrigger(this.forward, moviePlayingForward, movieElapsed);
 	}
 
 	this.tryTriggerBackward = function(moviePlayingForward, movieElapsed) {
-		return this.tryTrigger(moviePlayingForward, movieElapsed);
+		return this.tryTrigger(this.backward, !moviePlayingForward, movieElapsed);
 	}
 	
 	return this.config(options);
-} // CLASS:MovieTriggerdAction
+} // CLASS:MovieTriggerAction
 
 
 
@@ -499,7 +730,9 @@ function Movie(stage, options) {
 	this.elapsedRatioLastTime = 0;
 	this.actors = {};
 	this.actorsCount = 0;
-	this.triggeredActions = [];
+	this.virtualActors = {};
+	this.virtualActorsCount = 0;
+	this.triggerActions = [];
 
 	this.onStop = function() {};
 	this.onPause = function() {};
@@ -518,12 +751,21 @@ function Movie(stage, options) {
 	}
 
 	this.addActor = function(actorName, locator, symbol, options) {
-		var _actor = new Actor(locator, symbol, options);
+		var _actor = new Actor(actorName, locator, symbol, options);
 		if (_actor) {
 			this.actors[actorName] = _actor;
 			this.actorsCount++;
-			l('Actor\t\t'+actorName+''+(new Array(48-actorName.length)).join(' ')+'has been created.');
 			return _actor;
+		}
+		return undefined;
+	}
+
+	this.addVirtualActor = function(actorName, actorObj, options) {
+		var _virtualActor = new VirtualActor(actorName, actorObj, options);
+		if (_virtualActor) {
+			this.virtualActors[actorName] = _virtualActor;
+			this.virtualActorsCount++;
+			return _virtualActor;
 		}
 		return undefined;
 	}
@@ -534,37 +776,78 @@ function Movie(stage, options) {
 		return this.addActor(actorName, _l, _s, options);
 	}
 
-	this.actor = function(actorName) {
+	this.actor = function(actorName) { // just for conveniece
 		return this.actors[actorName];
+	}
+
+	this.virtualActor = function(actorName) { // just for conveniece
+		return this.virtualActors[actorName];
+	}
+
+	this.anyActor = function(actorName) {
+		var _actor = this.actor(actorName);
+		if(!_actor) _actor = this.virtualActor(actorName);
+		if (!_actor) return undefined;
+		return _actor;
 	}
 
 	this.forEachActor = function (func) {
 		if (typeof func != 'function') {
 			return 0;
 		}
-		var _i = 0;
-		var _r = undefined;
+		var _successCount = 0;
+		var _successful = undefined;
 		for (var _actorName in this.actors) {
-			_r = func.call(this.actors[_actorName], _i);
-			if (typeof _r === 'undefined' || !!_r) {
-				_i++;
+			_successful = func.call(this.actors[_actorName], _successCount);
+			if (typeof _successful === 'undefined' || !!_successful) {
+				_successCount++;
 			}
 		}
-		return _i;
+		return _successCount;
 	}
 
-	this.logActors = function() {
-		return this.forEachActor(
-			function (i) {
-				l(i, this);
-			}) + ' of ' + this.actorsCount + ' actors printed.';
+	this.forEachVirtualActor = function (func) {
+		if (typeof func != 'function') {
+			return 0;
+		}
+		var _successCount = 0;
+		var _successful = undefined;
+		for (var _actorName in this.virtualActors) {
+			_successful = func.call(this.virtualActors[_actorName], _successCount);
+			if (typeof _successful === 'undefined' || !!_successful) {
+				_successCount++;
+			}
+		}
+		return _successCount;
 	}
 
-	this.addTriggeredAction = function (actorName, options) {
-		var _a = new MovieTriggerdAction(this, this.actors[actorName], options);
-		if (_a) {
-			this.triggeredActions.push(_a);
-			return _a;
+	this.logActors = function(logSummary) {
+		var _c = this.forEachActor(function (i) { l(i, this); });
+		if (!!logSummary) l(_c + ' of ' + this.actorsCount + ' actors printed.');
+		return _c;
+	}
+
+	this.logVirtualActors = function(logSummary) {
+		var _c = this.forEachVirtualActor(function (i) { l(i, this); });
+		if (!!logSummary) l(_c + ' of ' + this.virtualActorsCount + ' virtual actors printed.');
+		return _c;
+	}
+
+	this.logActorsOfAllTypes = function() {
+		var _c = 0;
+		var _total = this.actorsCount + this.virtualActorsCount;
+		_c += this.logActors(false);
+		_c += this.logVirtualActors(false);
+		l(_c + ' of ' + _total + ' actors of all types printed.');
+		return _c;
+	}
+
+
+	this.addTriggerAction = function (actorName, options) {
+		var _action = new MovieTriggerAction(this, this.anyActor(actorName), options);
+		if (_action) {
+			this.triggerActions.push(_action);
+			return _action;
 		}
 	}
 
@@ -615,15 +898,24 @@ function Movie(stage, options) {
 		this.elapsedRatio = this.stage.play();
 		var _elapsed = this.stage.elapsedRemapped;
 
-		this.isPlayingForward = this.elapsedRatio > this.elapsedRatioLastTime;
-		// l('isPlayingForward = '+this.isPlayingForward);
+		var _delta = this.elapsedRatio - this.elapsedRatioLastTime;
 		this.elapsedRatioLastTime = this.elapsedRatio;
 
-		for (var i=0; i<this.triggeredActions.length;i++) {
-			var _a = this.triggeredActions[i];
-			_a.tryTriggerForward(this.isPlayingForward, _elapsed);
-			_a.tryTriggerBackward(this.isPlayingForward ,_elapsed);
+		var _distance = Math.abs(_delta);
+		// l('Movie.play();', _distance);
+		this.isPlaying = _distance > 0.001;
+		// l('Movie.play();', this.isPlaying);
+
+		this.isPlayingForward = this.isPlaying && _delta>0;
+
+		if ( this.isPlaying ) {
+			for (var i=0; i<this.triggerActions.length;i++) {
+				var _a = this.triggerActions[i];
+				_a.tryTriggerForward(this.isPlayingForward, _elapsed);
+				_a.tryTriggerBackward(this.isPlayingForward ,_elapsed);
+			}
 		}
+
 	}
 
 

@@ -191,3 +191,25 @@
 	90%		{ transform: scale3d(1.02,1.02,1.02); }
 	100%	{ transform: scale3d(1,1,1); }
 	}
+
+@-webkit-keyframes wak-gigantic-phone-boy-comes-out { /* best duration: 0.6s */
+	0%		{ -webkit-transform: rotateZ(0); }
+	50%		{ -webkit-transform: rotateZ(1.10); }
+	60%		{ -webkit-transform: rotateZ(0.93); }
+	70%		{ -webkit-transform: rotateZ(1.05); }
+	80%		{ -webkit-transform: rotateZ(0.97); }
+	90%		{ -webkit-transform: rotateZ(1.02); }
+	100%	{ -webkit-transform: rotateZ(1); }
+	}
+
+	@keyframes wak- {
+	0%		{ transform: scale3d(0.001,0.001,0.001); }
+	50%		{ transform: scale3d(1.10,1.10,1.10); }
+	60%		{ transform: scale3d(0.93,0.93,0.93); }
+	70%		{ transform: scale3d(1.05,1.05,1.05); }
+	80%		{ transform: scale3d(0.97,0.97,0.97); }
+	90%		{ transform: scale3d(1.02,1.02,1.02); }
+	100%	{ transform: scale3d(1,1,1); }
+	}
+
+

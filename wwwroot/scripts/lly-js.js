@@ -75,7 +75,19 @@ var wlcJS = new (function () {
 
 
 	this.domTools = new WLCDOMTools();
-	this.setNumberIfSafe = setNumberIfSafe;
+	
+	this.getSafeNumber = function(input, safeDefault) {
+		var result = Number(input);
+		if (isNaN(result)) {
+			if (isNaN(safeDefault)) {
+				e('Neight input nor safeDefault is a valid Number.');
+				return NaN;
+			}
+			result = safeDefault;
+		}
+		return result;
+	}
+
 
 
 	Number.prototype.format = function (in_n, in_sp) {
@@ -265,13 +277,6 @@ var wlcJS = new (function () {
 	//////// IE8 begin ////////////////////////////////////////////////////////////////////////////////
 	}
 	//////// IE8 end //////////////////////////////////////////////////////////////////////////////////
-
-	function setNumberIfSafe(input, target) {
-		var result = Number(input);
-		if (!isNaN(result)) {
-			target = result;
-		}
-	}
 
 	function WLCDOMTools() {
 
