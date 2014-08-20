@@ -10,5 +10,4 @@ WAT.applyAnimationTo(actorTempWifi1.locator, 'wak-things-pop-out-3', true, 0.36,
 welcomeStage.viewport.scrollLeft = 1860;
 document.body.on('click.show-wifi-spots', function() { WAT.resumeAnimationsOf( welcomeMovie.virtualActor('s5-all-wifi-spots').targets ); });
 
-
-
+// welcomeMovie.stop(); // init

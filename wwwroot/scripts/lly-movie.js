@@ -37,11 +37,6 @@ function getScrollBarDimension() {
 	};
 }
 
-// function getRealStyleOf(e) {
-// 	return document.defaultView.getComputedStyle(e,null);
-// }
-
-
 var WAT = new (function AnimationToolkits() {
 
 	function safeArray(input) {
@@ -264,14 +259,14 @@ function Stage (options) {
 	this.stageContentScale =			1;
 	this.stageWidthForScaledContent =	NaN;
 	this.stageHeightForScaledContent =	NaN;
-	this.viewportWidthRemapped =		NaN; // remapped back to unscaled stage content
+	this.viewportWidthUnscaled =		NaN; // Remap back to unscaled stage content
 	this.stageScrollingWidth =			NaN;
-	this.stageScrollingWidthRemapped =	NaN;
+	this.stageScrollingWidthUnscaled =	NaN;
 
 	this.elapsed = 0;
-	this.elapsedRemapped = 0;
-	this.elapsedRemappedMiddle = NaN;
-	this.elapsedRemappedRight = NaN;
+	this.elapsedUnscaled = 0;
+	this.elapsedUnscaledMiddle = NaN;
+	this.elapsedUnscaledRight = NaN;
 	this.elapsedRatio = 0;
 
 
@@ -359,10 +354,10 @@ function Stage (options) {
 		this.stageContentScale = this.stageHeightForScaledContent / this.stageHeightAtFullScale;
 		this.stageWidthForScaledContent = Math.floor( this.stageWidthAtFullScale * this.stageContentScale );
 		
-		this.viewportWidthRemapped = this.viewportWidth / this.stageContentScale;
+		this.viewportWidthUnscaled = this.viewportWidth / this.stageContentScale;
 
 		this.stageScrollingWidth = Math.max(0, this.stageWidthForScaledContent - this.viewportWidth);
-		this.stageScrollingWidthRemapped = this.stageScrollingWidth / this.stageContentScale;
+		this.stageScrollingWidthUnscaled = this.stageScrollingWidth / this.stageContentScale;
 
 
 
@@ -389,12 +384,12 @@ function Stage (options) {
 
 	this.playTo = function (elapsed) {
 		if (!isNaN(Number(elapsed))) { this.elapsed = Number(elapsed); }
-		this.elapsedRemapped = this.elapsed / this.stageContentScale;
-		this.elapsedRemappedMiddle = this.elapsedRemapped + this.viewportWidthRemapped * 0.5;
-		this.elapsedRemappedRight = this.elapsedRemapped + this.viewportWidthRemapped;
-		this.elapsedRatio = this.elapsedRemapped / this.stageScrollingWidthRemapped;
+		this.elapsedUnscaled = this.elapsed / this.stageContentScale;
+		this.elapsedUnscaledMiddle = this.elapsedUnscaled + this.viewportWidthUnscaled * 0.5;
+		this.elapsedUnscaledRight = this.elapsedUnscaled + this.viewportWidthUnscaled;
+		this.elapsedRatio = this.elapsedUnscaled / this.stageScrollingWidthUnscaled;
 
-		// l(this.elapsedRatio, '\t', this.elapsed + this.viewportWidthRemapped);
+		// l(this.elapsedRatio, '\t', this.elapsed + this.viewportWidthUnscaled);
 
 		return this.elapsedRatio;
 	}
@@ -534,9 +529,9 @@ function MovieTriggerAction(movie, actor, options) {
 		//									'no':			disable backward trigger
 		//									NaN:			disable backward trigger
 		//
-		//									'enabled':		forward.onElapsed + viewportWidthRemapped/2 | backward.onElapsed - viewportWidthRemapped/2
-		//									'yes':			forward.onElapsed + viewportWidthRemapped/2 | backward.onElapsed - viewportWidthRemapped/2
-		//									'auto':			forward.onElapsed + viewportWidthRemapped/2 | backward.onElapsed - viewportWidthRemapped/2
+		//									'enabled':		forward.onElapsed + viewportWidthUnscaled/2 | backward.onElapsed - viewportWidthUnscaled/2
+		//									'yes':			forward.onElapsed + viewportWidthUnscaled/2 | backward.onElapsed - viewportWidthUnscaled/2
+		//									'auto':			forward.onElapsed + viewportWidthUnscaled/2 | backward.onElapsed - viewportWidthUnscaled/2
 		//
 		//									<Valid Number>:	the number value
 		//
@@ -580,7 +575,7 @@ function MovieTriggerAction(movie, actor, options) {
 
 		} else {
 
-			var _viewportWidth = movie.stage.viewportWidthRemapped;
+			var _viewportWidth = movie.stage.viewportWidthUnscaled;
 
 			if (_o.f.specified && _o.b.enabledByString) {
 				_o.b.number = _o.f.number + _viewportWidth/2;
@@ -746,7 +741,7 @@ function Movie(stage, options) {
 		}
 
 		this.stage = stage;
-		this.stageWidth = this.stage.stageScrollingWidthRemapped;
+		this.stageWidth = this.stage.stageScrollingWidthUnscaled;
 		var _ = options || {};
 	}
 
@@ -896,14 +891,14 @@ function Movie(stage, options) {
 		this.isPlaying = true;
 		this.isPaused = false;
 		this.elapsedRatio = this.stage.play();
-		var _elapsed = this.stage.elapsedRemapped;
+		var _elapsed = this.stage.elapsedUnscaled;
 
 		var _delta = this.elapsedRatio - this.elapsedRatioLastTime;
 		this.elapsedRatioLastTime = this.elapsedRatio;
 
 		var _distance = Math.abs(_delta);
 		// l('Movie.play();', _distance);
-		this.isPlaying = _distance > 0.001;
+		// this.isPlaying = _distance > 0.001;
 		// l('Movie.play();', this.isPlaying);
 
 		this.isPlayingForward = this.isPlaying && _delta>0;
