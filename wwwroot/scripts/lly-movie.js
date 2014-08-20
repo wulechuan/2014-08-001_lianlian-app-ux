@@ -891,7 +891,7 @@ function Movie(stage, options) {
 		this.isPlaying = true;
 		this.isPaused = false;
 		this.elapsedRatio = this.stage.play();
-		var _elapsed = this.stage.elapsedUnscaled;
+		var _elapsed = this.stage.elapsedUnscaledRight;
 
 		var _delta = this.elapsedRatio - this.elapsedRatioLastTime;
 		this.elapsedRatioLastTime = this.elapsedRatio;
