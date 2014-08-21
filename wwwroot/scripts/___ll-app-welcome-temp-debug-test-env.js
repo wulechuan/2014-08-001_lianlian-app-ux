@@ -13,7 +13,7 @@
 		welcomeStage.viewport.style.position = 'relative';
 		welcomeStage.viewport.style.marginLeft = 'auto';
 		welcomeStage.viewport.style.marginRight = 'auto';
-		welcomeStage.viewport.style.marginTop = '200px';
+		welcomeStage.viewport.style.marginTop = '240px';
 
 		document.documentElement.style.backgroundColor =	'black';
 		document.body.style.backgroundColor =				'black';

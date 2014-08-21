@@ -88,6 +88,17 @@ var wlcJS = new (function () {
 		return result;
 	}
 
+	this.arraylize = function(input) {
+		var _arr = undefined;
+		if (Array.isArray(input)) {
+			_arr = input;
+		} else {
+			_arr = [];
+			_arr.push(input);
+		}
+		return _arr;		
+	}
+
 
 
 	Number.prototype.format = function (in_n, in_sp) {
