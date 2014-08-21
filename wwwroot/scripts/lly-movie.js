@@ -582,7 +582,7 @@ function WLCTrigger(triggerValue, funcObserveValue, funcExameValueForTrigger, fu
 		var _ = options || {};
 
 		this.triggerValue = triggerValue;
-		this.autoResetAllowed = !!_.autoResetAllowed;
+		this.autoResetAllowed = !_.hasOwnProperty('autoResetAllowed') || typeof _.autoResetAllowed == 'undefined' || !!_.autoResetAllowed;
 
 		var _preset = undefined;
 		switch (typeof this.triggerValue) {
@@ -642,14 +642,17 @@ function WLCTrigger(triggerValue, funcObserveValue, funcExameValueForTrigger, fu
 			}
 		}
 
+
 		this.isDisabled = _.disabled;
 		this.countLimit = wlcJS.getSafeNumber(_.countLimit, 0);
 
 		if (_.ontrigger) { this.ontrigger = _.ontrigger; }
-		if (this.actionsOnTrigger.length<1) { w('No actions are associated to this trigger yet!'); }
+		if (this.actionsOnTrigger.length<1) {
+			w('No actions are associated to this <WLCTrigger> object yet!');
+		}
 
 		if (!_ok) {
-			return undefined;
+			throw 'Fail to create <WLCTrigger> object.';
 		}
 	}
 
@@ -659,7 +662,7 @@ function WLCTrigger(triggerValue, funcObserveValue, funcExameValueForTrigger, fu
 
 
 
-function WLCBidirectionalTrigger(options, funcObservingDirection) {
+function WLCBidirectionalTrigger(funcObservingDirection, options) {
 
 	this.forwardTrigger			= undefined;
 	this.backwardTrigger		= undefined;
@@ -695,16 +698,14 @@ function WLCBidirectionalTrigger(options, funcObservingDirection) {
 
 	var _presets = {
 		'validNumber': {
-			exameValueForTriggerForward:	function (observedValue) { return observedValue >= this.triggerValue; },
-			exameValueForTriggerBackward:	function (observedValue) { return observedValue <= this.triggerValue; },
-			exameValueForResetForward:		function (observedValue) { return observedValue < this.triggerValue;  },
-			exameValueForResetBackward:		function (observedValue) { return observedValue > this.triggerValue;  }
-		},
-		'boolean': {
-			// exameValueForTriggerForward:	function (observedValue) { return  this.triggerValue &&  observedValue; },
-			// exameValueForTriggerBackward:	function (observedValue) { return !this.triggerValue && !observedValue; },
-			// exameValueForResetForward:		function (observedValue) { return  this.triggerValue !== observedValue; },
-			// exameValueForResetBackward:		function (observedValue) { return  this.triggerValue !== observedValue; }
+			f: {
+				exameValueForTrigger:	function (observedValue) { return observedValue >= this.triggerValue; },
+				exameValueForReset:		function (observedValue) { return observedValue <  this.triggerValue; }
+			},
+			b: {
+				exameValueForTrigger:	function (observedValue) { return observedValue <= this.triggerValue; },
+				exameValueForReset:		function (observedValue) { return observedValue >  this.triggerValue; }
+			}
 		}
 	}
 
@@ -754,134 +755,165 @@ function WLCBidirectionalTrigger(options, funcObservingDirection) {
 		return _r;
 	}
 
-	function _init(options, funcObservingDirection) {
+	function _init(funcObserveDirection, options) {
 
-		// funcObservingDirection		<function> required;
+		// funcObserveDirection				<function> required;
 
-		// options.disabled				<boolean> optional, default: false;
-		// options.summaryCountLimit	<Integer> optional, default: 0;
-		// options.ontrigger			<function> optional;
+		// options.disabled					<boolean> optional, default: false;
+		// options.summaryCountLimit		<Integer> optional, default: 0;
+		// options.ontrigger				<function> optional, because either trigger could have its own ontrigger event, at least;
 
 		// options.forward.triggerValue:	<Valid Number>|<boolean>;
 		// options.backward.triggerValue:	<Valid Number>|<boolean>;
 
-		var _ok = true;
-		var _ = options || {};
+		// if both triggers are defined, their data types MUST match!
+		// if and only if both triggers are defined, they are paired.
 
-		this.triggerValue = triggerValue;
-		this.autoResetAllowed = !!_.autoResetAllowed;
+		function __selectPresetForType(triggerValue, propertyNameForLog) {
+			var _preset = undefined;
+			switch (typeof triggerValue) {
+				case 'number':
+					if (!isNaN(triggerValue)) { _preset = _presets['validNumber']; }
+					break;
 
-		var _preset = undefined;
-		switch (typeof this.triggerValue) {
-			case 'number':
-				if (!isNaN(this.triggerValue)) { _preset = _presets['validNumber']; }
-				break;
+				case 'boolean':
+					_preset = _presets['boolean'];
+					break;
 
-			case 'boolean':
-				e('NOT implemented yet!');
-				break;
-
-			default:
+				default:
+					_o.ok = false;
+					e('Invalid datum type of <WLCBidirectionalTrigger.'+propertyNameForLog+'.triggerValue>.');
+			}
+			return _preset;
 		}
 
-		if (typeof funcObservingValue		=== 'function')	{ this.observeValue =			funcObservingValue; };
-		if (typeof funcObservingDirection	=== 'function')	{ this.observeDirection =		fucntionObservingDirection; };
-		if (typeof funcExameValueForTrigger	=== 'function')	{ this.exameValueForTrigger =	funcExameValueForTrigger; };
-		if (typeof funcExameValueForReset	=== 'function')	{ this.exameValueForReset =		funcExameValueForReset; };
 
-		var _ok = true;
-		var _o = { triggersArePaired: false, f: {}, b: {} };
+		function __tryBuildOneTrigger (isForward, optionsRaw, optionsOrganized) {
+			var _or  = optionsRaw;
+			var _oo  = optionsOrganized;
+			var _sel = isForward ? 'f' : 'b'; // the selector for presets
 
-		var _ = options || {};
-			_.forward  = _.forward  || {};
-			_.backward = _.backward || {};
+			_oo.triggerValue = _or.triggerValue;
+			_oo.observeValue = _or.observeValue;
+			_oo.options = _or.options || {};
+			_oo.autoResetAllowed = !_or.hasOwnProperty('autoResetAllowed') || typeof _or.autoResetAllowed == 'undefined' || !!_or.autoResetAllowed;
 
+			_oo.exameValueForTrigger = _or.exameValueForTrigger;
+			if (typeof _oo.exameValueForTrigger !== 'function' && _oo.preset) {
+				_oo.exameValueForTrigger = _oo.preset[_sel].exameValueForTrigger;
+			}
 
-		_o.f.number = _.forward.onElapsed  === null ? NaN : Number(_.forward.onElapsed);
-		_o.f.string = String( _.forward.onElapsed).toLowerCase();
+			_oo.exameValueForReset = _or.exameValueForReset;
+			if (typeof _oo.exameValueForReset !== 'function' && _oo.preset && _oo.autoResetAllowed) {
+				_oo.exameValueForReset = _oo.preset[_sel].exameValueForReset;
+			}
 
-		_o.b.number = _.backward.onElapsed === null ? NaN : Number(_.backward.onElapsed);
-		_o.b.string = String(_.backward.onElapsed).toLowerCase();
-
-		// _o.f.stringValid = _o.f.string === 'auto' || _o.f.string === 'yes' || _o.f.string === 'no' || _o.f.string === 'enabled' || _o.f.string === 'disabled' || _o.f.string === 'null';
-		// _o.b.stringValid = _o.b.string === 'auto' || _o.b.string === 'yes' || _o.b.string === 'no' || _o.b.string === 'enabled' || _o.b.string === 'disabled' || _o.b.string === 'null';
-		_o.f.enabledByString = _o.f.string === 'auto' || _o.f.string === 'yes' || _o.f.string === 'enabled';
-		_o.b.enabledByString = _o.b.string === 'auto' || _o.b.string === 'yes' || _o.b.string === 'enabled';
-
-		_o.f.specified = !isNaN(_o.f.number);
-		_o.b.specified = !isNaN(_o.b.number);
-
-		_o.f.enabled = _o.f.specified || _o.f.enabledByString;
-		_o.b.enabled = _o.b.specified || _o.b.enabledByString;
-
-		if (!_o.f.specified && !_o.b.specified) {
-
-			_ok = false;
-			e(
-				this.actor,
-				'\n\tNeither forward trigger nor backward trigger is provided specifically.',
-				'\n\tProvided forward.onElapsed :', _.forward.onElapsed,
-				'\n\tProvided backward.onElapsed:', _.backward.onElapsed
+			var _newTrigger = new WLCTrigger(
+				_oo.triggerValue,
+				_oo.observeValue,
+				_oo.exameValueForTrigger,
+				_oo.exameValueForReset,
+				_oo.options
 			);
 
+			if (_newTrigger instanceof WLCTrigger) {
+				_oo.created = true;
+				_oo.eventsCount = _newTrigger.actionsOnTrigger.length;
+			} else {
+				_newTrigger = undefined;
+			}
+			return _newTrigger;
+		}
+
+
+		var _o = { ok: true, triggersArePaired: false, f: {}, b: {} };
+		var _ = options || {};
+
+		_.forward  = _.forward  || {};
+		_.backward = _.backward || {};
+
+		_o.fProvided = typeof _.forward  === 'object' && _.forward  && !Array.isArray(_.forward)  && _.forward .hasOwnProperty('triggerValue');
+		_o.bProvided = typeof _.backward === 'object' && _.backward && !Array.isArray(_.backward) && _.backward.hasOwnProperty('triggerValue');
+
+		if (!_o.fProvided && !_o.bProvided) {
+			_o.ok = false;
+			e('Try building <WLCBidirectionalTrigger>, neither forward nor backward trigger is defined!');
+		}
+
+		if (_o.fProvided) { // check valueType, if valid, try selecting a preset for that type
+			_o.f.preset = __selectPresetForType(_.forward.triggerValue, 'forwardTrigger' );
+			_o.fProvided = _o.fProvided && !!_o.f.preset;
+		}
+
+		if (_o.bProvided) { // check valueType, if valid, try selecting a preset for that type
+			_o.b.preset = __selectPresetForType(_.backward.triggerValue, 'backwardTrigger' );
+			_o.bProvided = _o.bProvided && !!_o.b.preset;
+		}
+
+		_o.f.valueType = typeof _.forward.triggerValue;
+		_o.b.valueType = typeof _.backward.triggerValue;
+
+		if (_o.fProvided && _o.bProvided && _o.f.valueType != _o.b.valueType) {
+			_o.ok = false;
+			e('Try building <WLCBidirectionalTrigger>, data types of 2 triggerValues do NOT match!');
+		}
+
+		if (typeof funcObserveDirection === 'function') {
+			this.observeDirection = funcObserveDirection;
 		} else {
+			_o.ok = false;
+			e('Invalid handler function for <WLCBidirectionalTrigger.observeDirection> method.\n\tProvided handler:', funcObserveDirection);
+		}
 
-			if (_o.f.specified && _o.b.enabledByString) {
-				_o.b.number = _o.f.number;
+
+
+		// It is ok if a trigger was created successfully or not provided at all.
+		_o.f.created = false;
+		_o.b.created = false;
+		_o.f.eventsCount = 0;
+		_o.b.eventsCount = 0;
+
+		if (_o.ok) {
+			if (_o.fProvided) {
+				this.forwardTrigger = __tryBuildOneTrigger(true,  _.forward,  _o.f);
+				_o.ok = _o.ok && _o.f.created;
 			}
 
-			if (_o.f.enabledByString && _o.b.specified) {
-				_o.f.number = _o.b.number;
+			if (_o.bProvided) {
+				this.backwardTrigger = __tryBuildOneTrigger(false, _.backward, _o.b);
+				_o.ok = _o.ok && _o.b.created;
 			}
-
 		}
 
-
-		if (_o.f.enabled && (!_.forward.actionId || typeof _.forward.actionId !== 'string')) {
-			_ok = false;
-			e(
-				'Invalid forward actionId for a MovieTriggerAction.',
-				'\n\tProvided forward.actionId :', _.forward.actionId
-			);
-		}
-
-		if (_o.b.enabled && (!_.backward.actionId || typeof _.backward.actionId !== 'string')) {
-			_ok = false;
-			e(
-				'Invalid backward actionId for a MovieTriggerAction.',
-				'\n\tProvided backward.actionId:', _.backward.actionId
-			);
-		}
-
-		if (!_ok) {
-			return false;
-		}
-
-		_o.triggersArePaired = _o.f.enabled && _o.b.enabled;
+		_o.disabled = !!_.disabled;
+		_o.triggersArePaired = _o.f.created && _o.b.created;
+		_o.summaryCountLimit = wlcJS.getSafeNumber(_.summaryCountLimit, 0);
 
 
-		if (!_o.f.enabled) { _o.f.number = NaN; _.forward.actionId = ''; }	// just for sure
-		if (!_o.b.enabled) { _o.b.number = NaN; _.backward.actionId = ''; }	// just for sure
+
+
 
 		// l(_o);
 
+
+
+
+
+		this.disabled = _o.disabled;
 		this.triggersArePaired = _o.triggersArePaired;
+		this.summaryCountLimit = _o.summaryCountLimit;
 
-		this.forwardTrigger.enabled			= _o.f.enabled;
-		this.forwardTrigger.onElapsed		= _o.f.number;
-		this.forwardTrigger.actionId		= _.forward.actionId;
-		this.forwardTrigger.hasBeenTriggered		= false; // !_o.f.enabled;
+		if (_.ontrigger) { this.ontrigger = _.ontrigger; }
+		if ( (this.actionsOnTrigger.length + _o.f.eventsCount + _o.b.eventsCount) < 1 ) {
+			w('No actions are associated to this <WLCBidirectionalTrigger> object yet!');
+		}
 
-		this.backwardTrigger.enabled		= _o.b.enabled;
-		this.backwardTrigger.onElapsed		= _o.b.number;
-		this.backwardTrigger.actionId		= _.backward.actionId;
-		this.backwardTrigger.hasBeenTriggered		= false; // !_o.b.enabled || _o.f.enabled;
-
-		this.forwardTrigger.opposite		= this.triggersArePaired ? this.backwardTrigger : undefined;
-		this.backwardTrigger.opposite		= this.triggersArePaired ? this.forwardTrigger  : undefined;
+		if (!_o.ok) {
+			throw 'Fail to create <WLCBidirectionalTrigger> object.';
+		}
 	}
 
-	_init.call(this, options, funcObservingDirection);
+	_init.call(this, funcObservingDirection, options);
 } // CLASS:WLCBidirectionalTrigger
 
 
@@ -1103,152 +1135,12 @@ function MovieTriggerAction(movie, actor, options) {
 	}
 
 	this.actor = actor;
-	this.isPaired = false;
-
-	this.forward = {
-		isForwardTrigger:	true, // read-only
-		enabled:			false,
-		hasBeenTriggered:	false,
-		onElapsed:			NaN,
-		actionId:			''
-	};
-
-	this.backward = {
-		isBackwardTrigger:	false, // read-only
-		enabled:			false,
-		hasBeenTriggered:	false,
-		onElapsed:			NaN,
-		actionId:			''
-	};
+	this.trigger = undefined
 
 	this.onTrigger = function (trigger) {}
 	this.onTriggerForward = function () {}
 	this.onTriggerBackward = function () {}
 
-
-	this.config = function (options) {
-		// options.forward.onElapsed:			'disabled'|'no'|NaN|'enabled'|'yes'|'auto'|<Valid Number>;
-		// options.backward.onElapsed:		'disabled'|'no'|NaN|'enabled'|'yes'|'auto'|<Valid Number>;
-		//
-		//									'disabled':		disable backward trigger
-		//									'no':			disable backward trigger
-		//									NaN:			disable backward trigger
-		//
-		//									'enabled':		forward.onElapsed + viewportWidthUnscaled/2 | backward.onElapsed - viewportWidthUnscaled/2
-		//									'yes':			forward.onElapsed + viewportWidthUnscaled/2 | backward.onElapsed - viewportWidthUnscaled/2
-		//									'auto':			forward.onElapsed + viewportWidthUnscaled/2 | backward.onElapsed - viewportWidthUnscaled/2
-		//
-		//									<Valid Number>:	the number value
-		//
-		// options.forward.actionId:		<string>; default: '';
-		// options.backward.actionId:		<string>; default: '';
-
-		var _ok = true;
-		var _o = { isPaired: false, f: {}, b: {} };
-
-		var _ = options || {};
-			_.forward  = _.forward  || {};
-			_.backward = _.backward || {};
-
-
-		_o.f.number = _.forward.onElapsed  === null ? NaN : Number(_.forward.onElapsed);
-		_o.f.string = String( _.forward.onElapsed).toLowerCase();
-
-		_o.b.number = _.backward.onElapsed === null ? NaN : Number(_.backward.onElapsed);
-		_o.b.string = String(_.backward.onElapsed).toLowerCase();
-
-		// _o.f.stringValid = _o.f.string === 'auto' || _o.f.string === 'yes' || _o.f.string === 'no' || _o.f.string === 'enabled' || _o.f.string === 'disabled' || _o.f.string === 'null';
-		// _o.b.stringValid = _o.b.string === 'auto' || _o.b.string === 'yes' || _o.b.string === 'no' || _o.b.string === 'enabled' || _o.b.string === 'disabled' || _o.b.string === 'null';
-		_o.f.enabledByString = _o.f.string === 'auto' || _o.f.string === 'yes' || _o.f.string === 'enabled';
-		_o.b.enabledByString = _o.b.string === 'auto' || _o.b.string === 'yes' || _o.b.string === 'enabled';
-
-		_o.f.specified = !isNaN(_o.f.number);
-		_o.b.specified = !isNaN(_o.b.number);
-
-		_o.f.enabled = _o.f.specified || _o.f.enabledByString;
-		_o.b.enabled = _o.b.specified || _o.b.enabledByString;
-
-		if (!_o.f.specified && !_o.b.specified) {
-
-			_ok = false;
-			e(
-				this.actor,
-				'\n\tNeither forward trigger nor backward trigger is provided specifically.',
-				'\n\tProvided forward.onElapsed :', _.forward.onElapsed,
-				'\n\tProvided backward.onElapsed:', _.backward.onElapsed
-			);
-
-		} else {
-
-			var _viewportWidth = movie.stage.viewportWidthUnscaled;
-
-			if (_o.f.specified && _o.b.enabledByString) {
-				_o.b.number = _o.f.number + _viewportWidth/2;
-			}
-
-			if (_o.f.enabledByString && _o.b.specified) {
-				_o.f.number = _o.b.number - _viewportWidth/2;
-			}
-
-			// if (_o.f.specified && _o.b.specified) {
-			// 	if (_o.b.number > _o.f.number) {
-			// 		w(
-			// 			this.actor,
-			// 			'\n\tThe backward trigger comes later than the forward trigger.',
-			// 			'\n\tProvided forward.onElapsed :', _.forward.onElapsed,
-			// 			'\n\tProvided backward.onElapsed:', _.backward.onElapsed
-			// 		);
-			// 	}
-			// }
-
-		}
-
-
-		if (_o.f.enabled && (!_.forward.actionId || typeof _.forward.actionId !== 'string')) {
-			_ok = false;
-			e(
-				'Invalid forward actionId for a MovieTriggerAction.',
-				'\n\tProvided forward.actionId :', _.forward.actionId
-			);
-		}
-
-		if (_o.b.enabled && (!_.backward.actionId || typeof _.backward.actionId !== 'string')) {
-			_ok = false;
-			e(
-				'Invalid backward actionId for a MovieTriggerAction.',
-				'\n\tProvided backward.actionId:', _.backward.actionId
-			);
-		}
-
-		if (!_ok) {
-			return false;
-		}
-
-		_o.isPaired = _o.f.enabled && _o.b.enabled;
-
-
-		if (!_o.f.enabled) { _o.f.number = NaN; _.forward.actionId = ''; }	// just for sure
-		if (!_o.b.enabled) { _o.b.number = NaN; _.backward.actionId = ''; }	// just for sure
-
-		// l(_o);
-
-		this.isPaired = _o.isPaired;
-
-		this.forward.enabled		= _o.f.enabled;
-		this.forward.onElapsed		= _o.f.number;
-		this.forward.actionId		= _.forward.actionId;
-		this.forward.hasBeenTriggered		= false; // !_o.f.enabled;
-
-		this.backward.enabled		= _o.b.enabled;
-		this.backward.onElapsed		= _o.b.number;
-		this.backward.actionId		= _.backward.actionId;
-		this.backward.hasBeenTriggered		= false; // !_o.b.enabled || _o.f.enabled;
-
-		this.forward.opposite		= this.isPaired ? this.backward : undefined;
-		this.backward.opposite		= this.isPaired ? this.forward  : undefined;
-
-		return this;
-	}
 
 	this.tryTrigger = function (trigger, moviePlayingInMyTriggerDirection, movieElapsed) {
 		var _triggerOpp = undefined;
@@ -1315,7 +1207,116 @@ function MovieTriggerAction(movie, actor, options) {
 		return this.tryTrigger(this.backward, !moviePlayingForward, movieElapsed);
 	}
 	
-	return this.config(options);
+	function _init (options) {
+		// options.forward.onElapsed:		NaN|<Valid Number>|'enabled'|'yes'|'auto';
+		// options.backward.onElapsed:		NaN|<Valid Number>|'enabled'|'yes'|'auto';
+		//
+		//									NaN:			disable the trigger
+		//
+		//									'enabled':		forward.onElapsed + viewportWidthUnscaled/2 | backward.onElapsed - viewportWidthUnscaled/2
+		//									'yes':			forward.onElapsed + viewportWidthUnscaled/2 | backward.onElapsed - viewportWidthUnscaled/2
+		//									'auto':			forward.onElapsed + viewportWidthUnscaled/2 | backward.onElapsed - viewportWidthUnscaled/2
+		//
+		//									<Valid Number>:	the number value
+		//
+		// options.forward.actionId:		<string>; default: '';
+		// options.backward.actionId:		<string>; default: '';
+
+		var _ok = true;
+		var _o = { isPaired: false, f: {}, b: {} };
+
+		var _ = options || {};
+			_.forward  = _.forward  || {};
+			_.backward = _.backward || {};
+
+
+		_o.f.number = _.forward.onElapsed  === null ? NaN : Number(_.forward.onElapsed);
+		_o.f.string = String( _.forward.onElapsed).toLowerCase();
+
+		_o.b.number = _.backward.onElapsed === null ? NaN : Number(_.backward.onElapsed);
+		_o.b.string = String(_.backward.onElapsed).toLowerCase();
+
+		_o.f.enabledByString = _o.f.string === 'auto' || _o.f.string === 'yes' || _o.f.string === 'enabled';
+		_o.b.enabledByString = _o.b.string === 'auto' || _o.b.string === 'yes' || _o.b.string === 'enabled';
+
+		_o.f.specified = !isNaN(_o.f.number);
+		_o.b.specified = !isNaN(_o.b.number);
+
+		_o.f.enabled = _o.f.specified || _o.f.enabledByString;
+		_o.b.enabled = _o.b.specified || _o.b.enabledByString;
+
+		if (!_o.f.specified && !_o.b.specified) {
+
+			_ok = false;
+			e(
+				this.actor,
+				'\n\tNeither forward trigger nor backward trigger is provided specifically.',
+				'\n\tProvided forward.onElapsed :', _.forward.onElapsed,
+				'\n\tProvided backward.onElapsed:', _.backward.onElapsed
+			);
+
+		} else {
+
+			var _viewportWidth = movie.stage.viewportWidthUnscaled;
+
+			if (_o.f.specified && _o.b.enabledByString) {
+				_o.b.number = _o.f.number + _viewportWidth/2;
+			}
+
+			if (_o.f.enabledByString && _o.b.specified) {
+				_o.f.number = _o.b.number - _viewportWidth/2;
+			}
+
+		}
+
+
+		if (_o.f.enabled && (!_.forward.actionId || typeof _.forward.actionId !== 'string')) {
+			_ok = false;
+			e(
+				'Invalid forward actionId for a MovieTriggerAction.',
+				'\n\tProvided forward.actionId :', _.forward.actionId
+			);
+		}
+
+		if (_o.b.enabled && (!_.backward.actionId || typeof _.backward.actionId !== 'string')) {
+			_ok = false;
+			e(
+				'Invalid backward actionId for a MovieTriggerAction.',
+				'\n\tProvided backward.actionId:', _.backward.actionId
+			);
+		}
+
+		if (!_ok) {
+			return false;
+		}
+
+		_o.isPaired = _o.f.enabled && _o.b.enabled;
+
+
+		if (!_o.f.enabled) { _o.f.number = NaN; _.forward.actionId = ''; }	// just for sure
+		if (!_o.b.enabled) { _o.b.number = NaN; _.backward.actionId = ''; }	// just for sure
+
+		// l(_o);
+
+		this.isPaired = _o.isPaired;
+
+		this.forward.enabled		= _o.f.enabled;
+		this.forward.onElapsed		= _o.f.number;
+		this.forward.actionId		= _.forward.actionId;
+		this.forward.hasBeenTriggered		= false; // !_o.f.enabled;
+
+		this.backward.enabled		= _o.b.enabled;
+		this.backward.onElapsed		= _o.b.number;
+		this.backward.actionId		= _.backward.actionId;
+		this.backward.hasBeenTriggered		= false; // !_o.b.enabled || _o.f.enabled;
+
+		this.forward.opposite		= this.isPaired ? this.backward : undefined;
+		this.backward.opposite		= this.isPaired ? this.forward  : undefined;
+
+		return this;
+	}
+
+	_init.call(this, options);
 } // CLASS:MovieTriggerAction
 
 

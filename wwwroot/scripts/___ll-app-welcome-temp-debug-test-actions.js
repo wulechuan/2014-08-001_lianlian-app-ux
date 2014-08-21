@@ -10,6 +10,33 @@ welcomeMovie.stop(); // init
 welcomeStage.viewport.scrollLeft = 1860;
 document.body.on('click.show-wifi-spots', function() { WAT.resumeAnimationsOf( welcomeMovie.virtualActor('s5-all-wifi-spots').targets ); });
 
-// var t = new WLCTrigger(3, function () { l(welcomeMovie.elapsed); return welcomeMovie.elapsed; }, null, function (v) { return v > this.triggerValue; }, { disabled: true, autoResetAllowed: true, countLimit: 6 });
-var bdt = new WLCBidirectionalTrigger({ forward: { onElapsed:  100, actionId: 'fly-forward' }, backward: { onElapsed: 230,  actionId: 'fly-backward' } });
+// var t = new WLCTrigger(3, /*function () { l(welcomeMovie.elapsed); return welcomeMovie.elapsed; }*/null, null, function (v) { return v > this.triggerValue; }, { disabled: true, autoResetAllowed: true, countLimit: 6 });
 
+var bdt = new WLCBidirectionalTrigger(
+
+	function () {
+		l(welcomeMovie.isPlayingForward);
+		return welcomeMovie.isPlayingForward;
+	},
+
+	{
+		disabled: false,
+		summaryCountLimit: 1,
+		forward:  {
+			triggerValue:			100,
+			observeValue:			function () { l(welcomeMovie.elapsed); return welcomeMovie.elapsed; },
+			exameValueForTrigger:	null,
+			exameValueForReset:		null,
+			options: { countLimit: 5 }
+		},
+		backward:  {
+			triggerValue:			100,
+			observeValue:			function () { l(welcomeMovie.elapsed); return welcomeMovie.elapsed; },
+			exameValueForTrigger:	null,
+			exameValueForReset:		null,
+			options: { countLimit: 5 }
+		}
+	}
+);
+
+l('bdt:', bdt);
