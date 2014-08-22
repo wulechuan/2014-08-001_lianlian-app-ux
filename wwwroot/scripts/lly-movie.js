@@ -486,13 +486,17 @@ function WLCTrigger(triggerValue, funcObserveValue, funcExameValueForTrigger, fu
 
 	this.observeValue			= undefined;	// required; function () { return observedValue; }
 	this.exameValueForTrigger	= undefined;	// required; function (observedValue) {}
-	this.exameValueForReset		= undefined;	// required if this.autoResetAllowed is true; function (observedValue) {}
+	this.exameValueForReset		= undefined;	// required if this.autoResetAllowed is true;
+												// function (observedValue) {}
 
 	this.actionsOnTrigger		= [];			// required but optional at init; functions array
 
-	Object.defineProperty(this, 'countLimitReached', { get: function() { return this.countLimit>0 && this.count >= this.countLimit; } });
+	Object.defineProperty(this, 'countLimitReached', {
+		get: function() { return this.countLimit>0 && this.count >= this.countLimit; }
+	});
 	Object.defineProperty(this, 'ontrigger', {
-		get: function(input) {
+		get: function() { return this.actionsOnTrigger; },
+		set: function(input) {
 			wlcJS.arraylize(input).forEach(function (funcCallBack, i, functionsArray) {
 				if (typeof funcCallBack === 'function') {
 					this.actionsOnTrigger.push(funcCallBack);
@@ -675,13 +679,27 @@ function WLCBidirectionalTrigger(funcObservingDirection, options) {
 	this.triggerValueRecords	= [];			// internal;
 	this.summaryCount			= 0;			// internal;
 
-	this.observeDirection		= undefined;	// required; function () { var directionIsForward = true; return directionIsForward; }
+	this.observeDirection		= undefined;	// required;
+												// function () {
+												//		var directionIsForward = true;
+												//		return directionIsForward;
+												// }
 
 	this.actionsOnTrigger		= [];			// optional functions array
 
-	Object.defineProperty(this, 'summaryCountLimitReached', { get: function() { return this.summaryCountLimit>0 && this.summaryCount >= this.summaryCountLimit; } });
+	Object.defineProperty(this, 'summaryCountLimitReached', {
+		get: function() { return this.summaryCountLimit>0 && this.summaryCount >= this.summaryCountLimit; }
+	});
 	Object.defineProperty(this, 'ontrigger', { // sample this.ontrigger = function (trigger) {}
-		get: function(input) {
+		get: function() {
+			return {
+				onEitherTrigger: this.actionsOnTrigger,
+				onForwardTrigger: this.forwardTrigger.actionsOnTrigger,
+				onBackwardTrigger: this.backwardTrigger.actionsOnTrigger
+			};
+		},
+
+		set: function(input) {
 			wlcJS.arraylize(input).forEach(function (funcCallBack, i, functionsArray) {
 				if (typeof funcCallBack === 'function') {
 					this.actionsOnTrigger.push(funcCallBack);
@@ -1137,9 +1155,21 @@ function MovieTriggerAction(movie, actor, options) {
 	this.actor = actor;
 	this.trigger = undefined
 
-	this.onTrigger = function (trigger) {}
-	this.onTriggerForward = function () {}
-	this.onTriggerBackward = function () {}
+	Object.defineProperty(this, 'ontrigger', {
+		get: function() { return this.trigger.ontrigger; },
+		set: function(input) {
+			wlcJS.arraylize(input).forEach(function (funcCallBack, i, functionsArray) {
+				if (typeof funcCallBack === 'function') {
+					this.actionsOnTrigger.push(funcCallBack);
+				} else {
+					w('Invalid handler function for <WLCBidirectionalTrigger.ontrigger> event. Ignored.');
+				}
+			});
+		}
+	});
+	// this.onTrigger = function (trigger) {}
+	// this.onTriggerForward = function () {}
+	// this.onTriggerBackward = function () {}
 
 
 	this.tryTrigger = function (trigger, moviePlayingInMyTriggerDirection, movieElapsed) {
@@ -1189,7 +1219,6 @@ function MovieTriggerAction(movie, actor, options) {
 
 			if (_shouldReset) {
 				trigger.hasBeenTriggered = false;
-				// l('Actor: "'+this.actor.name+'": '+'actionId: '+'"'+trigger.actionId+'"\t\t<'+(trigger.isForwardTrigger ? 'Forward' : 'Backward')+'> trigger has been reset.');
 			}
 
 		} else {
@@ -1213,9 +1242,11 @@ function MovieTriggerAction(movie, actor, options) {
 		//
 		//									NaN:			disable the trigger
 		//
-		//									'enabled':		forward.onElapsed + viewportWidthUnscaled/2 | backward.onElapsed - viewportWidthUnscaled/2
-		//									'yes':			forward.onElapsed + viewportWidthUnscaled/2 | backward.onElapsed - viewportWidthUnscaled/2
-		//									'auto':			forward.onElapsed + viewportWidthUnscaled/2 | backward.onElapsed - viewportWidthUnscaled/2
+		//									'enabled':
+		//									'yes':
+		//									'auto':
+		//										autoBackward = forward.onElapsed + viewportWidthUnscaled/2
+		//										autoForward = backward.onElapsed - viewportWidthUnscaled/2
 		//
 		//									<Valid Number>:	the number value
 		//
