@@ -1138,7 +1138,7 @@ function WLCPairedTriggersBACKUP(options, funcObservingValue, funcObservingDirec
 
 
 
-function MovieTriggerAction(movie, actor, options) {
+function MovieTriggerAction(movie, actor, actionsLib, options) {
 	// movie:						<object of CLASS:Movie>
 	// actor:						<object of CLASS:Actor or CLASS:VirtualActor>
 
@@ -1153,94 +1153,34 @@ function MovieTriggerAction(movie, actor, options) {
 	}
 
 	this.actor = actor;
-	this.trigger = undefined
+	this.trigger = undefined;
 
 	Object.defineProperty(this, 'ontrigger', {
 		get: function() { return this.trigger.ontrigger; },
-		set: function(input) {
-			wlcJS.arraylize(input).forEach(function (funcCallBack, i, functionsArray) {
-				if (typeof funcCallBack === 'function') {
-					this.actionsOnTrigger.push(funcCallBack);
-				} else {
-					w('Invalid handler function for <WLCBidirectionalTrigger.ontrigger> event. Ignored.');
-				}
-			});
-		}
+		set: function(input) { this.trigger.ontrigger = input; }
 	});
-	// this.onTrigger = function (trigger) {}
-	// this.onTriggerForward = function () {}
-	// this.onTriggerBackward = function () {}
+	Object.defineProperty(this, 'ontriggerforward', {
+		get: function() { return this.trigger.forwardTrigger.ontrigger; },
+		set: function(input) { this.trigger.forwardTrigger.ontrigger = input; }
+	});
+	Object.defineProperty(this, 'ontriggerbackward', {
+		get: function() { return this.trigger.backwardTrigger.ontrigger; },
+		set: function(input) { this.trigger.backwardTrigger.ontrigger = input; }
+	});
 
 
-	this.tryTrigger = function (trigger, moviePlayingInMyTriggerDirection, movieElapsed) {
-		var _triggerOpp = undefined;
-
-		if (this.isPaired) {
-			_triggerOpp = trigger.opposite; // moviePlayingForward ? this.backward : this.forward;
-		}
-
-		if (trigger.enabled) {
-			var _nowTriggered =
-					!trigger.hasBeenTriggered
-				&&	moviePlayingInMyTriggerDirection
-				&&	(trigger.isForwardTrigger
-						?	(movieElapsed >= trigger.onElapsed)
-						:	(movieElapsed <= trigger.onElapsed)
-					);
-
-			var _shouldReset =
-					trigger.hasBeenTriggered
-				&&	!moviePlayingInMyTriggerDirection
-				&&	(trigger.isForwardTrigger
-						?	(movieElapsed < trigger.onElapsed)
-						:	(movieElapsed > trigger.onElapsed)
-					)
-				;
-
-			if (_nowTriggered) {
-				trigger.hasBeenTriggered = true;
-
-				if (this.isPaired) {
-					_triggerOpp.hasBeenTriggered = false;
-				}
-
-				this.onTrigger(trigger);
-
-				if (trigger.isForwardTrigger) {
-					this.onTriggerForward();
-				} else {
-					this.onTriggerBackward();
-				}
-
-				this.actor.doAction(trigger.actionId);
-
-				return true;
-			}
-
-			if (_shouldReset) {
-				trigger.hasBeenTriggered = false;
-			}
-
-		} else {
-			// do nothing
-		}
-
-		return false;
+	this.tryTrigger = function () {
+		return this.trigger.tryTrigger();
 	}
 
-	this.tryTriggerForward = function(moviePlayingForward, movieElapsed) {
-		return this.tryTrigger(this.forward, moviePlayingForward, movieElapsed);
-	}
-
-	this.tryTriggerBackward = function(moviePlayingForward, movieElapsed) {
-		return this.tryTrigger(this.backward, !moviePlayingForward, movieElapsed);
-	}
-	
 	function _init (options) {
 		// options.forward.onElapsed:		NaN|<Valid Number>|'enabled'|'yes'|'auto';
 		// options.backward.onElapsed:		NaN|<Valid Number>|'enabled'|'yes'|'auto';
 		//
-		//									NaN:			disable the trigger
+		//									<Valid Number>:
+		//										the number value
+		//									NaN:
+		//										disable the trigger
 		//
 		//									'enabled':
 		//									'yes':
@@ -1248,37 +1188,34 @@ function MovieTriggerAction(movie, actor, options) {
 		//										autoBackward = forward.onElapsed + viewportWidthUnscaled/2
 		//										autoForward = backward.onElapsed - viewportWidthUnscaled/2
 		//
-		//									<Valid Number>:	the number value
-		//
 		// options.forward.actionId:		<string>; default: '';
 		// options.backward.actionId:		<string>; default: '';
-
-		var _ok = true;
-		var _o = { isPaired: false, f: {}, b: {} };
 
 		var _ = options || {};
 			_.forward  = _.forward  || {};
 			_.backward = _.backward || {};
 
+		var _o = { ok: true, isPaired: false, f: { options: {} }, b: { options: {} } };
 
-		_o.f.number = _.forward.onElapsed  === null ? NaN : Number(_.forward.onElapsed);
-		_o.f.string = String( _.forward.onElapsed).toLowerCase();
+		// Number(null) is 0
+		_o.f.number = _.forward.onElapsed   === null ? NaN : Number(_.forward.onElapsed);
+		_o.f.string = String(_.forward.onElapsed).toLowerCase();
 
-		_o.b.number = _.backward.onElapsed === null ? NaN : Number(_.backward.onElapsed);
+		_o.b.number = _.backward.onElapsed  === null ? NaN : Number(_.backward.onElapsed);
 		_o.b.string = String(_.backward.onElapsed).toLowerCase();
 
-		_o.f.enabledByString = _o.f.string === 'auto' || _o.f.string === 'yes' || _o.f.string === 'enabled';
-		_o.b.enabledByString = _o.b.string === 'auto' || _o.b.string === 'yes' || _o.b.string === 'enabled';
+		_o.f.providedByString = _o.f.string === 'auto' || _o.f.string === 'yes' || _o.f.string === 'enabled';
+		_o.b.providedByString = _o.b.string === 'auto' || _o.b.string === 'yes' || _o.b.string === 'enabled';
 
-		_o.f.specified = !isNaN(_o.f.number);
-		_o.b.specified = !isNaN(_o.b.number);
+		_o.f.providedByNumber = !isNaN(_o.f.number);
+		_o.b.providedByNumber = !isNaN(_o.b.number);
 
-		_o.f.enabled = _o.f.specified || _o.f.enabledByString;
-		_o.b.enabled = _o.b.specified || _o.b.enabledByString;
+		_o.f.provided = _o.f.providedByNumber || _o.f.providedByString;
+		_o.b.provided = _o.b.providedByNumber || _o.b.providedByString;
 
-		if (!_o.f.specified && !_o.b.specified) {
+		if (!_o.f.providedByNumber && !_o.b.providedByNumber) {
 
-			_ok = false;
+			_o.ok = false;
 			e(
 				this.actor,
 				'\n\tNeither forward trigger nor backward trigger is provided specifically.',
@@ -1290,56 +1227,59 @@ function MovieTriggerAction(movie, actor, options) {
 
 			var _viewportWidth = movie.stage.viewportWidthUnscaled;
 
-			if (_o.f.specified && _o.b.enabledByString) {
+			if (_o.f.providedByNumber && _o.b.providedByString) {
 				_o.b.number = _o.f.number + _viewportWidth/2;
 			}
 
-			if (_o.f.enabledByString && _o.b.specified) {
+			if (_o.f.providedByString && _o.b.providedByNumber) {
 				_o.f.number = _o.b.number - _viewportWidth/2;
 			}
 
 		}
 
+		_o.f.options.ontrigger = undefined;
 
-		if (_o.f.enabled && (!_.forward.actionId || typeof _.forward.actionId !== 'string')) {
-			_ok = false;
+		waeoraueohere!!!!
+		if (_.forward.actionId) _o.f.options.ontrigger = actionsLib[_.forward.actionId];
+		if (_o.f.provided && !!_o.f.options.ontrigger) {
+			_o.ok = false;
 			e(
 				'Invalid forward actionId for a MovieTriggerAction.',
 				'\n\tProvided forward.actionId :', _.forward.actionId
 			);
 		}
 
-		if (_o.b.enabled && (!_.backward.actionId || typeof _.backward.actionId !== 'string')) {
-			_ok = false;
+		if (_o.b.provided && (!_.backward.actionId || typeof _.backward.actionId !== 'string')) {
+			_o.ok = false;
 			e(
 				'Invalid backward actionId for a MovieTriggerAction.',
 				'\n\tProvided backward.actionId:', _.backward.actionId
 			);
 		}
 
-		if (!_ok) {
+		if (!_o.ok) {
 			return false;
 		}
 
-		_o.isPaired = _o.f.enabled && _o.b.enabled;
+		_o.isPaired = _o.f.provided && _o.b.provided;
 
 
-		if (!_o.f.enabled) { _o.f.number = NaN; _.forward.actionId = ''; }	// just for sure
-		if (!_o.b.enabled) { _o.b.number = NaN; _.backward.actionId = ''; }	// just for sure
+		if (!_o.f.provided) { _o.f.number = NaN; _.forward.actionId = ''; }	// just for sure
+		if (!_o.b.provided) { _o.b.number = NaN; _.backward.actionId = ''; }	// just for sure
 
 		// l(_o);
 
 		this.isPaired = _o.isPaired;
 
-		this.forward.enabled		= _o.f.enabled;
+		this.forward.provided		= _o.f.provided;
 		this.forward.onElapsed		= _o.f.number;
 		this.forward.actionId		= _.forward.actionId;
-		this.forward.hasBeenTriggered		= false; // !_o.f.enabled;
+		this.forward.hasBeenTriggered		= false; // !_o.f.provided;
 
-		this.backward.enabled		= _o.b.enabled;
+		this.backward.provided		= _o.b.provided;
 		this.backward.onElapsed		= _o.b.number;
 		this.backward.actionId		= _.backward.actionId;
-		this.backward.hasBeenTriggered		= false; // !_o.b.enabled || _o.f.enabled;
+		this.backward.hasBeenTriggered		= false; // !_o.b.provided || _o.f.provided;
 
 		this.forward.opposite		= this.isPaired ? this.backward : undefined;
 		this.backward.opposite		= this.isPaired ? this.forward  : undefined;
