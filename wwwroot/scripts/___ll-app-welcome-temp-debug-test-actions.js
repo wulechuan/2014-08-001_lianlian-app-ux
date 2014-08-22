@@ -38,5 +38,3 @@ var bdt = new WLCBidirectionalTrigger(
 		}
 	}
 );
-
-l('bdt:', bdt);

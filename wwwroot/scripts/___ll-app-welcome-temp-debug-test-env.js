@@ -114,14 +114,14 @@ if (true) {
 		}
 	}
 
-	welcomeMovie.triggerActions.forEach(
-		function (action, i, actionsArray) {
+	welcomeMovie.actionTriggers.forEach(
+		function (trigger, i, triggersArray) {
 			switch (printingSolution) {
 				case 1: ;
 						break;
 				case 2: ;
 						break;
-				case 3: action.onTrigger = function(trigger) { printTriggeredActionInfoForActor.call(this, trigger) };
+				case 3: trigger.ontrigger = function(trigger) { printTriggeredActionInfoForActor.call(this, trigger) };
 						break;
 				default:
 			}
