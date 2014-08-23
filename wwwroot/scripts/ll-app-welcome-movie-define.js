@@ -96,6 +96,7 @@ welcomeMovie.addVirtualActor('s5-all-wifi-spots', Array.prototype.slice.call(qSA
 var actionsLib = new (function () {
 	function _clearAnimationsForActorOfAnyType () {
 		var _targets = (this instanceof Actor) ? this.locator : this.targets;
+		// l(_targets);
 		WAT.clearAnimationsOf(_targets);
 	}
 
@@ -159,35 +160,45 @@ welcomeMovie.defineActionForActor( 's5-all-wifi-spots', 'jump-out-one-by-one', a
 welcomeMovie.defineActionTrigger(
 	'cloud-1',
 	{
-		forward: { onElapsed:   70, actionId: 'fly-forward' },
-		backward: { onElapsed: 210,  actionId: 'fly-backward' }
-	} 
+		name: 'fly',
+		forward:  { onElapsed:  70, actionId: 'fly-forward' },
+		backward: { onElapsed: 210, actionId: 'fly-backward' }
+	}
 );
+
 welcomeMovie.defineActionTrigger(
 	'cloud-2',
 	{
-		forward: { onElapsed:  130, actionId: 'fly-forward' },
-		backward: { onElapsed: 240,  actionId: 'fly-backward' }
-	} 
+		name: 'fly',
+		forward:  { onElapsed: 130, actionId: 'fly-forward' },
+		backward: { onElapsed: 240, actionId: 'fly-backward' }
+	}
 );
+
 welcomeMovie.defineActionTrigger(
 	'cloud-3',
 	{
-		forward: { onElapsed:  100, actionId: 'fly-forward' },
-		backward: { onElapsed: 230,  actionId: 'fly-backward' }
-	} 
+		name: 'fly',
+		forward:  { onElapsed: 100, actionId: 'fly-forward' },
+		backward: { onElapsed: 230, actionId: 'fly-backward' }
+	}
 );
 
 welcomeMovie.defineActionTrigger(
 	's5-all-wifi-spots',
 	{
-		forward:  { onElapsed: 2560, actionId: 'prepare' },
-		backward: { onElapsed: 2580, actionId: 'reset' }
-	} 
+		// name: '',
+		__debug__: false,
+		forward:  { onElapsed: 2560, actionId: 'prepare', options: { name: 'prepare for jumping', __debug__: false } },
+		backward: { onElapsed: 2580, actionId: 'reset',   options: { name: 'all reset', __debug__: false } }
+	}
 );
+
 welcomeMovie.defineActionTrigger(
 	's5-all-wifi-spots',
 	{
-		forward:  { onElapsed: 3333, actionId: 'jump-out-one-by-one' }
-	} 
+		name: 'all jump out',
+		__debug__: false,
+		forward:  { onElapsed: 3000, actionId: 'jump-out-one-by-one' }
+	}
 );

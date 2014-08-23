@@ -86,6 +86,8 @@ var WAT = new (function AnimationToolkits() {
 		wlcJS.arraylize(elements).forEach(function (element, i, _elements) {
 			if (!isDomElement(element)) return undefined;
 			element.animationIsRunning = false;
+			element.style.webkitAnimationPlayState = '';
+			element.style.animationPlayState = '';
 			element.style.webkitAnimation = '';
 			element.style.animation = '';
 		});
@@ -481,6 +483,7 @@ function VirtualActor (name, targets, options) {
 
 function WLCTrigger(triggerValue, funcObserveValue, funcExameValueForTrigger, funcExameValueForReset, options) {
 
+	this.name					= 'anonymous-trigger';	// optional;
 	this.triggerValue			= undefined;	// required;
 
 	this.isDisabled				= false;		// optional;
@@ -490,6 +493,8 @@ function WLCTrigger(triggerValue, funcObserveValue, funcExameValueForTrigger, fu
 	this.triggerValueRecords	= [];			// internal;
 	this.count					= 0;			// internal;
 	this.hasBeenTriggered		= false;		// internal;
+
+	this.__debug__				= false			// optional;
 
 	this.observeValue			= undefined;	// required; function () { return observedValue; }
 	this.exameValueForTrigger	= undefined;	// required; function (observedValue) {}
@@ -560,26 +565,43 @@ function WLCTrigger(triggerValue, funcObserveValue, funcExameValueForTrigger, fu
 		var _r = { triggered: false, observedValue: '__wlc_undefined__' };
 
 		if (!this.isDisabled) {
-			var _observedValue = this.observeValue();
+			_r.observedValue = this.observeValue();
 
-			var _shouldReset =
-					this.hasBeenTriggered
-				&&	!this.autoResetAllowed
-				&&	(typeof this.exameValueForReset === 'function')
-				&&	this.exameValueForReset(_observedValue)
-			;
-
-			var _shouldTrigger =
+			_r.triggered =
 					!this.hasBeenTriggered
-				&&	this.exameValueForTrigger(_observedValue)
+				&&	this.exameValueForTrigger(_r.observedValue)
 			;
 
-			if (_shouldReset) { this.reset(); }
+			if (_r.triggered) {
+				if (this.__debug__) {
+					l(this.name, '\n\tobserved value:', _r.observedValue, '\tShould now trigger.\n');
+				}
+				this.trigger(_r.observedValue);
+			}
+		}
 
-			if (_shouldTrigger) {
-				this.trigger(_observedValue);
-				_r.triggered = true;
-				_r.observedValue = _observedValue;
+		return _r;
+	}
+
+	this.tryAutoReset = function () {
+		var _r = { reset: false, observedValue: '__wlc_undefined__' };
+
+		if (!this.isDisabled) {
+			_r.observedValue = this.observeValue();
+
+			_r.reset =
+					this.hasBeenTriggered
+				&&	this.autoResetAllowed
+				&&	(typeof this.exameValueForReset === 'function')
+				&&	this.exameValueForReset(_r.observedValue)
+			;
+
+			if (_r.reset) {
+				if (this.__debug__) {
+					l(this.name, '\n\tobserved value:', _r.observedValue, '\tShould now reset.\n');
+					l('this.exameValueForReset', this.exameValueForReset);
+				}
+				this.reset();
 			}
 		}
 
@@ -594,6 +616,7 @@ function WLCTrigger(triggerValue, funcObserveValue, funcExameValueForTrigger, fu
 		// funcExameValueForTrigger		<function> required;
 		// funcExameValueForReset		<function> required if autoResetAllowed is true;
 
+		// options.name					<string>, default: 'anonymous'
 		// options.disabled				<boolean>, default: false;
 		// options.autoResetAllowed		<boolean>, default: true;
 		// options.countLimit			<Integer>, default: 0;
@@ -684,6 +707,8 @@ function WLCTrigger(triggerValue, funcObserveValue, funcExameValueForTrigger, fu
 
 
 		this.isDisabled = _.disabled;
+		if (_.name) this.name = _.name;
+		this.__debug__ = _.__debug__;
 		this.countLimit = wlcJS.getSafeNumber(_.countLimit, 0);
 
 		if (_.ontrigger) { this.ontrigger = _.ontrigger; }
@@ -692,7 +717,7 @@ function WLCTrigger(triggerValue, funcObserveValue, funcExameValueForTrigger, fu
 		}
 
 		if (!_ok) {
-			throw 'Fail to create <WLCTrigger> object.';
+			throw 'Fail to create <WLCTrigger> object. Name: "'+_.name+'".';
 		}
 	}
 
@@ -702,18 +727,25 @@ function WLCTrigger(triggerValue, funcObserveValue, funcExameValueForTrigger, fu
 
 
 
-function WLCBidirectionalTrigger(funcObserveDirection, options) {
+function WLCBidirectionalTrigger(funcObserveDirection, options, __debugTriggerStack__) {
 
 	this.forwardTrigger			= undefined;
 	this.backwardTrigger		= undefined;
 
-	this.triggersArePaired		= false;		// internal;
-
+	this.name					= 'anonymous-bidi-trigger';	// optional;
 	this.isDisabled				= false;		// optional;
 	this.summaryCountLimit		= 0;			// optional;
 
+	this.triggersArePaired		= false;		// internal;
+
+	this.directionIsForward		= undefined;	// internal;
+	this.currentTrigger			= undefined;	// internal;
+	this.oppositeTrigger		= undefined;	// internal;
+
 	this.triggerValueRecords	= [];			// internal;
 	this.summaryCount			= 0;			// internal;
+
+	this.__debug__				= false;		// optional;
 
 	this.observeDirection		= undefined;	// required;
 												// function () {
@@ -726,6 +758,7 @@ function WLCBidirectionalTrigger(funcObserveDirection, options) {
 	Object.defineProperty(this, 'summaryCountLimitReached', {
 		get: function() { return this.summaryCountLimit>0 && this.summaryCount >= this.summaryCountLimit; }
 	});
+
 	Object.defineProperty(this, 'ontrigger', { // sample this.ontrigger = function (trigger) {}
 		get: function() {
 			return {
@@ -774,36 +807,68 @@ function WLCBidirectionalTrigger(funcObserveDirection, options) {
 		this.isDisabled = !!isDisabled;
 	}
 
-	this.trigger = function (directionIsForward, observedValue) {
+	this.decideWhichTriggerIsCurrentOne = function () {
+		this.directionIsForward	= this.observeDirection();
 
+		this.currentTrigger  = this.directionIsForward ? this.forwardTrigger  : this.backwardTrigger;
+
+		if (this.triggersArePaired || !this.currentTrigger) {
+			this.oppositeTrigger = this.directionIsForward ? this.backwardTrigger : this.forwardTrigger;
+		} else {
+			// clear old value
+			this.oppositeTrigger = undefined;
+		}
+	}
+
+	this.trigger = function (observedValue) {
 		if (this.triggersArePaired) {
-			var _oppositeTrigger = directionIsForward ? this.backwardTrigger : this.forwardTrigger;
-				_oppositeTrigger.reset();
+			this.oppositeTrigger.reset();
 		}
 
-		this.triggerValueRecords.push( { directionIsForward: directionIsForward, observedValue: observedValue } );
+		this.triggerValueRecords.push( { directionIsForward: this.directionIsForward, observedValue: observedValue } );
 		this.actionsOnTrigger.forEach(function (funcCallBack) {
 			funcCallBack.call(this);
 		});
 		this.summaryCount++;
-		if (this.summaryCountLimit) this.disable();
+		if (this.summaryCountLimitReached) this.disable();
 	}
 
 	this.tryTrigger = function () {
-		var _r = { triggered: false, triggeredForward: '__wlc_undefined__', observedValue: '__wlc_undefined__' };
+		var _r = { triggered: false, isForward: '__wlc_undefined__', observedValue: '__wlc_undefined__' };
 
 		if (!this.isDisabled) {
-			var _directionIsForward	= this.observeDirection();
+			this.decideWhichTriggerIsCurrentOne();
 
-			var _currentTrigger = _directionIsForward ? this.forwardTrigger : this.backwardTrigger;
-			l('_currentTrigger:', _currentTrigger);
-			var _result = _currentTrigger.tryTrigger();
+			if (this.currentTrigger) {
+				var _triggerResult = this.currentTrigger.tryTrigger();
 
-			if (_result.triggered) {
-				this.trigger(_directionIsForward, _result.observedValue);
-				_r.triggered = true;
-				_r.triggeredForward = _directionIsForward;
-				_r.observedValue = _result.observedValue;
+				if (_triggerResult.triggered) {
+
+					if (this.__debug__) {
+						l(
+							this.currentTrigger.name, '\n\ttriggered just now!',
+							'\ttriggered on value:', _triggerResult.observedValue, '\n'
+						);
+					}
+
+					// trigger the 'up-level' bidirectionalTrigger
+					this.trigger(_triggerResult.observedValue);
+
+					_r.triggered = true;
+					_r.isForward = this.directionIsForward;
+					_r.observedValue = _triggerResult.observedValue;
+				}
+			}
+
+			if (this.oppositeTrigger) {
+				var _resetResult = this.oppositeTrigger.tryAutoReset();
+
+				if (_resetResult.reset && this.__debug__) {
+					l(
+						this.oppositeTrigger.name, '\n\treset just now!',
+						'\treset on value:', _resetResult.observedValue, '\n'
+					);
+				}
 			}
 		}
 
@@ -844,150 +909,409 @@ function WLCBidirectionalTrigger(funcObserveDirection, options) {
 		}
 
 
-		function __tryBuildOneTrigger (isForward, optionsRaw, optionsOrganized) {
-			var _or  = optionsRaw;
-			var _oo  = optionsOrganized;
+		function __tryBuildOneTrigger (BidiTriggerName, isForward, optionsRaw, optionsOrganized, __debug__) {
+			var _oro  = optionsRaw;
+			var _ooo  = optionsOrganized;
 			var _sel = isForward ? 'f' : 'b'; // the selector for presets
+			var _suffix = isForward ? 'forward' : 'backward'; // the selector for presets
 
-			_oo.triggerValue = _or.triggerValue;
-			_oo.observeValue = _or.observeValue;
-			_oo.options = _or.options || {};
-			_oo.autoResetAllowed =
-					!_or.hasOwnProperty('autoResetAllowed')
-				||	typeof _or.autoResetAllowed == 'undefined'
-				||	!!_or.autoResetAllowed
-			;
+			_ooo.triggerValue = _oro.triggerValue;
+			_ooo.observeValue = _oro.observeValue;
+			_ooo.options = _oro.options || {};
 
-			_oo.exameValueForTrigger = _or.exameValueForTrigger;
-			if (typeof _oo.exameValueForTrigger !== 'function' && _oo.preset) {
-				_oo.exameValueForTrigger = _oo.preset[_sel].exameValueForTrigger;
+			var _actionName = !!_ooo.options.name ? _ooo.options.name : '';
+			_ooo.options.name =
+					'trigger:   <' + BidiTriggerName
+				+	_actionName
+				+	'   on-' + _suffix
+				+	':'+_ooo.triggerValue
+				+	'>';
+
+			_ooo.options.__debug__ = __debug__ || !!_oro.options.__debug__;
+
+			if (__debugTriggerStack__) {
+				l(	'WLCBidirectionalTrigger:',
+					'\n\t_ooo['+_suffix+']'+(isForward ? ' ' : ''), _ooo,
+					'__debugTriggerStack__', __debugTriggerStack__
+				);
 			}
 
-			_oo.exameValueForReset = _or.exameValueForReset;
-			if (typeof _oo.exameValueForReset !== 'function' && _oo.preset && _oo.autoResetAllowed) {
-				_oo.exameValueForReset = _oo.preset[_sel].exameValueForReset;
+			_ooo.autoResetAllowed =
+					!_oro.hasOwnProperty('autoResetAllowed')
+				||	typeof _oro.autoResetAllowed == 'undefined'
+				||	!!_oro.autoResetAllowed
+			;
+
+			_ooo.exameValueForTrigger = _oro.exameValueForTrigger;
+			if (typeof _ooo.exameValueForTrigger !== 'function' && _ooo.preset) {
+				_ooo.exameValueForTrigger = _ooo.preset[_sel].exameValueForTrigger;
+			}
+
+			_ooo.exameValueForReset = _oro.exameValueForReset;
+			if (typeof _ooo.exameValueForReset !== 'function' && _ooo.preset && _ooo.autoResetAllowed) {
+				_ooo.exameValueForReset = _ooo.preset[_sel].exameValueForReset;
 			}
 
 			var _newTrigger = new WLCTrigger(
-				_oo.triggerValue,
-				_oo.observeValue,
-				_oo.exameValueForTrigger,
-				_oo.exameValueForReset,
-				_oo.options
+				_ooo.triggerValue,
+				_ooo.observeValue,
+				_ooo.exameValueForTrigger,
+				_ooo.exameValueForReset,
+				_ooo.options
 			);
 
-			if (_newTrigger instanceof WLCTrigger) {
-				_oo.created = true;
-				_oo.eventsCount = _newTrigger.actionsOnTrigger.length;
-			} else {
-				_newTrigger = undefined;
-			}
+			if (!_newTrigger instanceof WLCTrigger) _newTrigger = undefined;
 			return _newTrigger;
 		}
 
 
-		var _o = { ok: true, triggersArePaired: false, f: {}, b: {} };
-		var _ = options || {};
+		var _oo = { ok: true, triggersArePaired: false, f: { options: {} }, b: { options: {} } };
+		var _or = options || {};
 
-		_.forward  = _.forward  || {};
-		_.backward = _.backward || {};
+		_or.forward  = _or.forward  || {};
+		_or.backward = _or.backward || {};
+		_or.forward.options  = _or.forward.options  || {};
+		_or.backward.options = _or.backward.options || {};
 
-		_o.fProvided =
-				typeof _.forward  === 'object'
-			&&	_.forward
-			&&	!Array.isArray(_.forward)
-			&&	_.forward .hasOwnProperty('triggerValue')
+		_oo.fProvided =
+				typeof _or.forward  === 'object'
+			&&	_or.forward
+			&&	!Array.isArray(_or.forward)
+			&&	_or.forward .hasOwnProperty('triggerValue')
 		;
 
-		_o.bProvided =
-				typeof _.backward === 'object'
-			&&	_.backward
-			&&	!Array.isArray(_.backward)
-			&&	_.backward.hasOwnProperty('triggerValue')
+		_oo.bProvided =
+				typeof _or.backward === 'object'
+			&&	_or.backward
+			&&	!Array.isArray(_or.backward)
+			&&	_or.backward.hasOwnProperty('triggerValue')
 		;
 
-		if (!_o.fProvided && !_o.bProvided) {
-			_o.ok = false;
+		if (!_oo.fProvided && !_oo.bProvided) {
+			_oo.ok = false;
 			e('Try building <WLCBidirectionalTrigger>, neither forward nor backward trigger is defined!');
 		}
 
-		if (_o.fProvided) { // check valueType, if valid, try selecting a preset for that type
-			_o.f.preset = __selectPresetForType(_.forward.triggerValue, 'forwardTrigger' );
-			_o.fProvided = _o.fProvided && !!_o.f.preset;
+		if (_oo.fProvided) { // check valueType, if valid, try selecting a preset for that type
+			_oo.f.preset = __selectPresetForType(_or.forward.triggerValue, 'forwardTrigger' );
+			_oo.fProvided = _oo.fProvided && !!_oo.f.preset;
 		}
 
-		if (_o.bProvided) { // check valueType, if valid, try selecting a preset for that type
-			_o.b.preset = __selectPresetForType(_.backward.triggerValue, 'backwardTrigger' );
-			_o.bProvided = _o.bProvided && !!_o.b.preset;
+		if (_oo.bProvided) { // check valueType, if valid, try selecting a preset for that type
+			_oo.b.preset = __selectPresetForType(_or.backward.triggerValue, 'backwardTrigger' );
+			_oo.bProvided = _oo.bProvided && !!_oo.b.preset;
 		}
 
-		_o.f.valueType = typeof _.forward.triggerValue;
-		_o.b.valueType = typeof _.backward.triggerValue;
+		_oo.f.valueType = typeof _or.forward.triggerValue;
+		_oo.b.valueType = typeof _or.backward.triggerValue;
 
-		if (_o.fProvided && _o.bProvided && _o.f.valueType != _o.b.valueType) {
-			_o.ok = false;
+		if (_oo.fProvided && _oo.bProvided && _oo.f.valueType != _oo.b.valueType) {
+			_oo.ok = false;
 			e('Try building <WLCBidirectionalTrigger>, data types of 2 triggerValues do NOT match!');
 		}
 
 		if (typeof funcObserveDirection === 'function') {
 			this.observeDirection = funcObserveDirection;
 		} else {
-			_o.ok = false;
+			_oo.ok = false;
 			e(	 'Invalid handler function for <WLCBidirectionalTrigger.observeDirection> method.'
 				+'\n\tProvided handler:', funcObserveDirection
 			);
 		}
 
 
+		if (_or.name) this.name = _or.name;
 
-		// It is ok if a trigger was created successfully or not provided at all.
-		_o.f.created = false;
-		_o.b.created = false;
-		_o.f.eventsCount = 0;
-		_o.b.eventsCount = 0;
+		_oo.f.created = false;
+		_oo.b.created = false;
+		_oo.f.eventsCount = 0;
+		_oo.b.eventsCount = 0;
+		_oo.isDisabled = !!_or.disabled;
+		_oo.__debug__ = !!_or.__debug__;
+		_oo.summaryCountLimit = wlcJS.getSafeNumber(_or.summaryCountLimit, 0);
 
-		if (_o.ok) {
-			if (_o.fProvided) {
-				this.forwardTrigger = __tryBuildOneTrigger(true,  _.forward,  _o.f);
-				_o.ok = _o.ok && _o.f.created;
+		if (_oo.ok && _oo.fProvided) {
+			this.forwardTrigger  = __tryBuildOneTrigger(
+				this.name,
+				true,
+				_or.forward,
+				_oo.f,
+				_oo.__debug__
+			);
+
+			if (this.forwardTrigger instanceof WLCTrigger) {
+				_oo.f.created = true;
+				_oo.f.eventsCount = this.forwardTrigger.actionsOnTrigger.length;
 			}
-
-			if (_o.bProvided) {
-				this.backwardTrigger = __tryBuildOneTrigger(false, _.backward, _o.b);
-				_o.ok = _o.ok && _o.b.created;
-			}
+			_oo.ok = _oo.ok && _oo.f.created;
 		}
 
-		_o.disabled = !!_.disabled;
-		_o.triggersArePaired = _o.f.created && _o.b.created;
-		_o.summaryCountLimit = wlcJS.getSafeNumber(_.summaryCountLimit, 0);
+		if (_oo.ok && _oo.bProvided) {
+			this.backwardTrigger = __tryBuildOneTrigger(
+				this.name,
+				false,
+				_or.backward,
+				_oo.b,
+				_oo.__debug__
+			);
+
+			if (this.backwardTrigger instanceof WLCTrigger) {
+				_oo.b.created = true;
+				_oo.b.eventsCount = this.backwardTrigger.actionsOnTrigger.length;
+			}
+			_oo.ok = _oo.ok && _oo.b.created;
+		}
+
+
+
+
+		_oo.triggersArePaired = _oo.f.created && _oo.b.created;
 
 
 
 
 
-		// l(_o);
+		// if (_oo.__debug__) l(this.name, '\n\t_oo', _oo);
 
 
 
 
 
-		this.disabled = _o.disabled;
-		this.triggersArePaired = _o.triggersArePaired;
-		this.summaryCountLimit = _o.summaryCountLimit;
+		this.isDisabled = _oo.isDisabled;
+		this.__debug__ = _oo.__debug__;
+		this.triggersArePaired = _oo.triggersArePaired;
+		this.summaryCountLimit = _oo.summaryCountLimit;
 
-		if (_.ontrigger) { this.ontrigger = _.ontrigger; }
-		if ( (this.actionsOnTrigger.length + _o.f.eventsCount + _o.b.eventsCount) < 1 ) {
+		if (_or.ontrigger) { this.ontrigger = _or.ontrigger; }
+		if ( (this.actionsOnTrigger.length + _oo.f.eventsCount + _oo.b.eventsCount) < 1 ) {
 			w('No actions are associated to this <WLCBidirectionalTrigger> object yet!');
 		}
 
-		if (!_o.ok) {
+		if (!_oo.ok) {
 			throw 'Fail to create <WLCBidirectionalTrigger> object.';
 		}
 	}
 
 	_init.call(this);
 } // CLASS:WLCBidirectionalTrigger
+
+
+
+
+function MovieActionTrigger(movie, actor, options, __debugActionTriggerStack__) {
+	// movie:						<object of CLASS:Movie>
+	// actor:						<object of CLASS:Actor or CLASS:VirtualActor>
+
+	if (!(movie instanceof Movie) ) {
+		e('Invalid movie for new <MovieActionTrigger>.', '\n\tProvided movie:', movie);
+		return undefined;
+	}
+
+	if (!(actor instanceof Actor) && !(actor instanceof VirtualActor) ) {
+		e('Invalid Actor\/VirtualActor for a MovieActionTrigger.', '\n\tProvided Actor/VirtualActor:', actor);
+		return undefined;
+	}
+
+	this.movie = movie;
+	this.actor = actor;
+	this.trigger = undefined;
+
+	Object.defineProperty(this, 'ontrigger', {
+		get: function() { return this.trigger.ontrigger; },
+		set: function(input) { this.trigger.ontrigger = input; }
+	});
+	Object.defineProperty(this, 'ontriggerforward', {
+		get: function() { return this.trigger.forwardTrigger.ontrigger; },
+		set: function(input) { this.trigger.forwardTrigger.ontrigger = input; }
+	});
+	Object.defineProperty(this, 'ontriggerbackward', {
+		get: function() { return this.trigger.backwardTrigger.ontrigger; },
+		set: function(input) { this.trigger.backwardTrigger.ontrigger = input; }
+	});
+
+
+	this.tryTrigger = function () {
+		return this.trigger.tryTrigger();
+	}
+
+	function _init () {
+		// options.forward.onElapsed:		NaN|<Valid Number>|'enabled'|'yes'|'auto';
+		// options.backward.onElapsed:		NaN|<Valid Number>|'enabled'|'yes'|'auto';
+		//
+		//									<Valid Number>:
+		//										the number value
+		//									NaN:
+		//										disable the trigger
+		//
+		//									'enabled':
+		//									'yes':
+		//									'auto':
+		//										autoBackward = forward.onElapsed + viewportWidthUnscaled/2
+		//										autoForward = backward.onElapsed - viewportWidthUnscaled/2
+		//
+		// options.forward.actionId:		<string>; default: '';
+		// options.backward.actionId:		<string>; default: '';
+
+		var _ = options || {};
+			_.forward  = _.forward  || {};
+			_.backward = _.backward || {};
+			_.forward.options  = _.forward.options  || {};
+			_.backward.options = _.backward.options || {};
+
+		var _ot = { ok: true, f: {}, b: {} };
+			// options Temp
+
+		var _oo = { // options organized
+
+			isDisabled:					_.isDisabled,
+			summaryCountLimit:			_.summaryCountLimit,
+			__debug__:					_.__debug__,
+
+			forward: {
+				// triggerValue:		to be decided,
+				// observeValue:		to be decided,
+				exameValueForTrigger:	_.forward.exameValueForTrigger,		// maybe undefined but its ok
+				exameValueForReset:		_.forward.exameValueForReset,		// maybe undefined but its ok
+				options: {
+					isDisabled:			_.forward.options.isDisabled,		// maybe undefined but its ok
+					name:				_.forward.options.name,				// maybe undefined but its ok
+					__debug__:			_.forward.options.__debug__,		// maybe undefined but its ok
+					countLimit:			_.forward.options.countLimit,		// maybe undefined but its ok
+					autoResetAllowed:	_.forward.options.autoResetAllowed	// maybe undefined but its ok
+					// ontrigger:		to be decided
+				}
+			},
+
+			backward: {
+				// triggerValue:		to be decided,
+				// observeValue:		to be decided,
+				exameValueForTrigger:	_.backward.exameValueForTrigger,	// maybe undefined but its ok
+				exameValueForReset:		_.backward.exameValueForReset,		// maybe undefined but its ok
+				options: {
+					isDisabled:			_.backward.options.isDisabled,		// maybe undefined but its ok
+					name:				_.backward.options.name,			// maybe undefined but its ok
+					__debug__:			_.backward.options.__debug__,		// maybe undefined but its ok
+					countLimit:			_.backward.options.countLimit,		// maybe undefined but its ok
+					autoResetAllowed:	_.backward.options.autoResetAllowed	// maybe undefined but its ok
+					// ontrigger:		to be decided
+				}
+			}
+		};
+		
+
+
+		// Number(null) is 0
+		_ot.f.number = _.forward.onElapsed   === null ? NaN : Number(_.forward.onElapsed);
+		_ot.f.string = String(_.forward.onElapsed).toLowerCase();
+
+		_ot.b.number = _.backward.onElapsed  === null ? NaN : Number(_.backward.onElapsed);
+		_ot.b.string = String(_.backward.onElapsed).toLowerCase();
+
+		_ot.f.providedByString = _ot.f.string === 'auto' || _ot.f.string === 'yes' || _ot.f.string === 'enabled';
+		_ot.b.providedByString = _ot.b.string === 'auto' || _ot.b.string === 'yes' || _ot.b.string === 'enabled';
+
+		_ot.f.providedByNumber = !isNaN(_ot.f.number);
+		_ot.b.providedByNumber = !isNaN(_ot.b.number);
+
+		_ot.f.provided = _ot.f.providedByNumber || _ot.f.providedByString;
+		_ot.b.provided = _ot.b.providedByNumber || _ot.b.providedByString;
+
+		if (!_ot.f.providedByNumber && !_ot.b.providedByNumber) {
+
+			_ot.ok = false;
+			e(
+				this.actor,
+				'\n\tNeither forward trigger nor backward trigger is provided specifically.',
+				'\n\tProvided forward.onElapsed :', _.forward.onElapsed,
+				'\n\tProvided backward.onElapsed:', _.backward.onElapsed
+			);
+
+		} else {
+
+			var _viewportWidth = this.movie.stage.viewportWidthUnscaled;
+
+			if (_ot.f.providedByNumber && _ot.b.providedByString) {
+				_ot.b.number = _ot.f.number + _viewportWidth/2;
+			}
+
+			if (_ot.f.providedByString && _ot.b.providedByNumber) {
+				_ot.f.number = _ot.b.number - _viewportWidth/2;
+			}
+
+		}
+
+		_ot.f.ontrigger = undefined;
+		_ot.b.ontrigger = undefined;
+
+		if (_.forward.actionId)  _ot.f.ontrigger = actor.actions[_.forward.actionId].bind(actor) ;
+		if (_.backward.actionId) _ot.b.ontrigger = actor.actions[_.backward.actionId].bind(actor);
+
+		if (_ot.f.provided && !_ot.f.ontrigger) {
+			_ot.ok = false;
+			e(
+				'Invalid <forward.actionId> for <MovieActionTrigger> object.',
+				'\n\tProvided forward.actionId :', _.forward.actionId
+			);
+		}
+
+		if (_ot.b.provided && !_ot.b.ontrigger) {
+			_ot.ok = false;
+			e(
+				'Invalid <backward.actionId> for <MovieActionTrigger> object.',
+				'\n\tProvided backward.actionId:', _.backward.actionId
+			);
+		}
+
+
+
+		if (__debugActionTriggerStack__) l('MovieActionTrigger:\n\t_ot', _ot);
+
+
+
+		var _actionName = !!_.name ? _.name : '';
+		_oo.name = actor.name+'   '+_actionName;
+
+		var _newBDTrigger = undefined;
+		if (_ot.ok) {
+
+			if (_ot.f.provided) {
+				_oo.forward.triggerValue  = _ot.f.number;
+				_oo.forward.observeValue  = this.movie.triggerActionsObserveValue.bind(this.movie);
+				_oo.forward.options.ontrigger  = _ot.f.ontrigger;
+			}
+
+			if (_ot.b.provided) {
+				_oo.backward.triggerValue = _ot.b.number;
+				_oo.backward.observeValue = this.movie.triggerActionsObserveValue.bind(this.movie);
+				_oo.backward.options.ontrigger = _ot.b.ontrigger;
+			}
+
+
+
+			if (__debugActionTriggerStack__) l('\t_oo', _oo);
+
+			_newBDTrigger = new WLCBidirectionalTrigger( 
+				this.movie.triggerActionsObserveDirection.bind(this.movie),
+				_oo,
+				__debugActionTriggerStack__
+			);
+			// if (__debugActionTriggerStack__) l(_newBDTrigger);
+
+
+
+			_ot.ok = _ot.ok && !!_newBDTrigger;
+		}
+
+		if (!_ot.ok) {
+			throw 'Fail to create <MovieActionTrigger> object.';
+			// return undefined;
+		}
+
+		this.trigger = _newBDTrigger;
+	}
+
+	_init.call(this);
+} // CLASS:MovieActionTrigger
 
 
 
@@ -1103,13 +1427,13 @@ function Movie(stage, options) {
 	}
 
 	this.triggerActionsObserveDirection = function () {
-		// l(this.isPlayingForward);
+		// l(this.isPlayingForward, '\t\tThis is <Moive>:', this instanceof Movie);
 		return this.isPlayingForward;
 	}
 
 	this.triggerActionsObserveValue = function () {
-		 // l(this.elapsed);
-		 return this.elapsed;
+		// l(this.stage.elapsedUnscaled, '\t\tThis is <Moive>:', this instanceof Movie);
+		return this.stage.elapsedUnscaled;
 	}
 
 	this.defineActionForActor = function (actorName, actionName, actionHandler) {
@@ -1117,7 +1441,12 @@ function Movie(stage, options) {
 	}
 
 	this.defineActionTrigger = function (actorName, options) {
-		var _action = new MovieActionTrigger(this, this.anyActor(actorName), options);
+		var __debugActionTriggerStack__ = false; // actorName === 's5-all-wifi-spots';
+		if (__debugActionTriggerStack__) {
+			l('\n\n\nMovie.defineActionTrigger:\n\toptions', options);
+		}
+
+		var _action = new MovieActionTrigger(this, this.anyActor(actorName), options, __debugActionTriggerStack__);
 		if (_action) {
 			this.actionTriggers.push(_action);
 			return _action;
@@ -1202,203 +1531,3 @@ function Movie(stage, options) {
 
 	this.config();
 } // CLASS:Movie
-
-
-
-
-function MovieActionTrigger(movie, actor, options) {
-	// movie:						<object of CLASS:Movie>
-	// actor:						<object of CLASS:Actor or CLASS:VirtualActor>
-
-	if (!(movie instanceof Movie) ) {
-		e('Invalid movie for new <MovieActionTrigger>.', '\n\tProvided movie:', movie);
-		return undefined;
-	}
-
-	if (!(actor instanceof Actor) && !(actor instanceof VirtualActor) ) {
-		e('Invalid Actor\/VirtualActor for a MovieActionTrigger.', '\n\tProvided Actor/VirtualActor:', actor);
-		return undefined;
-	}
-
-	this.movie = movie;
-	this.actor = actor;
-	this.trigger = undefined;
-
-	Object.defineProperty(this, 'ontrigger', {
-		get: function() { return this.trigger.ontrigger; },
-		set: function(input) { this.trigger.ontrigger = input; }
-	});
-	Object.defineProperty(this, 'ontriggerforward', {
-		get: function() { return this.trigger.forwardTrigger.ontrigger; },
-		set: function(input) { this.trigger.forwardTrigger.ontrigger = input; }
-	});
-	Object.defineProperty(this, 'ontriggerbackward', {
-		get: function() { return this.trigger.backwardTrigger.ontrigger; },
-		set: function(input) { this.trigger.backwardTrigger.ontrigger = input; }
-	});
-
-
-	this.tryTrigger = function () {
-		return this.trigger.tryTrigger();
-	}
-
-	function _init () {
-		// options.forward.onElapsed:		NaN|<Valid Number>|'enabled'|'yes'|'auto';
-		// options.backward.onElapsed:		NaN|<Valid Number>|'enabled'|'yes'|'auto';
-		//
-		//									<Valid Number>:
-		//										the number value
-		//									NaN:
-		//										disable the trigger
-		//
-		//									'enabled':
-		//									'yes':
-		//									'auto':
-		//										autoBackward = forward.onElapsed + viewportWidthUnscaled/2
-		//										autoForward = backward.onElapsed - viewportWidthUnscaled/2
-		//
-		// options.forward.actionId:		<string>; default: '';
-		// options.backward.actionId:		<string>; default: '';
-
-		var _ = options || {};
-			_.forward  = _.forward  || {};
-			_.backward = _.backward || {};
-			_.forward.options  = _.forward.options  || {};
-			_.backward.options = _.backward.options || {};
-
-		var _ot = { ok: true, f: {}, b: {} };
-			// options Temp
-
-		var _oo = { // options organized
-
-			isDisabled:					_.isDisabled,
-			summaryCountLimit:			_.summaryCountLimit,
-
-			forward: {
-				// triggerValue:		to be decided,
-				// observeValue:		to be decided,
-				exameValueForTrigger:	_.forward.exameValueForTrigger,		// maybe undefined but its ok
-				exameValueForReset:		_.forward.exameValueForReset,		// maybe undefined but its ok
-				options: {
-					isDisabled:			_.forward.options.isDisabled,		// maybe undefined but its ok
-					countLimit:			_.forward.options.countLimit,		// maybe undefined but its ok
-					autoResetAllowed:	_.forward.options.autoResetAllowed	// maybe undefined but its ok
-					// ontrigger:		to be decided
-				}
-			},
-
-			backward: {
-				// triggerValue:		to be decided,
-				// observeValue:		to be decided,
-				exameValueForTrigger:	_.forward.exameValueForTrigger,		// maybe undefined but its ok
-				exameValueForReset:		_.forward.exameValueForReset,		// maybe undefined but its ok
-				options: {
-					isDisabled:			_.forward.options.isDisabled,		// maybe undefined but its ok
-					countLimit:			_.forward.options.countLimit,		// maybe undefined but its ok
-					autoResetAllowed:	_.forward.options.autoResetAllowed	// maybe undefined but its ok
-					// ontrigger:		to be decided
-				}
-			}
-		};
-		
-
-		// Number(null) is 0
-		_ot.f.number = _.forward.onElapsed   === null ? NaN : Number(_.forward.onElapsed);
-		_ot.f.string = String(_.forward.onElapsed).toLowerCase();
-
-		_ot.b.number = _.backward.onElapsed  === null ? NaN : Number(_.backward.onElapsed);
-		_ot.b.string = String(_.backward.onElapsed).toLowerCase();
-
-		_ot.f.providedByString = _ot.f.string === 'auto' || _ot.f.string === 'yes' || _ot.f.string === 'enabled';
-		_ot.b.providedByString = _ot.b.string === 'auto' || _ot.b.string === 'yes' || _ot.b.string === 'enabled';
-
-		_ot.f.providedByNumber = !isNaN(_ot.f.number);
-		_ot.b.providedByNumber = !isNaN(_ot.b.number);
-
-		_ot.f.provided = _ot.f.providedByNumber || _ot.f.providedByString;
-		_ot.b.provided = _ot.b.providedByNumber || _ot.b.providedByString;
-
-		if (!_ot.f.providedByNumber && !_ot.b.providedByNumber) {
-
-			_ot.ok = false;
-			e(
-				this.actor,
-				'\n\tNeither forward trigger nor backward trigger is provided specifically.',
-				'\n\tProvided forward.onElapsed :', _.forward.onElapsed,
-				'\n\tProvided backward.onElapsed:', _.backward.onElapsed
-			);
-
-		} else {
-
-			var _viewportWidth = this.movie.stage.viewportWidthUnscaled;
-
-			if (_ot.f.providedByNumber && _ot.b.providedByString) {
-				_ot.b.number = _ot.f.number + _viewportWidth/2;
-			}
-
-			if (_ot.f.providedByString && _ot.b.providedByNumber) {
-				_ot.f.number = _ot.b.number - _viewportWidth/2;
-			}
-
-		}
-
-		_ot.f.ontrigger = undefined;
-		_ot.b.ontrigger = undefined;
-
-		if (_.forward.actionId)  _ot.f.ontrigger = actor.actions[_.forward.actionId] ;
-		if (_.backward.actionId) _ot.b.ontrigger = actor.actions[_.backward.actionId];
-
-		if (_ot.f.provided && !_ot.f.ontrigger) {
-			_ot.ok = false;
-			e(
-				'Invalid <forward.actionId> for <MovieActionTrigger> object.',
-				'\n\tProvided forward.actionId :', _.forward.actionId
-			);
-		}
-
-		if (_ot.b.provided && !_ot.b.ontrigger) {
-			_ot.ok = false;
-			e(
-				'Invalid <backward.actionId> for <MovieActionTrigger> object.',
-				'\n\tProvided backward.actionId:', _.backward.actionId
-			);
-		}
-
-		// l('_ot', _ot);
-		var _newBDTrigger = undefined;
-		if (_ot.ok) {
-
-			if (_ot.f.provided) {
-				_oo.forward.triggerValue  = _ot.f.number;
-				_oo.forward.observeValue  = this.movie.triggerActionsObserveValue;
-				_oo.forward.options.ontrigger  = _ot.f.ontrigger;
-			}
-
-			if (_ot.b.provided) {
-				_oo.backward.triggerValue = _ot.b.number;
-				_oo.backward.observeValue = this.movie.triggerActionsObserveValue;
-				_oo.backward.options.ontrigger = _ot.b.ontrigger;
-			}
-
-			// l('_oo', _oo);
-
-			_newBDTrigger = new WLCBidirectionalTrigger( 
-				this.movie.triggerActionsObserveDirection,
-				_oo
-			);
-			// l(_newBDTrigger);
-			_ot.ok = _ot.ok && !!_newBDTrigger;
-		}
-
-		// l('_ot', _ot);
-
-		if (!_ot.ok) {
-			throw 'Fail to create <MovieActionTrigger> object.';
-			// return undefined;
-		}
-
-		this.trigger = _newBDTrigger;
-	}
-
-	_init.call(this);
-} // CLASS:MovieActionTrigger
