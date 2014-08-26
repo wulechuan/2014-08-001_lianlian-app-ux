@@ -771,4 +771,440 @@ function WLCWebsite(wlcJS) {
 			return true;
 		} // CLASS:PopupWindow
 	});
+
+	this.WLCFlipoverModule = WLCFlipoverModule;
+
+
+	function WLCFlipoverModule(rootElement, initOptions) {
+
+		if (!wlcJS.domTools.isDom(rootElement)) {
+			e('Invalid element for the rootElement of a {popupWindow} object.');
+			return undefined;
+		}
+
+		var _thisFlipoverModule = {
+			logName: 'flipover "'+rootElement.id+'"',
+			rootElement: rootElement,
+			sidesElements: [],
+
+			lastSideId: 0,
+			currentSideId: 0,
+			comingSideId: 0,
+
+			lastSide: undefined,
+			currentSide: undefined,
+			comingSide: undefined,
+
+			nextButtons: [],
+			prevButtons: [],
+			toggleButtons: [],
+
+			playReversedAnimationOnGoingNext: false,
+			lastAnimationWasReversed: true,
+
+			endedAnimationsCount: 0,
+
+			config: function (options, allowWarning) { _config.call(this, options, allowWarning); },
+
+			addPrevButtons: function (elementsArray, allowWarning) {
+				return _addButtonsToArray.call(this, elementsArray, 'prevButtons', allowWarning);
+			},
+			addNextButtons: function (elementsArray, allowWarning) {
+				return _addButtonsToArray.call(this, elementsArray, 'nextButtons', allowWarning);
+			},
+			addToggleButtons: function (elementsArray, allowWarning) {
+				return _addButtonsToArray.call(this, elementsArray, 'toggleButtons', allowWarning);
+			},
+			removePrevButtons: function (elementsArray) {
+				return _removeButtonsFromArray.call(this, elementsArray, 'prevButtons');
+			},
+			removeNextButtons: function (elementsArray) {
+				return _removeButtonsFromArray.call(this, elementsArray, 'nextButtons');
+			},
+			removeToggleButtons: function (elementsArray) {
+				return _removeButtonsFromArray.call(this, elementsArray, 'toggleButtons');
+			},
+			clearPrevButtons: function () { _clearButtonsInArray.call(this, 'prevButtons'); },
+			clearNextButtons: function () { _clearButtonsInArray.call(this, 'nextButtons'); },
+			clearToggleButtons: function () { _clearButtonsInArray.call(this, 'toggleButtons'); },
+
+			prev: function () {
+				_flipAllSidesElements.call(this, !this.playReversedAnimationOnGoingNext);
+			},
+			next: function () {
+				_flipAllSidesElements.call(this, this.playReversedAnimationOnGoingNext);
+			},
+			toggle: function () {
+				_flipAllSidesElements.call(this, !this.lastAnimationWasReversed);
+			},
+
+			onprevstart:	function ()			{ /*l('on prev start',	this.currentSideId);*/ },
+			onprevend:		function (event)	{ /*l('on prev end',		this.currentSideId);*/ },
+
+			onnextstart:	function ()			{ /*l('on next start',	this.currentSideId);*/ },
+			onnextend:		function (event)	{ /*l('on next end',		this.currentSideId);*/ },
+
+			onflipstart:	function () 		{ /*l('on flip start',	this.currentSideId);*/ },
+			onflipend:		function (event)	{ /*l('on flip end',		this.currentSideId);*/ }
+		};
+
+	
+		return (function () { // initialize
+			this.rootElement.setAttribute('wa-flipover-root', '');
+			this.sidesElements = Array.prototype.slice.apply(
+				this.rootElement.querySelectorAll('[wa-flipover-side]')
+			);
+
+			if (this.sidesElements.length < 2) return undefined;
+
+			this.currentSide = this.sidesElements[0];
+
+			Object.defineProperty(this, 'buttonsWhoGoPrev', {
+				get: function () { return this.prevButtons; }
+			});
+
+			Object.defineProperty(this, 'buttonsWhoGoNext', {
+				get: function () { return this.nextButtons; }
+			});
+
+			Object.defineProperty(this, 'buttonsWhoToggleMe', {
+				get: function () { return this.toggleButtons; }
+			});
+
+			this.config(initOptions, false);
+
+			this.sidesElements.forEach(function (element, i, allElements) {
+				var _sideId = parseInt(element.getAttribute('wa-flipover-side'));
+
+				var eventName = !!element.webkitAnimationEnd ? 'webkitAnimationEnd' : 'webkitAnimationEnd';
+				element.addEventListener(eventName, _onAnyAnimationEnd.bind(_thisFlipoverModule));
+
+				if (isNaN(_sideId)) {
+					_sideId = i;
+					element.setAttribute('wa-flipover-side', String(i));
+				}
+
+				if (_sideId!==_thisFlipoverModule.currentSideId) {
+					element.setAttribute('wa-flipover-shown', 'no');
+					element.style.display = 'none';
+				} else {
+					element.setAttribute('wa-flipover-shown', 'yes');
+					// element.style.display = '';
+					element.className = 'flipover-forwards-to-show-front-face';
+				}
+			});
+
+			return this;
+		}).apply(_thisFlipoverModule);
+
+
+
+
+
+
+
+		function _config(options, allowWarning) {
+			var _ = options || {};
+			allowWarning = (typeof allowWarning === 'undefined') || !!allowWarning;
+
+			// this.clearPrevButtons();
+			// this.clearNextButtons();
+			// this.clearToggleButtons();
+			this.addPrevButtons(_.prevButtons, allowWarning);
+			this.addNextButtons(_.nextButtons, allowWarning);
+			this.addToggleButtons(_.toggleButtons, allowWarning);
+
+			if (_.hasOwnProperty('reverseOnGoingNext'))
+				this.playReversedAnimationOnGoingNext = !!_.reverseOnGoingNext;
+
+			if (_.hasOwnProperty('currentSideId')) {
+				_.currentSideId = parseInt(_.currentSideId);
+				if (!isNaN(_.currentSideId) && _.currentSideId >=0 && _.currentSideId < this.sidesElements.length) {
+					this.currentSideId = _.currentSideId;
+				}
+			}
+
+			if (typeof _.onprevstart	=== 'function') this.onprevstart	= _.onprevstart;
+			if (typeof _.onprevend		=== 'function') this.onprevend		= _.onprevend;
+
+			if (typeof _.onnextstart	=== 'function') this.onnextstart	= _.onnextstart;
+			if (typeof _.onnextend		=== 'function') this.onnextend		= _.onnextend;
+
+			if (typeof _.onflipstart	=== 'function') this.onflipstart	= _.onflipstart;
+			if (typeof _.onflipend		=== 'function') this.onflipend		= _.onflipend;
+
+			if (allowWarning && this.nextButtons.length === 0 && this.toggleButtons.length === 0 && !this.options.autoHide) {
+				w(this.logName+':\n\tIt hasn\'t any prev buttons, or next buttons, or toggle buttons.\n\tBeing a NON auto-flipping module, it could never be flipped interatively.\n\tAlthough it can still flip programmatically.\n');
+			}
+		}
+
+
+
+		function _clearButtonsInArray(arrayName) {
+			var a = this[arrayName];
+			var oldLength = a.length;
+			
+			if (a===this.prevButtons) _detachAllPrevButtons.call(this);
+			if (a===this.nextButtons) _detachAllNextButtons.call(this);
+			if (a===this.toggleButtons) _detachAllToggleButtons.call(this);
+
+			a = [];
+			if (oldLength > 0) {
+				w('The array "'+arrayName+'" of '+this.logName+' has been cleared! From now on, there is nothing inside this array.');
+			}
+		}
+
+		function _addButtonsToArray(elementsArray, targetArrayName, allowWarning) {
+			var _addedElements = [];
+			if ( typeof elementsArray !== 'object' ) return _addedElements;
+
+			elementsArray = wlcJS.arraylize(elementsArray);
+			allowWarning = (typeof allowWarning === 'undefined') || !!allowWarning;
+
+			var _allPossibleArrayNames = [
+				'prevButtons',
+				'nextButtons',
+				'toggleButtons'
+			];
+
+			var _targetArray = this[targetArrayName];
+			targetArrayName = '"'+targetArrayName+'"';
+
+			for (var i = 0; i < elementsArray.length; i++) {
+				var element = elementsArray[i];
+				if ( wlcJS.domTools.isDom(element) ) {
+					var _alreadyInOneOfTheArrays = false;
+					var _containingArrayName = '';
+
+					for (var j = 0; j < _allPossibleArrayNames.length; j++) {
+						var _arrayName = _allPossibleArrayNames[j];
+						var _array = this[_arrayName];
+						if (_array.has(element)) {
+							_alreadyInOneOfTheArrays = true;
+							_containingArrayName = '"'+_arrayName+'"';
+							break;
+						}
+					};
+
+					if (!_alreadyInOneOfTheArrays) {
+						l(this.logName+': adding ', element, 'to', targetArrayName);
+						_targetArray.push( element );
+						_addedElements.push( element );
+					} else {
+						if (allowWarning) {
+							w(
+								 'Element already in array '+_containingArrayName+'. Ignored.'
+								+'\nThe element metioned is', element, '\n'
+							);
+						}
+					}
+				} else {
+					if (allowWarning) {
+						w(
+							 'Invalid element is met when trying to add buttons to '
+							+targetArrayName+' for '+this.logName+'. Ignored.'
+							+'\nThe element metioned is', element, '\n'
+						);
+					}
+					continue;
+				}
+			};
+
+			if (_targetArray===this.prevButtons) {
+				_wireUpPrevButtons.call(this, _addedElements);
+			}
+
+			if (_targetArray===this.nextButtons) {
+				_wireUpNextButtons.call(this, _addedElements);
+			}
+
+			if (_targetArray===this.toggleButtons) {
+				_wireUpToggleButtons.call(this, _addedElements);
+			}
+
+			return _addedElements;
+		}
+
+		function _removeButtonsFromArray(elementsArray, targetArray) {
+			var removedElements = [];
+
+			if ( typeof elementsArray === 'undefined' || elementsArray === null ) {
+				return removedElements;
+			}
+
+			elementsArray = wlcJS.arraylize(elementsArray);
+
+			for (var i = 0; i < elementsArray.length; i++) {
+				var element = elementsArray[ i ];
+				if ( wlcJS.domTools.isDom(element) ) {
+					if (targetArray===this.prevButtons) _detachOnePrevButton.call(this,element);
+					if (targetArray===this.nextButtons) _detachOneNextButton.call(this,element);
+					if (targetArray===this.toggleButtons) _detachOneToggleButton.call(this,element);
+					targetArray.del(element);
+					removedElements.push(element);
+				} else {
+					w( 'Invalid element met when trying to remove buttons for '+this.logName+'. Ignored.' );
+					continue;
+				}
+			};
+			return removedElements;
+		}
+
+
+
+		function _wireUpPrevButtons(elementsArray) {
+			for (var i = 0; i < elementsArray.length; i++) {
+				var element = elementsArray[i];
+
+				$(element).on('click'+'.go-prev-of-flipover-'+_thisFlipoverModule.rootElement.id,
+					function (e) {
+						e.preventDefault();
+						e.stopPropagation();
+						_thisFlipoverModule.prev();
+					}
+				);
+			};
+		}
+
+		function _wireUpNextButtons(elementsArray) {
+			for (var i = 0; i < elementsArray.length; i++) {
+				var element = elementsArray[i];
+
+				$(element).on('click'+'.go-next-of-flipover-'+_thisFlipoverModule.rootElement.id,
+					function (e) {
+						e.preventDefault();
+						e.stopPropagation();
+						_thisFlipoverModule.next();
+					}
+				);
+			};
+		}
+
+		function _wireUpToggleButtons(elementsArray) {
+			for (var i = 0; i < elementsArray.length; i++) {
+				var element = elementsArray[i];
+
+				$(element).on('click'+'.toggle-flipover-'+_thisFlipoverModule.rootElement.id,
+					function (e) {
+						e.preventDefault();
+						e.stopPropagation();
+						_thisFlipoverModule.toggle();
+					}
+				);
+			};
+		}
+
+
+
+		function _detachOnePrevButton(prevButton) {
+			$(prevButton).off('click'+'.go-prev-of-flipover-'+this.rootElement.id);
+		}
+
+		function _detachOneNextButton(nextButton) {
+			$(nextButton).off('click'+'.go-next-of-flipover-'+this.rootElement.id);
+		}
+
+		function _detachOneToggleButton(toggleButton) {
+			$(toggleButton).off('click'+'.toggle-flipover-'+this.rootElement.id);
+		}
+
+		function _detachAllPrevButtons() {
+			for (var i = 0; i < this.prevButtons.length; i++) {
+				_detachOnePrevButton.call(this, this.prevButtons[i]);
+			};
+		}
+
+		function _detachAllNextButtons() {
+			for (var i = 0; i < this.nextButtons.length; i++) {
+				_detachOneNextButton.call(this, this.nextButtons[i]);
+			};
+		}
+
+		function _detachAllToggleButtons() {
+			for (var i = 0; i < this.toggleButtons.length; i++) {
+				_detachOneToggleButton.call(this, this.toggleButtons[i]);
+			};
+		}
+
+
+		function _decideComingSideId(isDecrease) {
+			if (isDecrease) {
+				this.comingSideId = this.currentSideId+1;
+				if (this.comingSideId>=this.sidesElements.length) this.comingSideId=0;
+			} else {
+				this.comingSideId = this.currentSideId-1;
+				if (this.comingSideId<0) this.comingSideId=this.sidesElements.length-1;
+			}
+			this.comingSide = this.sidesElements[this.comingSideId];
+		}
+
+		function _updateCurrentSideId() {
+			this.currentSideId = this.comingSideId;
+			this.currentSide = this.sidesElements[this.currentSideId];
+		}
+
+		function _recordCurrentSideIdAsLastOne() {
+			this.lastSideId = this.currentSideId;
+			this.lastSide = this.sidesElements[this.lastSideId];
+		}
+
+		function _flipAllSidesElements(reverse) {
+			this.endedAnimationsCount=0;
+			_decideComingSideId.call(this, reverse);
+
+			this.onflipstart();
+
+			if (this.lastAnimationWasReversed!==this.playReversedAnimationOnGoingNext) {
+				this.onnextstart(event);
+			} else {
+				this.onprevstart(event);
+			}
+
+			this.sidesElements.forEach(function (element, i) {
+				_flipOneSideElement.call(element, reverse, i);
+			});
+
+			this.lastAnimationWasReversed = reverse;
+		}
+
+		function _flipOneSideElement(reverse, i) {
+			var _direction = reverse ? 'backwards' : 'forwards';
+			var _isShown = this.getAttribute('wa-flipover-shown').toLowerCase()==='yes';
+			var _faceToShow = _isShown ? 'back-face' : 'front-face';
+
+			this.style.display = '';
+			this.className = 'flipover-' + _direction + '-to-show-' + _faceToShow;
+			this.setAttribute('wa-flipover-shown', _isShown ? 'no' : 'yes');
+
+			// if (false) {
+			// 	var _d = reverse ? 'forwards' : 'backwards';
+			// 	var _f = _isShown ? 'hide (front to back)' : 'show (back to front)';
+			// 	l(
+			// 		i+':',
+			// 		// '\tdirection: '+_d,
+			// 		'\t', _f
+			// 	);
+			// }
+		}
+
+		function _onAnyAnimationEnd(event) {
+			this.endedAnimationsCount++;
+			if (this.endedAnimationsCount>this.sidesElements.length) {
+				e('weird!');
+			}
+
+			if (this.endedAnimationsCount===this.sidesElements.length) { // all animation ended.
+
+				_recordCurrentSideIdAsLastOne.call(this);
+				_updateCurrentSideId.call(this);
+
+				if (this.lastAnimationWasReversed===this.playReversedAnimationOnGoingNext) {
+					this.onnextend(event);
+				} else {
+					this.onprevend(event);
+				}
+				this.onflipend(event);
+			}
+		}
+	} // CLASS:WLCFlipoverModule
 } // CLASS:WLCWebsite
