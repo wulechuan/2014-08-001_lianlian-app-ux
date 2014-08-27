@@ -1,6 +1,7 @@
 var website = new WLCWebsite(wlcJS);
 
 function WLCWebsite(wlcJS) {
+	_website = this;
 	this.env = (function () {
 
 		// wulechuan@live.com
@@ -572,7 +573,7 @@ function WLCWebsite(wlcJS) {
 				} else {
 					var elementsArray = [].push(elementOrArrayToAdd);
 				}
-				l('_removeButtonsFromArray();');
+				// l('_removeButtonsFromArray();');
 
 				for (var i = 0; i < elementsArray.length; i++) {
 					var element = elementsArray[ i ];
@@ -772,17 +773,17 @@ function WLCWebsite(wlcJS) {
 		} // CLASS:PopupWindow
 	});
 
-	this.WLCFlipoverModule = WLCFlipoverModule;
 
-
-	function WLCFlipoverModule(rootElement, initOptions) {
+	this.FlipoverModule = function (rootElement, initOptions) {
 
 		if (!wlcJS.domTools.isDom(rootElement)) {
-			e('Invalid element for the rootElement of a {popupWindow} object.');
+			e('Invalid element for the rootElement of a {FlipoverModule} object.');
 			return undefined;
 		}
 
 		var _thisFlipoverModule = {
+			disabled: false,
+
 			logName: 'flipover "'+rootElement.id+'"',
 			rootElement: rootElement,
 			sidesElements: [],
@@ -790,6 +791,8 @@ function WLCWebsite(wlcJS) {
 			lastSideId: 0,
 			currentSideId: 0,
 			comingSideId: 0,
+
+			loop: true,
 
 			lastSide: undefined,
 			currentSide: undefined,
@@ -803,6 +806,12 @@ function WLCWebsite(wlcJS) {
 			lastAnimationWasReversed: true,
 
 			endedAnimationsCount: 0,
+
+			autoFlip: false,
+			autoFlipTimeGap: 5000,
+
+			enable:  function () { this.config({ disabled: false }); },
+			disable: function () { this.config({ disabled: true }); },
 
 			config: function (options, allowWarning) { _config.call(this, options, allowWarning); },
 
@@ -839,13 +848,13 @@ function WLCWebsite(wlcJS) {
 			},
 
 			onprevstart:	function ()			{ /*l('on prev start',	this.currentSideId);*/ },
-			onprevend:		function (event)	{ /*l('on prev end',		this.currentSideId);*/ },
+			onprevend:		function (event)	{ /*l('on prev end',	this.currentSideId);*/ },
 
 			onnextstart:	function ()			{ /*l('on next start',	this.currentSideId);*/ },
-			onnextend:		function (event)	{ /*l('on next end',		this.currentSideId);*/ },
+			onnextend:		function (event)	{ /*l('on next end',	this.currentSideId);*/ },
 
 			onflipstart:	function () 		{ /*l('on flip start',	this.currentSideId);*/ },
-			onflipend:		function (event)	{ /*l('on flip end',		this.currentSideId);*/ }
+			onflipend:		function (event)	{ /*l('on flip end',	this.currentSideId);*/ }
 		};
 
 	
@@ -857,26 +866,16 @@ function WLCWebsite(wlcJS) {
 
 			if (this.sidesElements.length < 2) return undefined;
 
+			this.loop = this.sidesElements.length === 2;
+
 			this.currentSide = this.sidesElements[0];
-
-			Object.defineProperty(this, 'buttonsWhoGoPrev', {
-				get: function () { return this.prevButtons; }
-			});
-
-			Object.defineProperty(this, 'buttonsWhoGoNext', {
-				get: function () { return this.nextButtons; }
-			});
-
-			Object.defineProperty(this, 'buttonsWhoToggleMe', {
-				get: function () { return this.toggleButtons; }
-			});
 
 			this.config(initOptions, false);
 
 			this.sidesElements.forEach(function (element, i, allElements) {
 				var _sideId = parseInt(element.getAttribute('wa-flipover-side'));
 
-				var eventName = !!element.webkitAnimationEnd ? 'webkitAnimationEnd' : 'webkitAnimationEnd';
+				var eventName = _website.env.engine.webkit ? 'webkitAnimationEnd' : 'animationend';
 				element.addEventListener(eventName, _onAnyAnimationEnd.bind(_thisFlipoverModule));
 
 				if (isNaN(_sideId)) {
@@ -886,16 +885,17 @@ function WLCWebsite(wlcJS) {
 
 				if (_sideId!==_thisFlipoverModule.currentSideId) {
 					element.setAttribute('wa-flipover-shown', 'no');
-					element.style.display = 'none';
+					// element.style.display = 'none';
+					element.setAttribute('wa-flipover-animation', 'flipover-forwards-to-show-back-face');
 				} else {
 					element.setAttribute('wa-flipover-shown', 'yes');
 					// element.style.display = '';
-					element.className = 'flipover-forwards-to-show-front-face';
+					element.setAttribute('wa-flipover-animation', 'flipover-forwards-to-show-front-face');
 				}
 			});
 
 			return this;
-		}).apply(_thisFlipoverModule);
+		}).call(_thisFlipoverModule);
 
 
 
@@ -914,6 +914,12 @@ function WLCWebsite(wlcJS) {
 			this.addNextButtons(_.nextButtons, allowWarning);
 			this.addToggleButtons(_.toggleButtons, allowWarning);
 
+			if (_.hasOwnProperty('disabled'))
+				this.disabled = !!_.disabled;
+
+			if (_.hasOwnProperty('loop'))
+				this.loop = !!_.loop && this.sidesElements.length > 2;
+
 			if (_.hasOwnProperty('reverseOnGoingNext'))
 				this.playReversedAnimationOnGoingNext = !!_.reverseOnGoingNext;
 
@@ -921,6 +927,16 @@ function WLCWebsite(wlcJS) {
 				_.currentSideId = parseInt(_.currentSideId);
 				if (!isNaN(_.currentSideId) && _.currentSideId >=0 && _.currentSideId < this.sidesElements.length) {
 					this.currentSideId = _.currentSideId;
+				}
+			}
+
+			if (_.hasOwnProperty('autoFlip'))
+				this.autoFlip = !!_.autoFlip;
+
+			if (_.hasOwnProperty('autoFlipTimeGap')) {
+				_.autoFlipTimeGap = Number(_.autoFlipTimeGap);
+				if (!isNaN(_.autoFlipTimeGap) && _.autoFlipTimeGap > 1) {
+					this.autoFlipTimeGap = _.autoFlipTimeGap;
 				}
 			}
 
@@ -933,7 +949,13 @@ function WLCWebsite(wlcJS) {
 			if (typeof _.onflipstart	=== 'function') this.onflipstart	= _.onflipstart;
 			if (typeof _.onflipend		=== 'function') this.onflipend		= _.onflipend;
 
-			if (allowWarning && this.nextButtons.length === 0 && this.toggleButtons.length === 0 && !this.options.autoHide) {
+			if (
+					allowWarning
+				&&	this.prevButtons.length === 0
+				&&	this.nextButtons.length === 0
+				&&	this.toggleButtons.length === 0
+				&&	!this.autoFlip
+			) {
 				w(this.logName+':\n\tIt hasn\'t any prev buttons, or next buttons, or toggle buttons.\n\tBeing a NON auto-flipping module, it could never be flipped interatively.\n\tAlthough it can still flip programmatically.\n');
 			}
 		}
@@ -987,7 +1009,7 @@ function WLCWebsite(wlcJS) {
 					};
 
 					if (!_alreadyInOneOfTheArrays) {
-						l(this.logName+': adding ', element, 'to', targetArrayName);
+						// l(this.logName+': adding ', element, 'to', targetArrayName);
 						_targetArray.push( element );
 						_addedElements.push( element );
 					} else {
@@ -1096,6 +1118,11 @@ function WLCWebsite(wlcJS) {
 
 
 
+		function enableButtonsInArray(array) { array.forEach(function(button) { button.disabled = false; }); }
+		function disableButtonsInArray(array) { array.forEach(function(button) { button.disabled = true; }); }
+
+
+
 		function _detachOnePrevButton(prevButton) {
 			$(prevButton).off('click'+'.go-prev-of-flipover-'+this.rootElement.id);
 		}
@@ -1127,37 +1154,54 @@ function WLCWebsite(wlcJS) {
 		}
 
 
-		function _decideComingSideId(isDecrease) {
-			if (isDecrease) {
-				this.comingSideId = this.currentSideId+1;
-				if (this.comingSideId>=this.sidesElements.length) this.comingSideId=0;
-			} else {
-				this.comingSideId = this.currentSideId-1;
-				if (this.comingSideId<0) this.comingSideId=this.sidesElements.length-1;
+		function _checkIfEitherTerminalIsMet() {
+			var _ternimalMet = { either: false, begin: false, end: false };
+			if (!this.loop) {
+				_ternimalMet.begin = this.currentSideId<1;
+				_ternimalMet.end = this.currentSideId>this.sidesElements.length-2;
+				_ternimalMet.either = _ternimalMet.begin || _ternimalMet.end;
 			}
+			return _ternimalMet;
+		}
+
+		function _decideComingSide(isDecrease) {
+			if (isDecrease) {
+				this.comingSideId = this.currentSideId-1;
+				if (this.loop && this.comingSideId<0) {
+					this.comingSideId=this.sidesElements.length-1;
+				}
+			} else {
+				this.comingSideId = this.currentSideId+1;
+				if (this.loop && this.comingSideId>=this.sidesElements.length) {
+					this.comingSideId=0;
+				}
+			}
+
 			this.comingSide = this.sidesElements[this.comingSideId];
 		}
 
-		function _updateCurrentSideId() {
+		function _updateCurrentSide() {
 			this.currentSideId = this.comingSideId;
 			this.currentSide = this.sidesElements[this.currentSideId];
 		}
 
-		function _recordCurrentSideIdAsLastOne() {
+		function _recordCurrentSideAsLastOne() {
 			this.lastSideId = this.currentSideId;
 			this.lastSide = this.sidesElements[this.lastSideId];
 		}
 
 		function _flipAllSidesElements(reverse) {
+			if (this.disabled) return false;
+
 			this.endedAnimationsCount=0;
-			_decideComingSideId.call(this, reverse);
+			_decideComingSide.call(this, reverse);
 
 			this.onflipstart();
 
-			if (this.lastAnimationWasReversed!==this.playReversedAnimationOnGoingNext) {
-				this.onnextstart(event);
+			if (reverse===this.playReversedAnimationOnGoingNext) {
+				this.onnextstart();
 			} else {
-				this.onprevstart(event);
+				this.onprevstart();
 			}
 
 			this.sidesElements.forEach(function (element, i) {
@@ -1173,7 +1217,7 @@ function WLCWebsite(wlcJS) {
 			var _faceToShow = _isShown ? 'back-face' : 'front-face';
 
 			this.style.display = '';
-			this.className = 'flipover-' + _direction + '-to-show-' + _faceToShow;
+			this.setAttribute('wa-flipover-animation', 'flipover-' + _direction + '-to-show-' + _faceToShow);
 			this.setAttribute('wa-flipover-shown', _isShown ? 'no' : 'yes');
 
 			// if (false) {
@@ -1188,15 +1232,29 @@ function WLCWebsite(wlcJS) {
 		}
 
 		function _onAnyAnimationEnd(event) {
+			// l('_onAnyAnimationEnd');
 			this.endedAnimationsCount++;
 			if (this.endedAnimationsCount>this.sidesElements.length) {
 				e('weird!');
 			}
 
-			if (this.endedAnimationsCount===this.sidesElements.length) { // all animation ended.
+			if (this.endedAnimationsCount===this.sidesElements.length) { // all animations ended.
 
-				_recordCurrentSideIdAsLastOne.call(this);
-				_updateCurrentSideId.call(this);
+				_recordCurrentSideAsLastOne.call(this);
+				_updateCurrentSide.call(this);
+				var _ternimalMet = _checkIfEitherTerminalIsMet.call(this);
+
+				if (_ternimalMet.begin) {
+					disableButtonsInArray(this.prevButtons);
+				} else {
+					enableButtonsInArray(this.prevButtons);
+				}
+
+				if (_ternimalMet.end) {
+					disableButtonsInArray(this.nextButtons);
+				} else {
+					enableButtonsInArray(this.nextButtons);
+				}
 
 				if (this.lastAnimationWasReversed===this.playReversedAnimationOnGoingNext) {
 					this.onnextend(event);
@@ -1204,7 +1262,16 @@ function WLCWebsite(wlcJS) {
 					this.onprevend(event);
 				}
 				this.onflipend(event);
+
+				if (this.autoFlip) {
+					window.setTimeout(
+						function () {
+							_thisFlipoverModule.next();
+						},
+						this.autoFlipTimeGap
+					);
+				}
 			}
 		}
-	} // CLASS:WLCFlipoverModule
+	} // CLASS:FlipoverModule
 } // CLASS:WLCWebsite
