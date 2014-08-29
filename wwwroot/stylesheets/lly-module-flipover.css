@@ -1,0 +1,84 @@
+	@-webkit-keyframes wak-flipover-forwards-to-show-front-face {
+		0% { -webkit-transform: rotateX(180deg); }
+		to { -webkit-transform: rotateX(360deg); }
+	}
+
+	@keyframes wak-flipover-forwards-to-show-front-face {
+		0% { transform: rotateX(180deg); }
+		to { transform: rotateX(360deg); }
+	}
+
+	@-webkit-keyframes wak-flipover-forwards-to-show-back-face {
+		0% { -webkit-transform: rotateX(0deg); }
+		to { -webkit-transform: rotateX(180deg); }
+	}
+
+	@keyframes wak-flipover-forwards-to-show-back-face {
+		0% { transform: rotateX(0deg); }
+		to { transform: rotateX(180deg); }
+	}
+
+
+
+
+
+	@-webkit-keyframes wak-flipover-backwards-to-show-front-face {
+		0% { -webkit-transform: rotateX(180deg); }
+		to { -webkit-transform: rotateX(0deg); }
+	}
+
+	@keyframes wak-flipover-backwards-to-show-front-face {
+		0% { transform: rotateX(180deg); }
+		to { transform: rotateX(0deg); }
+	}
+
+	@-webkit-keyframes wak-flipover-backwards-to-show-back-face {
+		0% { -webkit-transform: rotateX(360deg); }
+		to { -webkit-transform: rotateX(180deg); }
+	}
+
+	@keyframes wak-flipover-backwards-to-show-back-face {
+		0% { transform: rotateX(360deg); }
+		to { transform: rotateX(180deg); }
+	}
+
+
+
+
+	*[wa-flipover-root] {
+		-webkit-perspective: 20rem;
+		perspective: 20rem;
+	}
+
+	*[wa-flipover-side] {
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		left: 0;
+		top: 0;
+		-webkit-backface-visibility: hidden;
+		        backface-visibility: hidden;
+	}
+
+
+
+	*[wa-flipover-animation='flipover-forwards-to-show-front-face'] {
+		-webkit-animation: wak-flipover-forwards-to-show-front-face 0.5s ease-in-out both;
+		        animation: wak-flipover-forwards-to-show-front-face 0.5s ease-in-out both;
+		z-index: 1;
+	}
+	*[wa-flipover-animation='flipover-forwards-to-show-back-face'] { /* to show back face in fact means to hide */
+		-webkit-animation: wak-flipover-forwards-to-show-back-face 0.5s ease-in-out both;
+		        animation: wak-flipover-forwards-to-show-back-face 0.5s ease-in-out both;
+		z-index: 0;
+	}
+	*[wa-flipover-animation='flipover-backwards-to-show-front-face'] {
+		-webkit-animation: wak-flipover-backwards-to-show-front-face 0.5s ease-in-out both;
+		        animation: wak-flipover-backwards-to-show-front-face 0.5s ease-in-out both;
+		z-index: 1;
+	}
+	*[wa-flipover-animation='flipover-backwards-to-show-back-face'] { /* to show back face in fact means to hide */
+		-webkit-animation: wak-flipover-backwards-to-show-back-face 0.5s ease-in-out both;
+		        animation: wak-flipover-backwards-to-show-back-face 0.5s ease-in-out both;
+		z-index: 0;
+	}

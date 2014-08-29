@@ -1274,4 +1274,449 @@ function WLCWebsite(wlcJS) {
 			}
 		}
 	} // CLASS:FlipoverModule
+
+
+	this.ArticlesList = function(rootElement, itemsElements, initOptions) {
+
+		if (!wlcJS.domTools.isDomElement(rootElement)) {
+			e('Invalid element for the rootElement of a <ArticlesList> object.');
+			return undefined;
+		}
+
+		var _thisArticlesList = {
+			logName: 'ArticlesList "'+rootElement.id+'"',
+			rootElement: rootElement,
+			itemsElements: [],
+
+			lastItemId: 0,
+			currentItemId: 0,
+			comingItemId: 0,
+
+			loop: false,
+
+			lastItem: undefined,
+			currentItem: undefined,
+			comingItem: undefined,
+
+			nextButtons: [],
+			prevButtons: [],
+			toggleButtons: [],
+
+			autoShift: false,
+			autoShiftTimeGap: 5000,
+
+			config: function (options, allowWarning) { _config.call(this, options, allowWarning); },
+
+			addPrevButtons: function (elementsArray, allowWarning) {
+				return _addButtonsToArray.call(this, elementsArray, 'prevButtons', allowWarning);
+			},
+			addNextButtons: function (elementsArray, allowWarning) {
+				return _addButtonsToArray.call(this, elementsArray, 'nextButtons', allowWarning);
+			},
+			removePrevButtons: function (elementsArray) {
+				return _removeButtonsFromArray.call(this, elementsArray, 'prevButtons');
+			},
+			removeNextButtons: function (elementsArray) {
+				return _removeButtonsFromArray.call(this, elementsArray, 'nextButtons');
+			},
+			clearPrevButtons: function () { _clearButtonsInArray.call(this, 'prevButtons'); },
+			clearNextButtons: function () { _clearButtonsInArray.call(this, 'nextButtons'); },
+
+			prev: function () { _shift.call(this, true); },
+			next: function () { _shift.call(this, false); },
+			shiftTo: function (itemId) { _shiftTo.call(this, itemId); },
+
+			onprevstart:	function ()	{ /*l('on prev start',	this.currentItemId);*/ },
+			onprevend:		function ()	{ /*l('on prev end',	this.currentItemId);*/ },
+
+			onnextstart:	function ()	{ /*l('on next start',	this.currentItemId);*/ },
+			onnextend:		function ()	{ /*l('on next end',	this.currentItemId);*/ },
+
+			onshiftstart:	function () { /*l('on shift start',	this.currentItemId);*/ },
+			onshiftend:		function ()	{ /*l('on shift end',	this.currentItemId);*/ }
+		};
+
+	
+		return (function () { // initialize
+			itemsElements = wlcJS.arraylize(itemsElements);
+			for (var i = 0; i < itemsElements.length; i++) {
+				var _item = itemsElements[i];
+				if (!wlcJS.domTools.isDomElement(_item)) {
+					w(
+						'Invalid item met when collecting items for '+this.logName+'. Ignored.',
+						'\n\tThe metioned item is ['+i+']', _item
+					);
+					continue;
+				}
+				this.itemsElements.push( _item );
+			}
+
+			this.currentItemId = 0;
+			this.currentItem = this.itemsElements[0];
+			this.loop = false; // this.itemsElements.length === 2;
+
+			this.config(initOptions, false);
+
+			this.itemsElements.forEach(function (element, i, allElements) {
+				// var animationEventName = !!element.webkitAnimationEnd ? 'webkitAnimationEnd' : 'animationend';
+				// var transitionEventName = !!element.webkitTransitionEnd ? 'webkitTransitionEnd' : 'transitionend';
+				// element.addEventListener(animationEventName, _onAnyAnimationEnd.bind(_thisArticlesList));
+				// element.addEventListener(transitionEventName, _onAnyAnimationEnd.bind(_thisArticlesList));
+				element.addEventListener('click', function() { _thisArticlesList.shiftTo(i); });
+			});
+
+			if (typeof this.comingItem==='undefined') {
+				this.shiftTo(0);
+			}
+
+			return this;
+		}).call(_thisArticlesList);
+
+
+
+
+
+
+
+		function _config(options, allowWarning) {
+			var _ = options || {};
+			allowWarning = (typeof allowWarning === 'undefined') || !!allowWarning;
+
+			// this.clearPrevButtons();
+			// this.clearNextButtons();
+			this.addPrevButtons(_.prevButtons, allowWarning);
+			this.addNextButtons(_.nextButtons, allowWarning);
+
+			if (_.hasOwnProperty('currentItemId')) {
+				// l(_.currentItemId);
+				this.shiftTo(_.currentItemId);
+			}
+
+			if (_.hasOwnProperty('loop'))
+				this.loop = !!_.loop;
+
+			if (_.hasOwnProperty('autoShift'))
+				this.autoShift = !!_.autoShift;
+
+			if (_.hasOwnProperty('autoShiftTimeGap')) {
+				_.autoShiftTimeGap = Number(_.autoShiftTimeGap);
+				if (!isNaN(_.autoShiftTimeGap) && _.autoShiftTimeGap > 1) {
+					this.autoShiftTimeGap = _.autoShiftTimeGap;
+				}
+			}
+
+			if (typeof _.onprevstart	=== 'function') this.onprevstart	= _.onprevstart;
+			if (typeof _.onprevend		=== 'function') this.onprevend		= _.onprevend;
+
+			if (typeof _.onnextstart	=== 'function') this.onnextstart	= _.onnextstart;
+			if (typeof _.onnextend		=== 'function') this.onnextend		= _.onnextend;
+
+			if (typeof _.onshiftstart	=== 'function') this.onshiftstart	= _.onshiftstart;
+			if (typeof _.onshiftend		=== 'function') this.onshiftend		= _.onshiftend;
+
+			if (
+					allowWarning
+				&&	this.prevButtons.length === 0
+				&&	this.nextButtons.length === 0
+				&&	!this.autoShift
+			) {
+				w(this.logName+':\n\tIt hasn\'t any prev buttons, or next buttons, or toggle buttons.\n\tBeing a NON auto-shifting module, it could never be shifted interatively.\n\tAlthough it can still shift programmatically.\n');
+			}
+		}
+
+
+
+		function _clearButtonsInArray(arrayName) {
+			var a = this[arrayName];
+			var oldLength = a.length;
+			
+			if (a===this.prevButtons) _detachAllPrevButtons.call(this);
+			if (a===this.nextButtons) _detachAllNextButtons.call(this);
+			if (a===this.toggleButtons) _detachAllToggleButtons.call(this);
+
+			a = [];
+			if (oldLength > 0) {
+				w('The array "'+arrayName+'" of '+this.logName+' has been cleared! From now on, there is nothing inside this array.');
+			}
+		}
+
+		function _addButtonsToArray(elementsArray, targetArrayName, allowWarning) {
+			var _addedElements = [];
+			if ( typeof elementsArray !== 'object' ) return _addedElements;
+
+			elementsArray = wlcJS.arraylize(elementsArray);
+			allowWarning = (typeof allowWarning === 'undefined') || !!allowWarning;
+
+			var _allPossibleArrayNames = [
+				'prevButtons',
+				'nextButtons'
+			];
+
+			var _targetArray = this[targetArrayName];
+			targetArrayName = '"'+targetArrayName+'"';
+
+			for (var i = 0; i < elementsArray.length; i++) {
+				var element = elementsArray[i];
+				if ( wlcJS.domTools.isDom(element) ) {
+					var _alreadyInOneOfTheArrays = false;
+					var _containingArrayName = '';
+
+					for (var j = 0; j < _allPossibleArrayNames.length; j++) {
+						var _arrayName = _allPossibleArrayNames[j];
+						var _array = this[_arrayName];
+						if (_array.has(element)) {
+							_alreadyInOneOfTheArrays = true;
+							_containingArrayName = '"'+_arrayName+'"';
+							break;
+						}
+					};
+
+					if (!_alreadyInOneOfTheArrays) {
+						// l(this.logName+': adding ', element, 'to', targetArrayName);
+						_targetArray.push( element );
+						_addedElements.push( element );
+					} else {
+						if (allowWarning) {
+							w(
+								 'Element already in array '+_containingArrayName+'. Ignored.'
+								+'\nThe element metioned is', element, '\n'
+							);
+						}
+					}
+				} else {
+					if (allowWarning) {
+						w(
+							 'Invalid element is met when trying to add buttons to '
+							+targetArrayName+' for '+this.logName+'. Ignored.'
+							+'\nThe element metioned is', element, '\n'
+						);
+					}
+					continue;
+				}
+			};
+
+			if (_targetArray===this.prevButtons) {
+				_wireUpPrevButtons.call(this, _addedElements);
+			}
+
+			if (_targetArray===this.nextButtons) {
+				_wireUpNextButtons.call(this, _addedElements);
+			}
+
+			return _addedElements;
+		}
+
+		function _removeButtonsFromArray(elementsArray, targetArray) {
+			var removedElements = [];
+
+			if ( typeof elementsArray === 'undefined' || elementsArray === null ) {
+				return removedElements;
+			}
+
+			elementsArray = wlcJS.arraylize(elementsArray);
+
+			for (var i = 0; i < elementsArray.length; i++) {
+				var element = elementsArray[ i ];
+				if ( wlcJS.domTools.isDom(element) ) {
+					if (targetArray===this.prevButtons) _detachOnePrevButton.call(this,element);
+					if (targetArray===this.nextButtons) _detachOneNextButton.call(this,element);
+					if (targetArray===this.toggleButtons) _detachOneToggleButton.call(this,element);
+					targetArray.del(element);
+					removedElements.push(element);
+				} else {
+					w( 'Invalid element met when trying to remove buttons for '+this.logName+'. Ignored.' );
+					continue;
+				}
+			};
+			return removedElements;
+		}
+
+
+
+		function _wireUpPrevButtons(elementsArray) {
+			for (var i = 0; i < elementsArray.length; i++) {
+				var element = elementsArray[i];
+
+				$(element).on('click'+'.go-prev-of-articles-list-'+_thisArticlesList.rootElement.id,
+					function (e) {
+						e.preventDefault();
+						e.stopPropagation();
+						_thisArticlesList.prev();
+					}
+				);
+			};
+		}
+
+		function _wireUpNextButtons(elementsArray) {
+			for (var i = 0; i < elementsArray.length; i++) {
+				var element = elementsArray[i];
+
+				$(element).on('click'+'.go-next-of-articles-list-'+_thisArticlesList.rootElement.id,
+					function (e) {
+						e.preventDefault();
+						e.stopPropagation();
+						_thisArticlesList.next();
+					}
+				);
+			};
+		}
+
+
+
+		function enableButtonsInArray(array) { array.forEach(function(button) { button.disabled = false; }); }
+		function disableButtonsInArray(array) { array.forEach(function(button) { button.disabled = true; }); }
+
+
+
+		function _detachOnePrevButton(prevButton) {
+			$(prevButton).off('click'+'.go-prev-of-articles-list-'+this.rootElement.id);
+		}
+
+		function _detachOneNextButton(nextButton) {
+			$(nextButton).off('click'+'.go-next-of-articles-list-'+this.rootElement.id);
+		}
+
+
+		function _detachAllPrevButtons() {
+			for (var i = 0; i < this.prevButtons.length; i++) {
+				_detachOnePrevButton.call(this, this.prevButtons[i]);
+			};
+		}
+
+		function _detachAllNextButtons() {
+			for (var i = 0; i < this.nextButtons.length; i++) {
+				_detachOneNextButton.call(this, this.nextButtons[i]);
+			};
+		}
+
+
+
+		function _checkIfEitherTerminalIsMet() {
+			var _ternimalMet = { either: false, begin: false, end: false };
+			if (!this.loop) {
+				_ternimalMet.begin = this.currentItemId<1;
+				_ternimalMet.end = this.currentItemId>this.itemsElements.length-2;
+				_ternimalMet.either = _ternimalMet.begin || _ternimalMet.end;
+			}
+			return _ternimalMet;
+		}
+
+		function _decideComingItemOnShift(isDecrease) {
+			if (isDecrease) {
+				this.comingItemId = this.currentItemId-1;
+				if (this.loop && this.comingItemId<0) {
+					this.comingItemId=this.itemsElements.length-1;
+				}
+			} else {
+				this.comingItemId = this.currentItemId+1;
+				if (this.loop && this.comingItemId>=this.itemsElements.length) {
+					this.comingItemId=0;
+				}
+			}
+
+			this.comingItem = this.itemsElements[this.comingItemId];
+		}
+
+		function _decideComingItemById(comingItemId) {
+			this.comingItemId = Math.max(0, Math.min(comingItemId, this.itemsElements.length-1));
+			this.comingItem = this.itemsElements[this.comingItemId];
+		}
+
+		function _recordCurrentItemAsLastOne() {
+			this.lastItemId = this.currentItemId;
+			this.lastItem = this.itemsElements[this.lastItemId];
+		}
+
+		function _updateCurrentItem() {
+			this.currentItemId = this.comingItemId;
+			this.currentItem = this.itemsElements[this.currentItemId];
+		}
+
+		function _shift(directionIsUpwards) {
+			directionIsUpwards = !!directionIsUpwards;
+			// l('_shift('+(directionIsUpwards ? 'upwards' : 'downwards')+')');
+			_decideComingItemOnShift.call(this, directionIsUpwards);
+
+			this.onshiftstart();
+
+			if (directionIsUpwards) {
+				this.onprevstart();
+			} else {
+				this.onnextstart();
+			}
+
+			_processOneItem.call(this.comingItem, true);
+			if (this.comingItem != this.currentItem) {
+				_processOneItem.call(this.currentItem, false);
+			} else {
+				// l('no need to move');
+			}
+
+			if (directionIsUpwards) {
+				this.onprevend();
+			} else {
+				this.onnextend();
+			}
+
+			_onActionEnd.call(this);
+		}
+
+		function _shiftTo(targetItemId) {
+			var targetItemId = parseInt(targetItemId);
+			if (isNaN(targetItemId)) {
+				return false;
+			}
+
+			_decideComingItemById.call(this, targetItemId);
+			// l('_shiftTo('+targetItemId+')', this.comingItem);
+
+			this.onshiftstart();
+
+			_processOneItem.call(this.comingItem, true);
+			if (this.comingItem != this.currentItem) {
+				_processOneItem.call(this.currentItem, false);
+			} else {
+				// l('no need to move');
+			}
+
+			_onActionEnd.call(this);
+		}
+
+		function _processOneItem(isGoingToBeCurrent) {
+			if (isGoingToBeCurrent) {
+				this.setAttribute('wlc-articles-list-current', '');
+			} else {
+				this.removeAttribute('wlc-articles-list-current');
+			}
+		}
+
+		function _onActionEnd() {
+			_recordCurrentItemAsLastOne.call(this);
+			_updateCurrentItem.call(this);
+			var _ternimalMet = _checkIfEitherTerminalIsMet.call(this);
+
+			if (_ternimalMet.begin) {
+				disableButtonsInArray(this.prevButtons);
+			} else {
+				enableButtonsInArray(this.prevButtons);
+			}
+
+			if (_ternimalMet.end) {
+				disableButtonsInArray(this.nextButtons);
+			} else {
+				enableButtonsInArray(this.nextButtons);
+			}
+
+			this.onshiftend();
+
+			if (this.autoShift) {
+				window.setTimeout(
+					function () {
+						_thisArticlesList.next();
+					},
+					this.autoShiftTimeGap
+				);
+			}
+		}
+	} // CLASS:ArticlesList
 } // CLASS:WLCWebsite

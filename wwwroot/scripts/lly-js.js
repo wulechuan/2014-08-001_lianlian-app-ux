@@ -250,17 +250,105 @@ var wlcJS = new (function () {
 		return deletedItemsCount;
 	}
 
+	Math.randomAround = function ( in_center, in_radius ) {
+		var a = isNaN(Number(in_center)) ? 0 : in_center;
+		var b = isNaN(Number(in_radius)) ? 0.5 : in_radius;
+		return ( (Math.random()-0.5)*2*in_radius + in_center);
+	}
+
 	Math.randomBetween = function ( in_a, in_b ) {
 		var a = isNaN(Number(in_a)) ? 0 : in_a;
 		var b = isNaN(Number(in_b)) ? 1 : in_b;
 		return ( Math.random()*(b - a) + a);
 	}
 
-	Math.randomAround = function ( in_center, in_radius ) {
-		var a = isNaN(Number(in_center)) ? 0 : in_center;
-		var b = isNaN(Number(in_radius)) ? 0.5 : in_radius;
-		return ( (Math.random()-0.5)*2*in_radius + in_center);
+	Math.randomAroundE = function(o) {
+		//the suffix "E" means "with Expection controls"
+			//
+			// o.E			<Number> for Expection of random distribution
+			// o.V1			<Number> for so-called 'left'  variance around Expection
+			// o.V2			<Number> for so-called 'right' variance around Expection
+			// o.exp		<Number> for exponential falloff around Expection
+			// o.integer	<boolean> whether the output value should be an integer
+
+		o = o || {};
+
+		o.E = Number(o.E);
+		o.V1 = Number(o.V1);
+		o.V2 = Number(o.V2);
+
+		if (isNaN(o.E)) {
+			return NaN;
+		}
+
+		if (isNaN(o.V1) && isNaN(o.V2)) {
+			o.V1=0;
+			o.V2=0;
+		}
+
+		if (isNaN(o.V1) && !isNaN(o.V2)) {
+			o.V1 = -o.V2;
+		}
+
+		if (!isNaN(o.V1) && isNaN(o.V2)) {
+			o.V2 = -o.V1;
+		}
+
+		
+		var _result = o.E;
+
+
+		if (o.V1!==0 || o.V2!==0) {
+			o.exp = parseInt(o.exp);
+			if (isNaN(o.exp)) o.exp = 1;
+
+			var _p = Math.random();
+			for (var i = 1; i < o.exp; i++) {
+				_p = _p * _p;
+			}
+
+			var _select = Math.random() > 0.4999999;
+
+			_result = _select ? (o.V1 * _p + o.E) : (o.V2 * _p + o.E);
+		}
+
+		return !!o.integer ? Math.round(_result) : _result;
 	}
+
+	Math.randomBetweenE = function(o) {
+		//the suffix "E" means "with Expection controls"
+			//
+			// o.E			<Number> for Expection of random distribution
+			// o.min		<Number> for min possible value of random distribution
+			// o.max		<Number> for max possible value of random distribution
+			// o.exp		<Number> for exponential falloff around Expection
+			// o.integer	<boolean> whether the output value should be an integer
+	
+		o = o || {};
+
+		o.E = Number(o.E);
+		o.min = Number(o.min);
+		o.max = Number(o.max);
+
+		if (isNaN(o.min) && isNaN(o.max)) {
+			return NaN;
+		}
+
+		if (isNaN(o.E)) {
+			o.E = (o.min + o.max)/2;
+		}
+
+		if (o.min==o.max) {
+			o.E = o.min;
+			return o.min;
+		}
+
+		o.V1 = o.min - o.E;
+		o.V2 = o.max - o.E;
+
+		return Math.randomAroundE(o);
+	}
+
 
 	Math.remapDegreeInto_0_360 = function ( in_degree ) {
 		var turns = Math.floor(in_degree / 360);
@@ -288,6 +376,229 @@ var wlcJS = new (function () {
 	//////// IE8 begin ////////////////////////////////////////////////////////////////////////////////
 	}
 	//////// IE8 end //////////////////////////////////////////////////////////////////////////////////
+
+	this.buildLoremOneSentence = function(o, prefix, suffix, wrapTag) {
+		var o = o || {};
+		o.prgph = o.prgph || {};
+		o.sntnc = o.sntnc || {};
+
+		o.prgph.E = 0;
+		o.prgph.min = 0;
+		o.prgph.max = 0;
+
+		o.sntnc.E = 1;
+		o.sntnc.min = 1;
+		o.sntnc.max = 1;
+
+		if (typeof prefix!='string') { prefix = ''; }
+		if (typeof suffix!='string') { suffix = ''; }
+		if (typeof wrapTag!='string') { wrapTag = ''; }
+
+		return (
+				(wrapTag ? ('<'+wrapTag+'>') : '')
+			+	prefix
+			+	this.buildLoremHtmlArticle(o)
+			+	suffix
+			+	(wrapTag ? ('</'+wrapTag+'>') : '')
+		);
+	}
+
+	this.buildLoremHtmlArticle = function(o) {
+		// o	options
+			// o.sentenceEnd	<String> for ends of every sentences
+			// o.comma			<String> for ends of every sub-clauses except the last one in a given sentence
+			// o.wordEnd		<String> for ends of every words except the last one in a sub-clause or sentence
+
+			// o.language		<String>
+			//							if omitted then it's 'zh-CN',
+			//							if input is an invalid language, then it's 'zh-CN'
+			//							currently only 'en' and 'zh-CN' are valid values 
+			//
+			// o.alphaBet		<Array> of strings
+			//
+			// o.prgph.E
+			// o.prgph.min
+			// o.prgph.max
+			// o.prgph.exp
+			// o.prgph.integer	
+			//
+			// o.sntnc.E		
+			// o.sntnc.min		
+			// o.sntnc.max
+			// o.sntnc.exp
+			// o.sntnc.integer	
+			//
+			// o.claus.E		
+			// o.claus.min		
+			// o.claus.max
+			// o.claus.exp
+			// o.claus.integer	
+			//
+			// o.words.E		
+			// o.words.min		
+			// o.words.max
+			// o.words.exp
+			// o.words.integer	
+			//
+			// o.chars.E		
+			// o.chars.min		
+			// o.chars.max
+			// o.chars.exp
+			// o.chars.integer	
+
+		function __buildSafeOptionsFor(o, E, min, max, exp) {
+			o.E = wlcJS.getSafeNumber(o.E, E);
+			o.min = wlcJS.getSafeNumber(o.min, min);
+			o.max = wlcJS.getSafeNumber(o.max, max);
+			o.exp = wlcJS.getSafeNumber(o.exp, exp);
+			o.integer = true;
+		}
+
+
+		var alphaBet = undefined;
+
+		var alphaBetPresets = {
+			en: [
+			'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'
+			],
+
+			'zh-CN': [
+			'吴','乐','川','印','亚','兰','淙','渊','子','谦','心','迟','庆','欢','笑','甜',
+			'丹','怀','立','峰','泠','溪','天','韵','王','琛','舒','晴','海','明','下','国',
+			'水','巷','青','云','普','江','西','省','南','昌','市','葵','硕','村','陶','秀',
+			'康','英','余','祥','殷','闾','晓','琴','雪','楠','苏','泰','兴','沙','桥','连',
+			'港','洛','灵','毛','妹','胖','月','半','文','含','章','贡','菡','菲','北','京',
+			'上','实','宝','禄','黄','掌','香','源','黔','晨','达','睿','金','红','珍','邮',
+			'电','学','院','刘','宜','华','重','芳','杨','菊','儿','东','湖','区','邓','玫',
+			'易','冕','商','叙','若','雷','倩','中','人','小','端','在','谢','蚕','石','通',
+			'信','工','程','维','动','画','剑','琴','马','磊','莉','惠','芬','曾','晶','罗',
+			'巧','湘','萍','宋','瑞','吕','夷','乔','玲','玉','影','符','劳','生','姚','暄',
+			'羽','徐','斌','李','啊','技','校','化','线','纱','漂','染','厂','棉','纺','织',
+			'山','咏','席','越','成','强','莲','平','肃','锋',
+			'Softimage','XSI','ICE',
+			'一','二','三','四','五','六','七','八','九','十','个','百','千','万','亿','点',
+			'的','地','得','是','否','有','无','你','我','他','它','们'
+			],
+		};
+
+		var o = o || {};
+		o.prgph = o.prgph || {};
+		o.sntnc = o.sntnc || {};
+		o.claus = o.claus || {};
+		o.words = o.words || {};
+		o.chars = o.chars || {};
+
+		if (typeof o.language!='string') { o.language='zh-CN'; };
+		if (o.language!='en') { o.language='zh-CN'; };
+
+		if (typeof o.sentenceEnd !== 'string') {
+			if (o.language==='zh-CN') {
+				o.sentenceEnd = '。';
+			} else {
+				o.sentenceEnd = '.';
+			}
+		}
+		if (typeof o.wordEnd !== 'string') {
+			if (o.language==='zh-CN') {
+				o.wordEnd = '';
+			} else {
+				o.wordEnd = ' ';
+			}
+		}
+		if (typeof o.comma !== 'string') {
+			if (o.language==='zh-CN') {
+				o.comma = '，';
+			} else {
+				o.comma = ', ';
+			}
+		}
+
+		var noParagraph = false;
+		if (o.prgph.min===0 && o.prgph.max===0) {
+			noParagraph = true;
+			o.prgph.min = 1;
+			o.prgph.max = 1;
+		}
+
+		// if (!Array.isArray(o.keywords) o.keywords = [];
+		if (Array.isArray(o.alphaBet)) {
+			alphaBet = o.alphaBet;
+		} else {
+			alphaBet = alphaBetPresets[o.language];
+		}
+
+		if (o.language==='zh-CN') {
+			__buildSafeOptionsFor(o.prgph, 5, 1, 8, 2);
+			__buildSafeOptionsFor(o.sntnc, 3, 1, 8, 3);
+			__buildSafeOptionsFor(o.claus, 1, 1, 3, 2);
+			__buildSafeOptionsFor(o.words, 6, 2, 19, 3);
+			__buildSafeOptionsFor(o.chars, 2, 1, 4, 2);
+		} else {
+			__buildSafeOptionsFor(o.prgph, 4, 1, 8, 2);
+			__buildSafeOptionsFor(o.sntnc, 3, 1, 8, 2);
+			__buildSafeOptionsFor(o.claus, 1, 1, 3, 2);
+			__buildSafeOptionsFor(o.words, 7, 1, 19, 3);
+			__buildSafeOptionsFor(o.chars, 7, 1, 13, 2);
+		}
+
+
+
+
+		var htmlSnippets = [];
+		var _char = '';
+
+		var prgphCount = NaN;
+		var sntncCount = NaN;
+		var clausCount = NaN;
+		var wordsCount = NaN;
+		var charsCount = NaN;
+		var charIndex = NaN;
+
+		prgphCount = Math.randomBetweenE(o.prgph);
+		for (var p=0; p<prgphCount; p++) {
+			if (!noParagraph) {
+				htmlSnippets.push('<p>');
+			}
+
+			sntncCount = Math.randomBetweenE(o.sntnc);
+			for (var s=0; s<sntncCount; s++) {
+
+				clausCount = Math.randomBetweenE(o.claus);
+				for (var sC=0; sC<clausCount; sC++) {
+
+					wordsCount = Math.randomBetweenE(o.words);
+					for (var w=0; w<wordsCount; w++) {
+
+						charsCount = Math.randomBetweenE(o.chars);
+						for (var c=0; c<charsCount; c++) {
+							charIndex = Math.randomBetweenE(
+								{ E:NaN, min:0, max:alphaBet.length-1, exp:1, integer:true }
+							);
+							_char = String(alphaBet[charIndex]);
+
+							if (w===0 && c===0) { _char = _char.toUpperCase(); }
+
+							htmlSnippets.push(_char);
+						}
+
+						if (w<wordsCount-1) htmlSnippets.push(o.wordEnd);
+					}
+
+					if (sC<clausCount-1) htmlSnippets.push(o.comma);
+				}
+
+				htmlSnippets.push(o.sentenceEnd);
+			}
+
+			if (!noParagraph) {
+				htmlSnippets.push('</p>\n\n');
+			}
+		}
+
+		return htmlSnippets.join('');
+	}
+
+
 
 	function WLCDOMTools() {
 
