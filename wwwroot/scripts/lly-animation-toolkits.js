@@ -101,10 +101,12 @@ var WAT = new (function AnimationToolkits() {
 		var animationEndEventName = '';
 		if (typeof element.style.webkitAnimation != 'undefined') {
 			element.style.webkitAnimation = _cssAnimation;
+			element.style.webkitBackfaceVisibility = 'hidden';
 			animationEndEventName = 'webkitAnimationEnd';
 		} else {
 			element.style.animation = _cssAnimation;
 			animationEndEventName = 'animationend';
+			element.style.backfaceVisibility = 'hidden';
 		}
 
 		var _eventHandlerOnAnimationEnd = function(event) {
@@ -138,8 +140,8 @@ var WAT = new (function AnimationToolkits() {
 
 		_ = options || {};
 
-		_.duraionExp = wlcJS.getSafeNumber(_.duraionExp, 0.4);
-		_.duraionVar = wlcJS.getSafeNumber(_.duraionVar, 0);
+		_.durationExp = wlcJS.getSafeNumber(_.durationExp, 0.4);
+		_.durationVar = wlcJS.getSafeNumber(_.durationVar, 0);
 
 		_.delayGlobal = wlcJS.getSafeNumber(_.delayGlobal, 0);
 
@@ -164,7 +166,7 @@ var WAT = new (function AnimationToolkits() {
 		var _lastestOneId = locatorsArray.length-1;
 
 		for (var i = 0; i < locatorsArray.length; i++) {
-			_durationCurrent =	Math.randomAround(_.duraionExp, _.duraionVar) * _accumulativeDurationRatio;
+			_durationCurrent =	Math.randomAround(_.durationExp, _.durationVar) * _accumulativeDurationRatio;
 			_delayGap =			Math.randomAround(_.delayEachStepExp, _.delayEachStepVar) * _accumulativeDelayGapRatio;
 
 			_accumulativeDurationRatio = _accumulativeDurationRatio * _accumulativeDurationRatioFactor;
@@ -222,11 +224,10 @@ var WAT = new (function AnimationToolkits() {
 		//		delayEachStepExp:	Number, <default = 0.12>
 		//		delayEachStepVar:	Number, <default = 0.04>
 		// }
-
 		_ = options || {};
 
-		_.duraionExp = wlcJS.getSafeNumber(_.duraionExp, 0.36);
-		_.duraionVar = wlcJS.getSafeNumber(_.duraionVar, 0.08);
+		_.durationExp = wlcJS.getSafeNumber(_.durationExp, 0.36);
+		_.durationVar = wlcJS.getSafeNumber(_.durationVar, 0.08);
 
 		_.delayGlobal = wlcJS.getSafeNumber(_.delayGlobal, 0);
 
@@ -248,8 +249,8 @@ var WAT = new (function AnimationToolkits() {
 
 			_ = options || {};
 
-			_.duraionExp = wlcJS.getSafeNumber(_.duraionExp, 0.69);
-			_.duraionVar = wlcJS.getSafeNumber(_.duraionVar, 0.06);
+			_.durationExp = wlcJS.getSafeNumber(_.durationExp, 0.69);
+			_.durationVar = wlcJS.getSafeNumber(_.durationVar, 0.06);
 
 			_.delayGlobal = wlcJS.getSafeNumber(_.delayGlobal, 0);
 
@@ -272,27 +273,52 @@ var WAT = new (function AnimationToolkits() {
 
 		oneByOneRiseUp: function(locatorsArray, playState, wakVarianceId, options, onLatestAnimationEnd) {
 			//	wakVarianceId:		<Integer>
-
 			wakVarianceId = wlcJS.getSafeNumber(wakVarianceId, 1);
 
 			_ = options || {};
 
-			_.duraionExp = wlcJS.getSafeNumber(_.duraionExp, 0.69);
-			_.duraionVar = wlcJS.getSafeNumber(_.duraionVar, 0.06);
+			_.durationExp = wlcJS.getSafeNumber(_.durationExp, 0.79);
+			_.durationVar = wlcJS.getSafeNumber(_.durationVar, 0.219);
 
 			_.delayGlobal = wlcJS.getSafeNumber(_.delayGlobal, 0);
 
 			_.delayEachStepExp = wlcJS.getSafeNumber(_.delayEachStepExp, 0.19);
-			_.delayEachStepVar = wlcJS.getSafeNumber(_.delayEachStepVar, 0.02);
+			_.delayEachStepVar = wlcJS.getSafeNumber(_.delayEachStepVar, 0.03);
 
 			_.oneByOne =	true;
 			_.oneAfterOne =	false;
 
-			_.timingFunction = 'ease-in';
-
 			_WAT.batchApplyOneByOneAnimationsTo(
 				locatorsArray,
 				'wak-rises-up-'+wakVarianceId,
+				playState,
+				_,
+				onLatestAnimationEnd
+			);
+		},
+
+		oneByOneSlideInFromLeft: function(locatorsArray, playState, wakVarianceId, options, onLatestAnimationEnd) {
+			//	wakVarianceId:		<Integer>
+			wakVarianceId = wlcJS.getSafeNumber(wakVarianceId, 1);
+
+			_ = options || {};
+
+			_.durationExp = wlcJS.getSafeNumber(_.durationExp, 0.45);
+			_.durationVar = wlcJS.getSafeNumber(_.durationVar, 0.01);
+
+			_.delayGlobal = wlcJS.getSafeNumber(_.delayGlobal, 0);
+
+			_.delayEachStepExp = wlcJS.getSafeNumber(_.delayEachStepExp, 0.19);
+			_.delayEachStepVar = wlcJS.getSafeNumber(_.delayEachStepVar, 0.03);
+
+			_.oneByOne =	true;
+			_.oneAfterOne =	false;
+
+			_.timingFunction = 'ease-out';
+
+			_WAT.batchApplyOneByOneAnimationsTo(
+				locatorsArray,
+				'wak-slide-in-from-left-'+wakVarianceId,
 				playState,
 				_,
 				onLatestAnimationEnd

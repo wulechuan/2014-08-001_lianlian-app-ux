@@ -377,33 +377,7 @@ var wlcJS = new (function () {
 	}
 	//////// IE8 end //////////////////////////////////////////////////////////////////////////////////
 
-	this.buildLoremOneSentence = function(o, prefix, suffix, wrapTag) {
-		var o = o || {};
-		o.prgph = o.prgph || {};
-		o.sntnc = o.sntnc || {};
-
-		o.prgph.E = 0;
-		o.prgph.min = 0;
-		o.prgph.max = 0;
-
-		o.sntnc.E = 1;
-		o.sntnc.min = 1;
-		o.sntnc.max = 1;
-
-		if (typeof prefix!='string') { prefix = ''; }
-		if (typeof suffix!='string') { suffix = ''; }
-		if (typeof wrapTag!='string') { wrapTag = ''; }
-
-		return (
-				(wrapTag ? ('<'+wrapTag+'>') : '')
-			+	prefix
-			+	this.buildLoremHtmlArticle(o)
-			+	suffix
-			+	(wrapTag ? ('</'+wrapTag+'>') : '')
-		);
-	}
-
-	this.buildLoremHtmlArticle = function(o) {
+	this.lorem = function(initOptions) {
 		// o	options
 			// o.sentenceEnd	<String> for ends of every sentences
 			// o.comma			<String> for ends of every sub-clauses except the last one in a given sentence
@@ -420,44 +394,27 @@ var wlcJS = new (function () {
 			// o.prgph.min
 			// o.prgph.max
 			// o.prgph.exp
-			// o.prgph.integer	
 			//
 			// o.sntnc.E		
 			// o.sntnc.min		
 			// o.sntnc.max
 			// o.sntnc.exp
-			// o.sntnc.integer	
 			//
 			// o.claus.E		
 			// o.claus.min		
 			// o.claus.max
 			// o.claus.exp
-			// o.claus.integer	
 			//
 			// o.words.E		
 			// o.words.min		
 			// o.words.max
 			// o.words.exp
-			// o.words.integer	
 			//
 			// o.chars.E		
 			// o.chars.min		
 			// o.chars.max
 			// o.chars.exp
-			// o.chars.integer	
-
-		function __buildSafeOptionsFor(o, E, min, max, exp) {
-			o.E = wlcJS.getSafeNumber(o.E, E);
-			o.min = wlcJS.getSafeNumber(o.min, min);
-			o.max = wlcJS.getSafeNumber(o.max, max);
-			o.exp = wlcJS.getSafeNumber(o.exp, exp);
-			o.integer = true;
-		}
-
-
-		var alphaBet = undefined;
-
-		var alphaBetPresets = {
+		var _alphaBetPresets = {
 			en: [
 			'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'
 			],
@@ -479,123 +436,213 @@ var wlcJS = new (function () {
 			'一','二','三','四','五','六','七','八','九','十','个','百','千','万','亿','点',
 			'的','地','得','是','否','有','无','你','我','他','它','们'
 			],
-		};
+		}
 
-		var o = o || {};
-		o.prgph = o.prgph || {};
-		o.sntnc = o.sntnc || {};
-		o.claus = o.claus || {};
-		o.words = o.words || {};
-		o.chars = o.chars || {};
+		this.options = {};
 
-		if (typeof o.language!='string') { o.language='zh-CN'; };
-		if (o.language!='en') { o.language='zh-CN'; };
+		function _buildDefaultRandomizationOptionsFor(E, min, max, exp) {
+			this.E = wlcJS.getSafeNumber(this.E, E);
+			this.min = wlcJS.getSafeNumber(this.min, min);
+			this.max = wlcJS.getSafeNumber(this.max, max);
+			this.exp = wlcJS.getSafeNumber(this.exp, exp);
+			this.integer = true;
+		}
 
-		if (typeof o.sentenceEnd !== 'string') {
+		this.config = function(o) {
+			var alphaBet = undefined;
+
+			var o = o || {}; // short for conveniences
+			o.prgph = o.prgph || {};
+			o.sntnc = o.sntnc || {};
+			o.claus = o.claus || {};
+			o.words = o.words || {};
+			o.chars = o.chars || {};
+
+			if (o.hasOwnProperty('language') && !!o.language) {
+				if (typeof o.language!='string') {
+					o.language='zh-CN';
+				} else if (o.language!='en') {
+					o.language='zh-CN'; }
+				}
+				this.options.language = o.language;
+			}
+
+			if ((o.hasOwnProperty('sentenceEnd') && !!o.sentenceEnd) || o.sentenceEnd===0) {
+				this.options.sentenceEnd = o.sentenceEnd;
+				// if (typeof o.sentenceEnd !== 'string') {
+				// 	if (o.language==='zh-CN') {
+				// 		o.sentenceEnd = '。';
+				// 	} else {
+				// 		o.sentenceEnd = '.';
+				// 	}
+				// }
+			}
+
+			if (typeof o.wordEnd !== 'string') {
+				if (o.language==='zh-CN') {
+					o.wordEnd = '';
+				} else {
+					o.wordEnd = ' ';
+				}
+			}
+			if (typeof o.comma !== 'string') {
+				if (o.language==='zh-CN') {
+					o.comma = '，';
+				} else {
+					o.comma = ', ';
+				}
+			}
+
+			var noParagraph = false;
+			if (o.prgph.min===0 && o.prgph.max===0) {
+				noParagraph = true;
+				o.prgph.min = 1;
+				o.prgph.max = 1;
+			}
+
+			// if (!Array.isArray(o.keywords) o.keywords = [];
+			(function () {
+				if (Array.isArray(o.alphaBet)) {
+					alphaBet = o.alphaBet;
+				} else {
+					alphaBet = _alphaBetPresets[o.language];
+				}
+			}).call(this);
+
 			if (o.language==='zh-CN') {
-				o.sentenceEnd = '。';
+				_buildDefaultRandomizationOptionsFor.call(o.prgph, 5, 1, 8, 2);
+				_buildDefaultRandomizationOptionsFor.call(o.sntnc, 3, 1, 8, 3);
+				_buildDefaultRandomizationOptionsFor.call(o.claus, 1, 1, 3, 2);
+				_buildDefaultRandomizationOptionsFor.call(o.words, 6, 2, 19, 3);
+				_buildDefaultRandomizationOptionsFor.call(o.chars, 2, 1, 4, 2);
 			} else {
-				o.sentenceEnd = '.';
-			}
-		}
-		if (typeof o.wordEnd !== 'string') {
-			if (o.language==='zh-CN') {
-				o.wordEnd = '';
-			} else {
-				o.wordEnd = ' ';
-			}
-		}
-		if (typeof o.comma !== 'string') {
-			if (o.language==='zh-CN') {
-				o.comma = '，';
-			} else {
-				o.comma = ', ';
+				_buildDefaultRandomizationOptionsFor.call(o.prgph, 4, 1, 8, 2);
+				_buildDefaultRandomizationOptionsFor.call(o.sntnc, 3, 1, 8, 2);
+				_buildDefaultRandomizationOptionsFor.call(o.claus, 1, 1, 3, 2);
+				_buildDefaultRandomizationOptionsFor.call(o.words, 7, 1, 19, 3);
+				_buildDefaultRandomizationOptionsFor.call(o.chars, 7, 1, 13, 2);
 			}
 		}
 
-		var noParagraph = false;
-		if (o.prgph.min===0 && o.prgph.max===0) {
-			noParagraph = true;
-			o.prgph.min = 1;
-			o.prgph.max = 1;
+		this.buildWord = function(o, prefix, suffix, wrapTag) {
+			// o	options
+				// o.chars.E		
+				// o.chars.min		
+				// o.chars.max
+				// o.chars.exp
+				// o.chars.integer	
+
+			var o = o || {};
+			o.prgph = o.prgph || {};
+			o.sntnc = o.sntnc || {};
+
+			o.prgph.E = 0;
+			o.prgph.min = 0;
+			o.prgph.max = 0;
+
+			o.sntnc.E = 1;
+			o.sntnc.min = 1;
+			o.sntnc.max = 1;
+
+			if (typeof prefix!='string') { prefix = ''; }
+			if (typeof suffix!='string') { suffix = ''; }
+			if (typeof wrapTag!='string') { wrapTag = ''; }
+
+			return (
+					(wrapTag ? ('<'+wrapTag+'>') : '')
+				+	prefix
+				+	this.buildLoremHtmlArticle(o)
+				+	suffix
+				+	(wrapTag ? ('</'+wrapTag+'>') : '')
+			);
 		}
 
-		// if (!Array.isArray(o.keywords) o.keywords = [];
-		if (Array.isArray(o.alphaBet)) {
-			alphaBet = o.alphaBet;
-		} else {
-			alphaBet = alphaBetPresets[o.language];
+		this.buildSentence = function(o, prefix, suffix, wrapTag) {
+			var o = o || {};
+			o.prgph = o.prgph || {};
+			o.sntnc = o.sntnc || {};
+
+			o.prgph.E = 0;
+			o.prgph.min = 0;
+			o.prgph.max = 0;
+
+			o.sntnc.E = 1;
+			o.sntnc.min = 1;
+			o.sntnc.max = 1;
+
+			if (typeof prefix!='string') { prefix = ''; }
+			if (typeof suffix!='string') { suffix = ''; }
+			if (typeof wrapTag!='string') { wrapTag = ''; }
+
+			return (
+					(wrapTag ? ('<'+wrapTag+'>') : '')
+				+	prefix
+				+	this.buildLoremHtmlArticle(o)
+				+	suffix
+				+	(wrapTag ? ('</'+wrapTag+'>') : '')
+			);
 		}
 
-		if (o.language==='zh-CN') {
-			__buildSafeOptionsFor(o.prgph, 5, 1, 8, 2);
-			__buildSafeOptionsFor(o.sntnc, 3, 1, 8, 3);
-			__buildSafeOptionsFor(o.claus, 1, 1, 3, 2);
-			__buildSafeOptionsFor(o.words, 6, 2, 19, 3);
-			__buildSafeOptionsFor(o.chars, 2, 1, 4, 2);
-		} else {
-			__buildSafeOptionsFor(o.prgph, 4, 1, 8, 2);
-			__buildSafeOptionsFor(o.sntnc, 3, 1, 8, 2);
-			__buildSafeOptionsFor(o.claus, 1, 1, 3, 2);
-			__buildSafeOptionsFor(o.words, 7, 1, 19, 3);
-			__buildSafeOptionsFor(o.chars, 7, 1, 13, 2);
-		}
+		this.buildArticle = function(o) {
 
 
 
 
-		var htmlSnippets = [];
-		var _char = '';
+			var htmlSnippets = [];
+			var _char = '';
 
-		var prgphCount = NaN;
-		var sntncCount = NaN;
-		var clausCount = NaN;
-		var wordsCount = NaN;
-		var charsCount = NaN;
-		var charIndex = NaN;
+			var prgphCount = NaN;
+			var sntncCount = NaN;
+			var clausCount = NaN;
+			var wordsCount = NaN;
+			var charsCount = NaN;
+			var charIndex = NaN;
 
-		prgphCount = Math.randomBetweenE(o.prgph);
-		for (var p=0; p<prgphCount; p++) {
-			if (!noParagraph) {
-				htmlSnippets.push('<p>');
-			}
-
-			sntncCount = Math.randomBetweenE(o.sntnc);
-			for (var s=0; s<sntncCount; s++) {
-
-				clausCount = Math.randomBetweenE(o.claus);
-				for (var sC=0; sC<clausCount; sC++) {
-
-					wordsCount = Math.randomBetweenE(o.words);
-					for (var w=0; w<wordsCount; w++) {
-
-						charsCount = Math.randomBetweenE(o.chars);
-						for (var c=0; c<charsCount; c++) {
-							charIndex = Math.randomBetweenE(
-								{ E:NaN, min:0, max:alphaBet.length-1, exp:1, integer:true }
-							);
-							_char = String(alphaBet[charIndex]);
-
-							if (w===0 && c===0) { _char = _char.toUpperCase(); }
-
-							htmlSnippets.push(_char);
-						}
-
-						if (w<wordsCount-1) htmlSnippets.push(o.wordEnd);
-					}
-
-					if (sC<clausCount-1) htmlSnippets.push(o.comma);
+			prgphCount = Math.randomBetweenE(o.prgph);
+			for (var p=0; p<prgphCount; p++) {
+				if (!noParagraph) {
+					htmlSnippets.push('<p>');
 				}
 
-				htmlSnippets.push(o.sentenceEnd);
+				sntncCount = Math.randomBetweenE(o.sntnc);
+				for (var s=0; s<sntncCount; s++) {
+
+					clausCount = Math.randomBetweenE(o.claus);
+					for (var sC=0; sC<clausCount; sC++) {
+
+						wordsCount = Math.randomBetweenE(o.words);
+						for (var w=0; w<wordsCount; w++) {
+
+							charsCount = Math.randomBetweenE(o.chars);
+							for (var c=0; c<charsCount; c++) {
+								charIndex = Math.randomBetweenE(
+									{ E:NaN, min:0, max:alphaBet.length-1, exp:1, integer:true }
+								);
+								_char = String(alphaBet[charIndex]);
+
+								if (w===0 && c===0) { _char = _char.toUpperCase(); }
+
+								htmlSnippets.push(_char);
+							}
+
+							if (w<wordsCount-1) htmlSnippets.push(o.wordEnd);
+						}
+
+						if (sC<clausCount-1) htmlSnippets.push(o.comma);
+					}
+
+					htmlSnippets.push(o.sentenceEnd);
+				}
+
+				if (!noParagraph) {
+					htmlSnippets.push('</p>\n\n');
+				}
 			}
 
-			if (!noParagraph) {
-				htmlSnippets.push('</p>\n\n');
-			}
+			return htmlSnippets.join('');
 		}
 
-		return htmlSnippets.join('');
+		this.config(initOptions);
 	}
 
 
