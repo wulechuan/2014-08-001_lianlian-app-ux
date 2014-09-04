@@ -35,6 +35,7 @@ if (fakeBind) {
 
 
 var wlcJS = new (function () {
+	var wlcJS = this;
 
 
 	//////// IE8 begin ////////////////////////////////////////////////////////////////////////////////
@@ -377,7 +378,9 @@ var wlcJS = new (function () {
 	}
 	//////// IE8 end //////////////////////////////////////////////////////////////////////////////////
 
-	this.lorem = function(initOptions) {
+	this.lorem = new Lorem;
+
+	function Lorem(initOptions) {
 		// o	options
 			// o.sentenceEnd	<String> for ends of every sentences
 			// o.comma			<String> for ends of every sub-clauses except the last one in a given sentence
@@ -394,28 +397,35 @@ var wlcJS = new (function () {
 			// o.prgph.min
 			// o.prgph.max
 			// o.prgph.exp
+			// o.prgph.wrapTag	<String> xml tagName
 			//
 			// o.sntnc.E		
 			// o.sntnc.min		
 			// o.sntnc.max
 			// o.sntnc.exp
+			// o.sntnc.wrapTag	<String> xml tagName
 			//
 			// o.claus.E		
 			// o.claus.min		
 			// o.claus.max
 			// o.claus.exp
+			// o.claus.wrapTag	<String> xml tagName
 			//
 			// o.words.E		
 			// o.words.min		
 			// o.words.max
 			// o.words.exp
+			// o.words.wrapTag	<String> xml tagName
 			//
 			// o.chars.E		
 			// o.chars.min		
 			// o.chars.max
 			// o.chars.exp
+			// o.chars.wrapTag	<String> xml tagName
+
+
 		var _alphaBetPresets = {
-			en: [
+			'en': [
 			'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'
 			],
 
@@ -438,210 +448,349 @@ var wlcJS = new (function () {
 			],
 		}
 
-		this.options = {};
 
-		function _buildDefaultRandomizationOptionsFor(E, min, max, exp) {
-			this.E = wlcJS.getSafeNumber(this.E, E);
-			this.min = wlcJS.getSafeNumber(this.min, min);
-			this.max = wlcJS.getSafeNumber(this.max, max);
-			this.exp = wlcJS.getSafeNumber(this.exp, exp);
+		this.options = {};
+		this.options.prgph = {};
+		this.options.sntnc = {};
+		this.options.claus = {};
+		this.options.words = {};
+		this.options.chars = {};
+
+		function _initRandomizationOptions(E, min, max, exp, wrapTag, isChars) {
+			this.E = E;
+			this.min = min;
+			this.max = max;
+			this.exp = exp;
 			this.integer = true;
+			if (!isChars)
+				this.wrapTag = (typeof wrapTag==='string') ? wrapTag.toLowerCase() : '';
 		}
 
+		function _initZhCN() {
+			// this.options.language = 'zh-CN'
+			this.options.sentenceEnd = '。';
+			this.options.wordEnd = '';
+			this.options.comma = '，';
+			this.options.alphaBet = _alphaBetPresets['zh-CN'];
+
+			_initRandomizationOptions.call(this.options.prgph, 5, 1, 8, 2);
+			_initRandomizationOptions.call(this.options.sntnc, 3, 1, 8, 3);
+			_initRandomizationOptions.call(this.options.claus, 1, 1, 3, 2);
+			_initRandomizationOptions.call(this.options.words, 6, 2, 19, 3);
+			_initRandomizationOptions.call(this.options.chars, 2, 1, 4, 2, true);
+		}
+
+		function _initEn() {
+			// this.options.language = 'en'
+			this.options.sentenceEnd = '. ';
+			this.options.wordEnd = ' ';
+			this.options.comma = ', ';
+			this.options.alphaBet = _alphaBetPresets['en'];
+
+			_initRandomizationOptions.call(this.options.prgph, 4, 1, 8, 2);
+			_initRandomizationOptions.call(this.options.sntnc, 3, 1, 8, 2);
+			_initRandomizationOptions.call(this.options.claus, 1, 1, 3, 2);
+			_initRandomizationOptions.call(this.options.words, 7, 1, 19, 3);
+			_initRandomizationOptions.call(this.options.chars, 7, 1, 13, 2, true);
+		}
+
+		function _init() {
+			if (this.options.language === 'zh-CN') {
+				_initZhCN.call(this);
+			} else {
+				_initEn.call(this);
+			}
+
+			this.options.prgph.wrapTag = 'p';
+			this.options.sntnc.wrapTag = '';
+			this.options.claus.wrapTag = '';
+			this.options.words.wrapTag = '';
+		}
+
+		function _safelyUpdateNumber(number, safeDefault) {
+			var _n = wlcJS.getSafeNumber(number, safeDefault);
+			if (_n<0) _n = safeDefault;
+			return _n;
+		}
+
+		function _safelyUpdateOptions(o, isChars) {
+			if (o.hasOwnProperty('E')) {
+				var _E = _safelyUpdateNumber(o.E, this.E);
+				this.E = _E;
+			}
+			if (o.hasOwnProperty('exp')) {
+				var _exp = _safelyUpdateNumber(o.exp, this.exp);
+				this.exp = _exp;
+			}
+
+			var _min = this.min;
+			var _max = this.max;
+			if (o.hasOwnProperty('min')) {
+				_min = _safelyUpdateNumber(o.min, this.min);
+			}
+			if (o.hasOwnProperty('max')) {
+				_max = _safelyUpdateNumber(o.max, this.max);
+			}
+
+			if (_min!==0 || _max!==0) {
+				this.min = _min;
+				this.max = _max;
+			}
+
+			if (!isChars && o.hasOwnProperty('wrapTag') && typeof o.wrapTag === 'string') {
+				this.wrapTag = o.wrapTag;
+			}
+		}
+
+
+
+
+		function _builderOfWord(isFirstWord, isLastWord) {
+			isFirstWord = !!isFirstWord;
+			var _count = Math.randomBetweenE(this.options.chars);
+			var _segs = [];
+			for (var c=0; c<_count; c++) {
+				var _index = Math.randomBetweenE(
+					{ E:NaN, min:0, max:this.options.alphaBet.length-1, exp:1, integer:true }
+				);
+				var _char = String(this.options.alphaBet[_index]);
+				if (isFirstWord && c===0) _char = _char.toUpperCase();
+				_segs.push(_char);
+			}
+			if (!isLastWord) {
+				_segs.push(this.options.wordEnd);
+			}
+			return _segs.join('');
+		}
+
+		function _builderOfClause(isFirstClause, isLastClause) {
+			isFirstClause = !!isFirstClause;
+			var _count = Math.randomBetweenE(this.options.words);
+			var _segs = [];
+			for (var c=0; c<_count; c++) {
+				_segs.push(this.buildWord(undefined, (isFirstClause && c===0), (c>=_count-1)));
+			}
+			if (!isLastClause) {
+				_segs.push(this.options.comma);
+			}
+			return _segs.join('');
+		}
+
+		function _builderOfSentence() {
+			var _count = Math.randomBetweenE(this.options.claus);
+			var _segs = [];
+			for (var c=0; c<_count; c++) {
+				_segs.push(this.buildClause(undefined, c===0, (c===_count-1)));
+			}
+			_segs.push(this.options.sentenceEnd);
+			return _segs.join('');
+		}
+
+		function _builderOfParagraph() {
+			var _count = Math.randomBetweenE(this.options.sntnc);
+			var _segs = [];
+			for (var c=0; c<_count; c++) {
+				_segs.push(this.buildSentence(undefined));
+			}
+			return _segs.join('');
+		}
+
+		function _builderOfArticle() {
+			var _count = Math.randomBetweenE(this.options.prgph);
+			var _segs = [];
+			for (var c=0; c<_count; c++) {
+				_segs.push(this.buildParagraph(undefined));
+			}
+			return _segs.join('');
+		}
+
+
+
+
+
 		this.config = function(o) {
-			var alphaBet = undefined;
+			if (typeof o !== 'object') return undefined;
 
-			var o = o || {}; // short for conveniences
-			o.prgph = o.prgph || {};
-			o.sntnc = o.sntnc || {};
-			o.claus = o.claus || {};
-			o.words = o.words || {};
-			o.chars = o.chars || {};
-
-			if (o.hasOwnProperty('language') && !!o.language) {
-				if (typeof o.language!='string') {
-					o.language='zh-CN';
-				} else if (o.language!='en') {
-					o.language='zh-CN'; }
+			var _languageChanged = false;
+			if (o.hasOwnProperty('language') && typeof o.language==='string' && !!o.language) {
+				if (o.language==='en') {
+					this.options.language = 'o.language';
+					_languageChanged = true;
+				} else if (this.options.language != 'zh-CN') {
+					this.options.language = 'zh-CN';
+					_languageChanged = true;
 				}
-				this.options.language = o.language;
+			}
+			if (_languageChanged) {
+				_init.call(this);
+			}
+
+			if (o.hasOwnProperty('alphaBet') && Array.isArray(o.alphaBet) && o.alphaBet.length>0) {
+				this.options.alphaBet = o.alphaBet;
 			}
 
 			if ((o.hasOwnProperty('sentenceEnd') && !!o.sentenceEnd) || o.sentenceEnd===0) {
-				this.options.sentenceEnd = o.sentenceEnd;
-				// if (typeof o.sentenceEnd !== 'string') {
-				// 	if (o.language==='zh-CN') {
-				// 		o.sentenceEnd = '。';
-				// 	} else {
-				// 		o.sentenceEnd = '.';
-				// 	}
-				// }
+				this.options.sentenceEnd = String(o.sentenceEnd);
 			}
 
-			if (typeof o.wordEnd !== 'string') {
-				if (o.language==='zh-CN') {
-					o.wordEnd = '';
-				} else {
-					o.wordEnd = ' ';
-				}
-			}
-			if (typeof o.comma !== 'string') {
-				if (o.language==='zh-CN') {
-					o.comma = '，';
-				} else {
-					o.comma = ', ';
-				}
+			if ((o.hasOwnProperty('wordEnd') && !!o.wordEnd) || o.wordEnd===0) {
+				this.options.wordEnd = String(o.wordEnd);
 			}
 
-			var noParagraph = false;
-			if (o.prgph.min===0 && o.prgph.max===0) {
-				noParagraph = true;
-				o.prgph.min = 1;
-				o.prgph.max = 1;
+			if ((o.hasOwnProperty('comma') && !!o.comma) || o.comma===0) {
+				this.options.comma = String(o.comma);
 			}
 
-			// if (!Array.isArray(o.keywords) o.keywords = [];
-			(function () {
-				if (Array.isArray(o.alphaBet)) {
-					alphaBet = o.alphaBet;
-				} else {
-					alphaBet = _alphaBetPresets[o.language];
-				}
-			}).call(this);
+			if (o.hasOwnProperty('prgph') && typeof o.prgph === 'object' && !!o.prgph) {
+				_safelyUpdateOptions.call(this.options.prgph, o.prgph);
+			}
 
-			if (o.language==='zh-CN') {
-				_buildDefaultRandomizationOptionsFor.call(o.prgph, 5, 1, 8, 2);
-				_buildDefaultRandomizationOptionsFor.call(o.sntnc, 3, 1, 8, 3);
-				_buildDefaultRandomizationOptionsFor.call(o.claus, 1, 1, 3, 2);
-				_buildDefaultRandomizationOptionsFor.call(o.words, 6, 2, 19, 3);
-				_buildDefaultRandomizationOptionsFor.call(o.chars, 2, 1, 4, 2);
-			} else {
-				_buildDefaultRandomizationOptionsFor.call(o.prgph, 4, 1, 8, 2);
-				_buildDefaultRandomizationOptionsFor.call(o.sntnc, 3, 1, 8, 2);
-				_buildDefaultRandomizationOptionsFor.call(o.claus, 1, 1, 3, 2);
-				_buildDefaultRandomizationOptionsFor.call(o.words, 7, 1, 19, 3);
-				_buildDefaultRandomizationOptionsFor.call(o.chars, 7, 1, 13, 2);
+			if (o.hasOwnProperty('sntnc') && typeof o.sntnc === 'object' && !!o.sntnc) {
+				_safelyUpdateOptions.call(this.options.sntnc, o.sntnc);
+			}
+
+			if (o.hasOwnProperty('claus') && typeof o.claus === 'object' && !!o.claus) {
+				_safelyUpdateOptions.call(this.options.claus, o.claus);
+			}
+
+			if (o.hasOwnProperty('words') && typeof o.words === 'object' && !!o.words) {
+				_safelyUpdateOptions.call(this.options.words, o.words);
+			}
+
+			if (o.hasOwnProperty('chars') && typeof o.chars === 'object' && !!o.chars) {
+				_safelyUpdateOptions.call(this.options.chars, o.chars, true);
 			}
 		}
 
-		this.buildWord = function(o, prefix, suffix, wrapTag) {
+
+
+
+		this.buildWord = function(o, isFirstWord, isLastWord, prefix, suffix) {
 			// o	options
 				// o.chars.E		
 				// o.chars.min		
 				// o.chars.max
 				// o.chars.exp
-				// o.chars.integer	
+			if (typeof o === 'object') this.config(o);
+			var _wrapTag = this.options.words.wrapTag;
+			var _hasWrapTag = _wrapTag.length > 0;
+			var openTag = _hasWrapTag ? ('<'+_wrapTag+'>') : '';
+			var closeTag = _hasWrapTag ? ('</'+_wrapTag+'>') : '';
 
-			var o = o || {};
-			o.prgph = o.prgph || {};
-			o.sntnc = o.sntnc || {};
-
-			o.prgph.E = 0;
-			o.prgph.min = 0;
-			o.prgph.max = 0;
-
-			o.sntnc.E = 1;
-			o.sntnc.min = 1;
-			o.sntnc.max = 1;
-
-			if (typeof prefix!='string') { prefix = ''; }
-			if (typeof suffix!='string') { suffix = ''; }
-			if (typeof wrapTag!='string') { wrapTag = ''; }
+			if (typeof prefix!=='string') { prefix = ''; }
+			if (typeof suffix!=='string') { suffix = ''; }
 
 			return (
-					(wrapTag ? ('<'+wrapTag+'>') : '')
+					openTag
 				+	prefix
-				+	this.buildLoremHtmlArticle(o)
+				+	_builderOfWord.call(this, isFirstWord, isLastWord)
 				+	suffix
-				+	(wrapTag ? ('</'+wrapTag+'>') : '')
+				+	closeTag
 			);
 		}
 
-		this.buildSentence = function(o, prefix, suffix, wrapTag) {
-			var o = o || {};
-			o.prgph = o.prgph || {};
-			o.sntnc = o.sntnc || {};
+		this.buildClause = function(o, isFirstClause, isLastClause, prefix, suffix) {
+			// o	options
+				// o.words.E		
+				// o.words.min		
+				// o.words.max
+				// o.words.exp
+				// o.words.wrapTag
+			if (typeof o === 'object') this.config(o);
+			var _wrapTag = this.options.claus.wrapTag;
+			var _hasWrapTag = _wrapTag.length > 0;
+			var openTag = _hasWrapTag ? ('<'+_wrapTag+'>') : '';
+			var closeTag = _hasWrapTag ? ('</'+_wrapTag+'>') : '';
 
-			o.prgph.E = 0;
-			o.prgph.min = 0;
-			o.prgph.max = 0;
-
-			o.sntnc.E = 1;
-			o.sntnc.min = 1;
-			o.sntnc.max = 1;
-
-			if (typeof prefix!='string') { prefix = ''; }
-			if (typeof suffix!='string') { suffix = ''; }
-			if (typeof wrapTag!='string') { wrapTag = ''; }
+			if (typeof prefix!=='string') { prefix = ''; }
+			if (typeof suffix!=='string') { suffix = ''; }
 
 			return (
-					(wrapTag ? ('<'+wrapTag+'>') : '')
+					openTag
 				+	prefix
-				+	this.buildLoremHtmlArticle(o)
+				+	_builderOfClause.call(this, isFirstClause, isLastClause)
 				+	suffix
-				+	(wrapTag ? ('</'+wrapTag+'>') : '')
+				+	closeTag
 			);
 		}
 
-		this.buildArticle = function(o) {
+		this.buildSentence = function(o, prefix, suffix) {
+			// o	options
+				// o.claus.E		
+				// o.claus.min		
+				// o.claus.max
+				// o.claus.exp
+				// o.claus.wrapTag
+			if (typeof o === 'object') this.config(o);
+			var _wrapTag = this.options.sntnc.wrapTag;
+			var _hasWrapTag = _wrapTag.length > 0;
+			var openTag = _hasWrapTag ? ('<'+_wrapTag+'>') : '';
+			var closeTag = _hasWrapTag ? ('</'+_wrapTag+'>') : '';
 
+			if (typeof prefix!=='string') { prefix = ''; }
+			if (typeof suffix!=='string') { suffix = ''; }
 
-
-
-			var htmlSnippets = [];
-			var _char = '';
-
-			var prgphCount = NaN;
-			var sntncCount = NaN;
-			var clausCount = NaN;
-			var wordsCount = NaN;
-			var charsCount = NaN;
-			var charIndex = NaN;
-
-			prgphCount = Math.randomBetweenE(o.prgph);
-			for (var p=0; p<prgphCount; p++) {
-				if (!noParagraph) {
-					htmlSnippets.push('<p>');
-				}
-
-				sntncCount = Math.randomBetweenE(o.sntnc);
-				for (var s=0; s<sntncCount; s++) {
-
-					clausCount = Math.randomBetweenE(o.claus);
-					for (var sC=0; sC<clausCount; sC++) {
-
-						wordsCount = Math.randomBetweenE(o.words);
-						for (var w=0; w<wordsCount; w++) {
-
-							charsCount = Math.randomBetweenE(o.chars);
-							for (var c=0; c<charsCount; c++) {
-								charIndex = Math.randomBetweenE(
-									{ E:NaN, min:0, max:alphaBet.length-1, exp:1, integer:true }
-								);
-								_char = String(alphaBet[charIndex]);
-
-								if (w===0 && c===0) { _char = _char.toUpperCase(); }
-
-								htmlSnippets.push(_char);
-							}
-
-							if (w<wordsCount-1) htmlSnippets.push(o.wordEnd);
-						}
-
-						if (sC<clausCount-1) htmlSnippets.push(o.comma);
-					}
-
-					htmlSnippets.push(o.sentenceEnd);
-				}
-
-				if (!noParagraph) {
-					htmlSnippets.push('</p>\n\n');
-				}
-			}
-
-			return htmlSnippets.join('');
+			return (
+					openTag
+				+	prefix
+				+	_builderOfSentence.call(this)
+				+	suffix
+				+	closeTag
+			);
 		}
 
+		this.buildParagraph = function(o, prefix, suffix) {
+			// o	options
+				// o.sntnc.E		
+				// o.sntnc.min		
+				// o.sntnc.max
+				// o.sntnc.exp
+				// o.sntnc.wrapTag
+			if (typeof o === 'object') this.config(o);
+			var _wrapTag = this.options.prgph.wrapTag;
+			var _hasWrapTag = _wrapTag.length > 0;
+			var openTag = _hasWrapTag ? ('<'+_wrapTag+'>') : '';
+			var closeTag = _hasWrapTag ? ('</'+_wrapTag+'>') : '';
+
+			if (typeof prefix!=='string') { prefix = ''; }
+			if (typeof suffix!=='string') { suffix = ''; }
+
+			return (
+					openTag
+				+	prefix
+				+	_builderOfParagraph.call(this)
+				+	suffix
+				+	closeTag
+			);
+		}
+
+		this.buildArticle = function(o, prefix, suffix) {
+			// o	options
+				// o.prgph.E		
+				// o.prgph.min		
+				// o.prgph.max
+				// o.prgph.exp
+				// o.prgph.wrapTag
+			if (typeof o === 'object') this.config(o);
+			var _wrapTag = this.options.prgph.wrapTag;
+			var _hasWrapTag = _wrapTag.length > 0;
+			var openTag = _hasWrapTag ? ('<'+_wrapTag+'>') : '';
+			var closeTag = _hasWrapTag ? ('</'+_wrapTag+'>') : '';
+
+			if (typeof prefix!=='string') { prefix = ''; }
+			if (typeof suffix!=='string') { suffix = ''; }
+
+			return (
+					openTag
+				+	prefix
+				+	_builderOfArticle.call(this)
+				+	suffix
+				+	closeTag
+			);
+		}
+
+		this.options.language = 'zh-CN';
+		_init.call(this);
 		this.config(initOptions);
 	}
 

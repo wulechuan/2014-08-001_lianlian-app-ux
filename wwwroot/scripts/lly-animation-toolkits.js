@@ -260,11 +260,40 @@ var WAT = new (function AnimationToolkits() {
 			_.oneByOne =	true;
 			_.oneAfterOne =	false;
 
-			_.timingFunction = 'ease-in';
+			_.timingFunction = _.timingFunction ? _.timingFunction : 'ease-in';
 
 			_WAT.batchApplyOneByOneAnimationsTo(
 				locatorsArray,
 				'wak-flies-in-'+wakVarianceId,
+				playState,
+				_,
+				onLatestAnimationEnd
+			);
+		},
+
+		oneByOnePopOut: function(locatorsArray, playState, wakVarianceId, options, onLatestAnimationEnd) {
+			//	wakVarianceId:		<Integer>
+
+			wakVarianceId = wlcJS.getSafeNumber(wakVarianceId, 3);
+
+			_ = options || {};
+
+			_.durationExp = wlcJS.getSafeNumber(_.durationExp, 0.69);
+			_.durationVar = wlcJS.getSafeNumber(_.durationVar, 0.06);
+
+			_.delayGlobal = wlcJS.getSafeNumber(_.delayGlobal, 0);
+
+			_.delayEachStepExp = wlcJS.getSafeNumber(_.delayEachStepExp, 0.19);
+			_.delayEachStepVar = wlcJS.getSafeNumber(_.delayEachStepVar, 0.02);
+
+			_.oneByOne =	true;
+			_.oneAfterOne =	false;
+
+			_.timingFunction = _.timingFunction ? _.timingFunction : 'ease-in';
+
+			_WAT.batchApplyOneByOneAnimationsTo(
+				locatorsArray,
+				'wak-pop-out-'+wakVarianceId,
 				playState,
 				_,
 				onLatestAnimationEnd
