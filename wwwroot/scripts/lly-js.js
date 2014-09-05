@@ -1038,7 +1038,9 @@ var wlcJS = new (function () {
 				'webkitTransitionEnd', // http://gotofritz.net/blog/howto/css3-transitions-callbacks/
 				'transitionend',
 				'animationstart',
-				'animationend'
+				'animationend',
+				'webkitAnimationStart',
+				'webkitAnimationEnd'
 			];
 
 			for (var _i=0; _i<_supportedTypes.length;_i++) {
