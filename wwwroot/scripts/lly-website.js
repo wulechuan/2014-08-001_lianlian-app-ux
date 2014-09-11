@@ -61,11 +61,11 @@ function WLCWebsite(wlcJS) {
 		var isWindowsTouch = uaHas('Touch') && isWindows;
 
 		// http://www.enterpriseios.com/wiki/UserAgent
-		var isIpod = uaHas('iPod');
-		var isIphone = uaHas('iPhone');
-		var isIpad = uaHas('iPad');
-		var isIOS = isIpod || isIphone || isIpad || uaHas('like Mac OS X;');
-		var isMacOSX = uaHas('Mac OS X;') && !isIOS;
+		var isIpod = uaHas('iPod') && platformHasNot('Win32');
+		var isIphone = uaHas('iPhone') && platformHasNot('Win32');
+		var isIpad = uaHas('iPad') && platformHasNot('Win32');
+		var isIOS = isIpod || isIphone || isIpad || uaHas('like Mac OS X;') && platformHasNot('Win32');
+		var isMacOSX = uaHas('Mac OS X;') && uaHasNot('like Mac OS X;') && platformHasNot('Win32');
 
 		// isAndroid *NOT* always correct
 		var isAndroid = uaHas('Android') || platformHas('Linux arm');
