@@ -37,197 +37,30 @@ function getScrollBarDimension() {
 	};
 }
 
-var WAT = new (function AnimationToolkits() {
 
-	this.setScales = function(elements, scaleX, scaleY, scaleZ) {
-		var _sX = wlcJS.getSafeNumber(scaleX, 1);
-		var _sY = wlcJS.getSafeNumber(scaleY, _sX);
-		var _sZ = wlcJS.getSafeNumber(scaleZ, _sX);
-		wlcJS.arraylize(elements).forEach(function (element, i, _elements) {
-			element.style.transform = 'scale3d('+_sX+','+_sY+','+_sZ+')';
-		});
+
+function Theater (movieScreen, initOptions) {
+	var _thisTheater = {
+		screenWidth: NaN,
+		screenHeight: NaN,
+
+		config: function (options) { _config.call(this, options); },
+		playMovie: function (movie) { _playMovie.call(this, movie); }
 	}
 
-	this.pauseAnimationsOf = function(elements) {
-		wlcJS.arraylize(elements).forEach(function (element, i, _elements) {
-			if (!isDomElement(element)) return undefined;
-			element.animationIsRunning = false;
-			element.style.webkitAnimationPlayState = 'paused';
-			element.style.animationPlayState = 'paused';
-		});
+	function _config (options) {
+		var _ = options || {}
 	}
 
-	this.resumeAnimationsOf = function(elements) {
-		wlcJS.arraylize(elements).forEach(function (element, i, _elements) {
-			if (!isDomElement(element)) return undefined;
-			element.animationIsRunning = true;
-			element.style.webkitAnimationPlayState = 'running';
-			element.style.animationPlayState = 'running';
-		});
-	}
-
-	this.toggleAnimationsOf = function(elements) {
-		wlcJS.arraylize(elements).forEach(function (element, i, _elements) {
-			if (!isDomElement(element)) return undefined;
-			if (typeof element.animationIsRunning === 'undefined') element.animationIsRunning = true;
-			if (element.animationIsRunning) {
-				element.animationIsRunning = false;
-				element.style.webkitAnimationPlayState = 'paused';
-				element.style.animationPlayState = 'paused';
-			} else {
-				element.animationIsRunning = true;
-				element.style.webkitAnimationPlayState = 'running';
-				element.style.animationPlayState = 'running';
-			}
-		});
-	}
-
-	this.clearAnimationsOf = function(elements) {
-		wlcJS.arraylize(elements).forEach(function (element, i, _elements) {
-			if (!isDomElement(element)) return undefined;
-			element.animationIsRunning = false;
-			element.style.webkitAnimationPlayState = '';
-			element.style.animationPlayState = '';
-			element.style.webkitAnimation = '';
-			element.style.animation = '';
-		});
-	}
-
-	this.applyAnimationTo = function(element, keyframesName, playState, duration, delay, iterationCount, direction, timingFunction, fillMode) {
-		if (!isDomElement(element)) {
-			return false;
+	function _playMovie (movie) {
+		if (!(movie instanceof Movie)) {
+			e('Invalid movie.');
+			return undefined;
 		}
 
-		keyframesName = String(keyframesName);
-		if (keyframesName.length < 1) {
-			return false;
-		}
-
-		playState = (typeof playState === 'undefined' || (!!playState && String(playState).toLowerCase()!='paused')) ? 'running' : 'paused';
-
-		duration = Number(duration);
-		duration = isNaN(duration) ? '0.6s' : (Math.max(0.05, duration)+'s');
-
-		delay = Number(delay);
-		delay = isNaN(delay) ? '0s' : (delay+'s');
-
-		iterationCount = isNaN(Number(iterationCount)) ? (String(iterationCount).toLowerCase()==='infinite' ? 'infinite' : '1' ) : String(Number(iterationCount)); // don't care integer or not
-
-		direction = String(direction);
-		direction = (direction==='normal' || direction==='alternate' || direction==='reverse' || direction==='alternate-reverse') ? direction : 'normal';
-
-		timingFunction = timingFunction ? String(timingFunction) : 'ease-in-out'; // be careful
-
-		fillMode = String(fillMode);
-		fillMode = (fillMode==='forwards' || fillMode==='backwards' || fillMode==='both') ? fillMode : 'both';
-
-		var _cssAnimation = [
-			keyframesName,
-			duration,
-			timingFunction,
-			iterationCount,
-			delay,
-			direction,
-			fillMode,
-			playState
-		].join(' ');
-
-		if (typeof element.style.webkitAnimation != 'undefined') {
-			element.style.webkitAnimation = _cssAnimation;
-		} else {
-			element.style.animation = _cssAnimation;
-		}
-
-		// l(element, '\n', _cssAnimation);
+		movie.play();
 	}
-
-	this.batchApplyAnimationsTo = function(locatorsArray, keyframesName, playState, options) {
-		// options {
-		//		durationExp:		Number, <default = 0.4>
-		//		durationVar:		Number, <default = 0>
-		//		delayGlobal:		Number, <default = 0>
-		//		delayEachStepExp:	Number, <default = 0>
-		//		delayEachStepVar:	Number, <default = 0>
-		//
-		//		oneByOne:			boolean, <default = false>
-		//							// Here oneByOne means extending delay accumulately
-		//
-		//		oneAfterOne:		boolean, <default = false>
-		//							// oneAfterOne ONLY take effects when oneByOne is set true
-		//							// Here oneAfterOne means extending delay further more,
-		//							// so that the next animation won't even start counting its delay(fake)
-		//							// until the previous animation running completely.
-		// }
-
-		_ = options || {};
-
-		_.duraionExp = wlcJS.getSafeNumber(_.duraionExp, 0.4);
-		_.duraionVar = wlcJS.getSafeNumber(_.duraionVar, 0);
-
-		_.delayGlobal = wlcJS.getSafeNumber(_.delayGlobal, 0);
-
-		_.delayEachStepExp = wlcJS.getSafeNumber(_.delayEachStepExp, 0);
-		_.delayEachStepVar = wlcJS.getSafeNumber(_.delayEachStepVar, 0);
-
-		_.oneByOne =	!!_.oneByOne;
-		_.oneAfterOne =	_.oneByOne && !!_.oneAfterOne;
-
-
-
-		var _durationCurrent = NaN;
-
-		var _delayGap = NaN;
-		var _delayCurrent = _.delayGlobal;
-
-		for (var i = 0; i < locatorsArray.length; i++) {
-			_durationCurrent =	Math.randomAround(_.duraionExp, _.duraionVar);
-			_delayGap =			Math.randomAround(_.delayEachStepExp, _.delayEachStepVar);
-
-			if (_.oneByOne) {
-				_delayCurrent += _delayGap;
-			} else {
-				_delayCurrent = _delayGap;
-			}
-
-			WAT.applyAnimationTo(locatorsArray[i], keyframesName, playState, _durationCurrent, _delayCurrent);
-
-			_delayCurrent += (_.oneAfterOne ? _durationCurrent : 0);
-			// l(_durationCurrent, _delayGap, _delayCurrent);
-		};
-	}
-
-	this.batchApplyOneByOneAnimationsTo = function(locatorsArray, keyframesName, playState, options) {
-		// options {
-		//		durationExp:		Number, <default = 0.4>
-		//		durationVar:		Number, <default = 0.05>
-		//		delayGlobal:		Number, <default = 0>
-		//		delayEachStepExp:	Number, <default = 0.25>
-		//		delayEachStepVar:	Number, <default = 0.08>
-		// }
-
-		_ = options || {};
-
-		_.duraionExp = wlcJS.getSafeNumber(_.duraionExp, 0.4);
-		_.duraionVar = wlcJS.getSafeNumber(_.duraionVar, 0.05);
-
-		_.delayGlobal = wlcJS.getSafeNumber(_.delayGlobal, 0);
-
-		_.delayEachStepExp = wlcJS.getSafeNumber(_.delayEachStepExp, 0.25);
-		_.delayEachStepVar = wlcJS.getSafeNumber(_.delayEachStepVar, 0.08);
-
-		_.oneByOne =	true;
-		_.oneAfterOne =	_.oneByOne && !!_.oneAfterOne;
-
-		this.batchApplyAnimationsTo(locatorsArray, keyframesName, playState, _);
-	}
-
-	this.oneByOneJumpOut = function(locatorsArray, playState, wakVarianceId, options) {
-		//	wakVarianceId:		<allowed: 1 or 2 or 3 or '1' or '2' or '3'>, <default = 3>
-		//						// there 3 types of keyframes available currently (2014-08-20)
-		wakVarianceId = wlcJS.getSafeNumber(wakVarianceId, 3);
-		this.batchApplyOneByOneAnimationsTo(locatorsArray, 'wak-things-pop-out-'+wakVarianceId, playState, options);
-	}
-});
+} // CLASS:Theater
 
 
 

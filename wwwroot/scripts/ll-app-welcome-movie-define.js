@@ -120,7 +120,7 @@ var actionsLib = new (function () {
 	}
 
 	this.s5_allWifiSpotsPrepareForJumpingOut = function () {
-		WAT.oneByOneJumpOut(this.targets, 'paused', 3, { delayGlobal: 0.5 });
+		WAT.presets.oneByOnePopOut(this.targets, 'paused', 3, { delayGlobal: 0.5 });
 	}
 
 	this.s5_allWifiSpotsJumpOut = function () {
