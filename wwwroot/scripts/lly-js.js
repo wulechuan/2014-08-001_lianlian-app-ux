@@ -1234,7 +1234,7 @@ var wlcJS = new (function () {
 
 				var computedStyle = window.getComputedStyle(this, null);
 				if (computedStyle.position === 'static') {
-					w(this, '\nThe element is about to be centered, but it\'s "position" attribute is set to "static".' );
+					w(this, '\nThe element is about to be centered, but it\'s "position" attribute is "static".' );
 				}
 
 
@@ -1260,13 +1260,13 @@ var wlcJS = new (function () {
 				_.alongX = (typeof _.alongX === 'undefined') ? true : !!_.alongX;
 				_.alongY = (typeof _.alongY === 'undefined') ? true : !!_.alongY;
 				_.shrinkWhenNeeded = (typeof _.shrinkWhenNeeded === 'undefined') ? true : !!_.shrinkWhenNeeded;
-				_.offsetX = isNaN(Number(_.offsetX)) ? 10: Number(_.offsetX);
-				_.offsetY = isNaN(Number(_.offsetY)) ? 10: Number(_.offsetY);
+				_.offsetX = isNaN(Number(_.offsetX)) ? 0 : Number(_.offsetX);
+				_.offsetY = isNaN(Number(_.offsetY)) ? 0 : Number(_.offsetY);
 
-				_.minMarginTop =	isNaN(Number(_.minMarginTop))		? 10: Number(_.minMarginTop);
-				_.minMarginRight =	isNaN(Number(_.minMarginRight))		? 10: Number(_.minMarginRight);
-				_.minMarginBottom =	isNaN(Number(_.minMarginBottom))	? 10: Number(_.minMarginBottom);
-				_.minMarginLeft =	isNaN(Number(_.minMarginLeft))		? 10: Number(_.minMarginLeft);
+				_.minMarginTop =	isNaN(Number(_.minMarginTop))		? 10 : Number(_.minMarginTop);
+				_.minMarginRight =	isNaN(Number(_.minMarginRight))		? 10 : Number(_.minMarginRight);
+				_.minMarginBottom =	isNaN(Number(_.minMarginBottom))	? 10 : Number(_.minMarginBottom);
+				_.minMarginLeft =	isNaN(Number(_.minMarginLeft))		? 10 : Number(_.minMarginLeft);
 
 				// l('_.centerRef:',_.centerRef);
 

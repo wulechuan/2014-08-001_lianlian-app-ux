@@ -233,11 +233,11 @@ function WLCWebsite(wlcJS) {
 
 		_tryCreatingPopupWindowsContainer = function () {
 			if (!this.rootElement) {
-				this.rootElement = document.querySelector('#popup-windows-container');
+				this.rootElement = document.querySelector('#all-popup-windows-container');
 			}
 			if (!this.rootElement) {
 				this.rootElement = document.createElement('section');
-				this.rootElement.id = 'popup-windows-container';
+				this.rootElement.id = 'all-popup-windows-container';
 				document.body.appendChild(this.rootElement);
 			}
 		}
@@ -260,10 +260,19 @@ function WLCWebsite(wlcJS) {
 					this.rootElement.appendChild(this.backplate);
 				}
 			}
+
+			this.backplate.addEventListener('click', function () {
+				var _shownWindows = _popupWindowsService.shownWindows;
+				if (_shownWindows.length===1 && _shownWindows[0].options.doNotHideOnBackplateClick === true) {
+					return false;
+				}
+				_popupWindowsService.hideAllWindows();
+			});
 		}
 
 		this.createWindow = function(rootElement, options) {
 			_tryCreatingBackplate.call(this);
+			window.addEventListener('resize', this.refreshAllWindows.bind(this));
 			return new this.PopupWindow(rootElement, options);
 		}
 
@@ -281,6 +290,14 @@ function WLCWebsite(wlcJS) {
 			}
 		}
 
+		this.hideAllWindows = function() {
+			this.shownWindows.forEach(function (popupWindow) { popupWindow.hide(); });
+		}
+
+		this.refreshAllWindows = function() {
+			this.shownWindows.forEach(function (popupWindow) { popupWindow.refresh(); });
+		}
+
 		this.prepareShowingPopupWindow = function(popupWindow, showBackplate) {
 			if (!this.shownWindows.has(popupWindow)) {
 				this.shownWindows.push(popupWindow);
@@ -296,7 +313,7 @@ function WLCWebsite(wlcJS) {
 		}
 
 
-		function PopupWindow(rootElement, options) {
+		function PopupWindow(rootElement, initOptions) {
 			// options = {
 			//		centered:				boolean		<default=true>
 			//		centerRef:				can be any of:
@@ -319,6 +336,7 @@ function WLCWebsite(wlcJS) {
 			//		autoHideDelayDuration:	Number		<default=1500, unit=ms>, ONLY takes effects when autoHide is true
 			//
 			//		showBackplate:			boolean		<default=true>, could be OVERRIDED by argument of show() method, if that argument is provided.
+			//		doNotHideOnBackplateClick:	boolean		<default=false>
 			//
 			//		showButtons:			[ array of elements ]
 			//		hideButtons:			[ array of elements ]
@@ -352,10 +370,11 @@ function WLCWebsite(wlcJS) {
 				showingDuration: 333,
 				hidingDuration: 333,
 
-				autoHide: false,
+				autoHide: undefined,
 				autoHideDelayDuration: 1500,
 
 				showBackplate: true,
+				doNotHideOnBackplateClick: false,
 
 				showButtons: [],
 				hideButtons: [],
@@ -374,6 +393,7 @@ function WLCWebsite(wlcJS) {
 			this.clearHideButtons = function () { _clearButtonsInArray.call(this, 'hideButtons'); }
 			this.clearToggleButtons = function () { _clearButtonsInArray.call(this, 'toggleButtons'); }
 
+			this.updateSizeAndPosition = function () { _updateSizeAndPosition.call(this); }
 			this.show = function (options) { _show.call(this, options); }
 			this.hide = function () { _hide.call(this); }
 			this.toggle = function () { _toggle.call(this); }
@@ -383,6 +403,7 @@ function WLCWebsite(wlcJS) {
 				// not implemented yet
 				// to be overrided
 				// l('Refreshing '+this.logName+' content. This is the default method.');
+				this.updateSizeAndPosition();
 			}
 
 
@@ -402,12 +423,22 @@ function WLCWebsite(wlcJS) {
 				var _o = this.options;
 				_allowWarning = (typeof _allowWarning === 'undefined') || !!_allowWarning;
 
-				if (typeof _.centered != 'undefined') { _o.centered = !!_.centered; }
-				if (typeof _.autoHide != 'undefined') { _o.autoHide = !!_.autoHide; }
-				if (typeof _.showBackplate != 'undefined') {
+				if (_.hasOwnProperty('onshow') && typeof _.onshow === 'function') this.onshow = _.onshow;
+				if (_.hasOwnProperty('onhide') && typeof _.onhide === 'function') this.onhide = _.onhide;
+				if (_.hasOwnProperty('onRelocateEnd') && typeof _.onRelocateEnd === 'function') this.onRelocateEnd = _.onRelocateEnd;
+
+				if (_.hasOwnProperty('centered')) { _o.centered = !!_.centered; }
+				if (_.hasOwnProperty('autoHide')) { _o.autoHide = !!_.autoHide; }
+				if (_.hasOwnProperty('showBackplate')) {
 					_o.showBackplate = !!_.showBackplate;
 				} else {
-					_o.showBackplate = !_o.autoHide;
+					if (typeof _o.autoHide != 'undefined') {
+						_o.showBackplate = !_o.autoHide;
+					}
+				}
+
+				if (_.hasOwnProperty('doNotHideOnBackplateClick')) {
+					_o.doNotHideOnBackplateClick = !!_.doNotHideOnBackplateClick && _o.showBackplate;
 				}
 
 				if (!isNaN(Number(_.offsetX))) { _o.offsetX = Number(_.offsetX); }
@@ -460,9 +491,6 @@ function WLCWebsite(wlcJS) {
 					this.addToggleButtons(_.toggleButtons, _allowWarning);
 				}
 
-
-				if (typeof _.onshow === 'function') this.onshow = _.onshow;
-				if (typeof _.onhide === 'function') this.onhide = _.onhide;
 
 				if (_allowWarning && this.options.hideButtons.length === 0 && this.options.toggleButtons.length === 0 && !this.options.autoHide) {
 					w(this.logName+':\n\tIt has neither hide button nor toggle button.\n\tBeing a NON auto-hide window, it could never be closed interatively.\n\tAlthough it can still be closed programmatically.\n')
@@ -530,7 +558,7 @@ function WLCWebsite(wlcJS) {
 						}
 
 						if (!elementAlreadyInOneOfTheArrays) {
-							l(this.logName+': adding ', element, 'to', targetArrayName);
+							// l(this.logName+': adding ', element, 'to', targetArrayName);
 							targetArray.push( element );
 							addedElements.push( element );
 						} else {
@@ -672,24 +700,37 @@ function WLCWebsite(wlcJS) {
 
 
 
-			function _show(options) {
+			function _show(o) {
 				if (this.isShown) {
 					// l(this.logName+' has already been opened. Skipped.');
-					return false;
+					// return false;
 				}
 				this.isShown = true;
 
-				var _ = options || {};
-				_.showBackplate = (typeof _.showBackplate  === 'undefined') ? this.options.showBackplate : _.showBackplate;
-				// if (typeof _.onShow === 'function') {
-				// 	_.onshow.call(this);
+				o = o || {};
+				o.showBackplate = (o.hasOwnProperty('showBackplate')) ? !!o.showBackplate : !!this.options.showBackplate;
+				// if (typeof o.onShow === 'function') {
+				// 	o.onshow.call(this);
 				// }
 
-				this.onshow();
-				_popupWindowsService.prepareShowingPopupWindow(this, _.showBackplate);
+				if (typeof this.onshow === 'function') this.onshow();
+				_popupWindowsService.prepareShowingPopupWindow(this, o.showBackplate);
 
 				this.rootElement.show(this.options.showingDuration);
 
+				this.updateSizeAndPosition();
+				// l(this.logName+'this.options.autoHide:', this.options.autoHide, '\nthis.options:', this.options)
+				if (!!this.options.autoHide) {
+					var thisPopupWindow = this;
+					var _duration = this.options.autoHideDelayDuration + this.options.showingDuration;
+					l(this.logName+' will close automatically in about '+Math.round(_duration/1000)+' seconds.');
+					window.setTimeout(function () {
+						thisPopupWindow.hide();
+					}, _duration);
+				}
+			}
+
+			function _updateSizeAndPosition() {
 				if (this.options.centered) {
 					this.rootElement.centerTo({
 						centerRef:			this.options.centerRef,
@@ -700,16 +741,15 @@ function WLCWebsite(wlcJS) {
 						minMarginBottom:	this.options.minMarginBottom,
 						minMarginLeft:		this.options.minMarginLeft
 					});
+				} else {
+					// if (this.options.offsetX != 0) {
+					// 	this.rootElement.style.left = this.options.offsetX + 'px';
+					// }
+					// if (this.options.offsetY != 0) {
+					// 	this.rootElement.style.top = this.options.offsetY + 'px';
+					// }
 				}
-				// l(this.logName+'this.options.autoHide:', this.options.autoHide, '\nthis.options:', this.options)
-				if (this.options.autoHide) {
-					var thisPopupWindow = this;
-					var _duration = this.options.autoHideDelayDuration + this.options.showingDuration;
-					l(this.logName+' will close automatically in about '+Math.round(_duration/1000)+' seconds.');
-					window.setTimeout(function () {
-						thisPopupWindow.hide();
-					}, _duration);
-				}
+				if (typeof this.onRelocateEnd === 'function') this.onRelocateEnd();		
 			}
 
 			function _hide() {
@@ -756,10 +796,11 @@ function WLCWebsite(wlcJS) {
 
 			if (this.rootElement) {
 				this.rootElement.style.display = 'none';
+				_popupWindowsService.rootElement.appendChild(this.rootElement);
 				// this.hide(); // will cause fadingOut if jQuery or Zepto presents.
-				this.config(options, false);
+				this.config(initOptions, false);
 
-				l(this.logName+':\n\tJust for conveniences, construcor is now automatically searching all possible hide-buttons:');
+				// l(this.logName+':\n\tJust for conveniences, construcor is now automatically searching all possible hide-buttons:');
 				this.addHideButtons([
 					this.rootElement.qS('.button-x'),
 					this.rootElement.qS('.button-ok'),
