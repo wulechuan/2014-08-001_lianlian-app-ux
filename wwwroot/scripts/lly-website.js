@@ -218,12 +218,11 @@ function WLCWebsite(wlcJS) {
 		var _popupWindowsService = this;
 
 		this.rootElement = null;
+		this.pageWrapElement = null;
 		this.backplate = null;
 		this.backplateIsShown = false;
 		this.windows = [];
 		this.shownWindows = [];
-
-		this.PopupWindow = PopupWindow; // a CLASS
 
 		this.options = {
 			backplateShowingDuration: 333,
@@ -236,9 +235,17 @@ function WLCWebsite(wlcJS) {
 				this.rootElement = document.querySelector('#all-popup-windows-container');
 			}
 			if (!this.rootElement) {
-				this.rootElement = document.createElement('section');
+				this.rootElement = document.createElement('DIV');
 				this.rootElement.id = 'all-popup-windows-container';
 				document.body.appendChild(this.rootElement);
+			} else {
+				this.pageWrapElement = document.querySelector('#all-popup-windows-container > .page-wrap');
+			}
+
+			if (!this.pageWrapElement) {
+				this.pageWrapElement = document.createElement('DIV');
+				this.pageWrapElement.className = 'page-wrap';
+				this.rootElement.appendChild(this.pageWrapElement);
 			}
 		}
 
@@ -263,7 +270,7 @@ function WLCWebsite(wlcJS) {
 
 			this.backplate.addEventListener('click', function () {
 				var _shownWindows = _popupWindowsService.shownWindows;
-				if (_shownWindows.length===1 && _shownWindows[0].options.doNotHideOnBackplateClick === true) {
+				if (_shownWindows.length>1 || _shownWindows[0].options.hideOnBackplateClick === false) {
 					return false;
 				}
 				_popupWindowsService.hideAllWindows();
@@ -273,7 +280,12 @@ function WLCWebsite(wlcJS) {
 		this.createWindow = function(rootElement, options) {
 			_tryCreatingBackplate.call(this);
 			window.addEventListener('resize', this.refreshAllWindows.bind(this));
-			return new this.PopupWindow(rootElement, options);
+			var _newWindow = _createWindow(rootElement, options);
+			if (_newWindow) {
+				this.windows.push(_newWindow);
+				this.pageWrapElement.appendChild(_newWindow.rootElement);
+			}
+			return _newWindow;
 		}
 
 		this.showBackplate = function() {
@@ -313,7 +325,7 @@ function WLCWebsite(wlcJS) {
 		}
 
 
-		function PopupWindow(rootElement, initOptions) {
+		function _createWindow(rootElement, initOptions) {
 			// options = {
 			//		centered:				boolean		<default=true>
 			//		centerRef:				can be any of:
@@ -336,7 +348,7 @@ function WLCWebsite(wlcJS) {
 			//		autoHideDelayDuration:	Number		<default=1500, unit=ms>, ONLY takes effects when autoHide is true
 			//
 			//		showBackplate:			boolean		<default=true>, could be OVERRIDED by argument of show() method, if that argument is provided.
-			//		doNotHideOnBackplateClick:	boolean		<default=false>
+			//		hideOnBackplateClick:	boolean		<default=false>
 			//
 			//		showButtons:			[ array of elements ]
 			//		hideButtons:			[ array of elements ]
@@ -352,125 +364,120 @@ function WLCWebsite(wlcJS) {
 			// this.buttonsWhoHideMe		is the getter that does same as			this.options.hideButtons
 			// this.buttonsWhoToggleMe		is the getter that does same as			this.options.toggleButtons
 
-			this.logName = 'popupwindow "#"';
-			this.rootElement = undefined;
-			this.isShown = false;
+			if (!wlcJS.domTools.isDom(rootElement)) {
+				e('Invalid element for the rootElement of a {popupWindow} object.');
+				return;
+			}
 
-			this.options = {
-				centered: true,
-				centerRef: window,
-				offsetX: 0,
-				offsetY: 0,
+			var _thisPopupWindow = {
 
-				minMarginTop: 10,
-				minMarginRight: 10,
-				minMarginBottom: 10,
-				minMarginLeft: 10,
-					
-				showingDuration: 333,
-				hidingDuration: 333,
+				rootElement: rootElement,
+				logName: 'popupwindow "#'+rootElement.id+'"',
+				isShown: false,
 
-				autoHide: undefined,
-				autoHideDelayDuration: 1500,
+				options: {
+					centered: true,
+					centerRef: window,
+					offsetX: 0,
+					offsetY: 0,
 
-				showBackplate: true,
-				doNotHideOnBackplateClick: false,
+					minMarginTop: 10,
+					minMarginRight: 10,
+					minMarginBottom: 10,
+					minMarginLeft: 10,
+						
+					showingDuration: 333,
+					hidingDuration: 333,
 
-				showButtons: [],
-				hideButtons: [],
-				toggleButtons: []
+					autoHide: undefined,
+					autoHideDelayDuration: 1500,
+
+					showBackplate: true,
+					hideOnBackplateClick: false,
+
+					showButtons: [],
+					hideButtons: [],
+					toggleButtons: []
+				},
+
+				config: function (options, _allowWarning) { _config.call(this, options, _allowWarning); },
+
+				addShowButtons: function (elementsArray, _allowWarning) { return _addButtonsToArray.call(this, elementsArray, this.options.showButtons, _allowWarning); },
+				addHideButtons: function (elementsArray, _allowWarning) { return _addButtonsToArray.call(this, elementsArray, this.options.hideButtons, _allowWarning); },
+				addToggleButtons: function (elementsArray, _allowWarning) { return _addButtonsToArray.call(this, elementsArray, this.options.toggleButtons, _allowWarning); },
+				removeShowButtons: function (elementsArray) { return _removeButtonsFromArray.call(this, elementsArray, this.options.showButtons); },
+				removeHideButtons: function (elementsArray) { return _removeButtonsFromArray.call(this, elementsArray, this.options.hideButtons); },
+				removeToggleButtons: function (elementsArray) { return _removeButtonsFromArray.call(this, elementsArray, this.options.toggleButtons); },
+				clearShowButtons: function () { _clearButtonsInArray.call(this, 'showButtons'); },
+				clearHideButtons: function () { _clearButtonsInArray.call(this, 'hideButtons'); },
+				clearToggleButtons: function () { _clearButtonsInArray.call(this, 'toggleButtons'); },
+
+				updateSizeAndPosition: function () { _updateSizeAndPosition.call(this); },
+				refresh: function () { _refresh.call(this); },
+
+				show: function (options) { _show.call(this, options); },
+				hide: function () { _hide.call(this); },
+				toggle: function () { _toggle.call(this); },
+				onshow: undefined,
+				onhide: undefined
 			};
 
-			this.config = function (options, _allowWarning) { _config.call(this, options, _allowWarning); }
-			this.updateContent = function (innerHTML) { this.rootElement.innerHTML = innerHTML; _refresh.call(this); }
-			this.addShowButtons = function (elementsArray, _allowWarning) { return _addButtonsToArray.call(this, elementsArray, this.options.showButtons, _allowWarning); }
-			this.addHideButtons = function (elementsArray, _allowWarning) { return _addButtonsToArray.call(this, elementsArray, this.options.hideButtons, _allowWarning); }
-			this.addToggleButtons = function (elementsArray, _allowWarning) { return _addButtonsToArray.call(this, elementsArray, this.options.toggleButtons, _allowWarning); }
-			this.removeShowButtons = function (elementsArray) { return _removeButtonsFromArray.call(this, elementsArray, this.options.showButtons); }
-			this.removeHideButtons = function (elementsArray) { return _removeButtonsFromArray.call(this, elementsArray, this.options.hideButtons); }
-			this.removeToggleButtons = function (elementsArray) { return _removeButtonsFromArray.call(this, elementsArray, this.options.toggleButtons); }
-			this.clearShowButtons = function () { _clearButtonsInArray.call(this, 'showButtons'); }
-			this.clearHideButtons = function () { _clearButtonsInArray.call(this, 'hideButtons'); }
-			this.clearToggleButtons = function () { _clearButtonsInArray.call(this, 'toggleButtons'); }
-
-			this.updateSizeAndPosition = function () { _updateSizeAndPosition.call(this); }
-			this.show = function (options) { _show.call(this, options); }
-			this.hide = function () { _hide.call(this); }
-			this.toggle = function () { _toggle.call(this); }
-			this.onshow = function () { /*l('This is', this.logName, 'I\'m coming.');*/ }
-			this.onhide = function () { /*l('This is', this.logName, 'I\'m leaving.');*/ }
-			this.refresh = function () {
-				// not implemented yet
-				// to be overrided
-				// l('Refreshing '+this.logName+' content. This is the default method.');
-				this.updateSizeAndPosition();
-			}
 
 
+			function _config(o, _allowWarning) {
 
-			function _setRootElement(rootElement) {
-				if (!wlcJS.domTools.isDom(rootElement)) {
-					e('Invalid element for the rootElement of a {popupWindow} object.');
-					return;
-				}
-				this.rootElement = rootElement;
-				this.logName = 'popupwindow "'+this.rootElement.id+'"';
-			}
-
-			function _config(options, _allowWarning) {
-
-				var _ = options || {};
+				o = o || {};
 				var _o = this.options;
 				_allowWarning = (typeof _allowWarning === 'undefined') || !!_allowWarning;
 
-				if (_.hasOwnProperty('onshow') && typeof _.onshow === 'function') this.onshow = _.onshow;
-				if (_.hasOwnProperty('onhide') && typeof _.onhide === 'function') this.onhide = _.onhide;
-				if (_.hasOwnProperty('onRelocateEnd') && typeof _.onRelocateEnd === 'function') this.onRelocateEnd = _.onRelocateEnd;
+				if (o.hasOwnProperty('onshow') && typeof o.onshow === 'function') this.onshow = o.onshow;
+				if (o.hasOwnProperty('onhide') && typeof o.onhide === 'function') this.onhide = o.onhide;
+				if (o.hasOwnProperty('onRelocateEnd') && typeof o.onRelocateEnd === 'function') this.onRelocateEnd = o.onRelocateEnd;
 
-				if (_.hasOwnProperty('centered')) { _o.centered = !!_.centered; }
-				if (_.hasOwnProperty('autoHide')) { _o.autoHide = !!_.autoHide; }
-				if (_.hasOwnProperty('showBackplate')) {
-					_o.showBackplate = !!_.showBackplate;
+				if (o.hasOwnProperty('centered')) { _o.centered = !!o.centered; }
+				if (o.hasOwnProperty('autoHide')) { _o.autoHide = !!o.autoHide; }
+				if (o.hasOwnProperty('showBackplate')) {
+					_o.showBackplate = !!o.showBackplate;
 				} else {
 					if (typeof _o.autoHide != 'undefined') {
 						_o.showBackplate = !_o.autoHide;
 					}
 				}
 
-				if (_.hasOwnProperty('doNotHideOnBackplateClick')) {
-					_o.doNotHideOnBackplateClick = !!_.doNotHideOnBackplateClick && _o.showBackplate;
+				if (o.hasOwnProperty('hideOnBackplateClick')) {
+					_o.hideOnBackplateClick = !!o.hideOnBackplateClick && _o.showBackplate;
 				}
 
-				if (!isNaN(Number(_.offsetX))) { _o.offsetX = Number(_.offsetX); }
-				if (!isNaN(Number(_.offsetY))) { _o.offsetY = Number(_.offsetY); }
-				if (!isNaN(Number(_.minMarginTop))) { _o.minMarginTop = Number(_.minMarginTop); }
-				if (!isNaN(Number(_.minMarginRight))) { _o.minMarginRight = Number(_.minMarginRight); }
-				if (!isNaN(Number(_.minMarginBottom))) { _o.minMarginBottom = Number(_.minMarginBottom); }
-				if (!isNaN(Number(_.minMarginLeft))) { _o.minMarginLeft = Number(_.minMarginLeft); }
-				if (!isNaN(Number(_.showingDuration))) { _o.showingDuration = Number(_.showingDuration); }
-				if (!isNaN(Number(_.hidingDuration))) { _o.hidingDuration = Number(_.hidingDuration); }
-				if (!isNaN(Number(_.autoHideDelayDuration))) { _o.autoHideDelayDuration = Number(_.autoHideDelayDuration); }
+				if (!isNaN(Number(o.offsetX))) { _o.offsetX = Number(o.offsetX); }
+				if (!isNaN(Number(o.offsetY))) { _o.offsetY = Number(o.offsetY); }
+				if (!isNaN(Number(o.minMarginTop))) { _o.minMarginTop = Number(o.minMarginTop); }
+				if (!isNaN(Number(o.minMarginRight))) { _o.minMarginRight = Number(o.minMarginRight); }
+				if (!isNaN(Number(o.minMarginBottom))) { _o.minMarginBottom = Number(o.minMarginBottom); }
+				if (!isNaN(Number(o.minMarginLeft))) { _o.minMarginLeft = Number(o.minMarginLeft); }
+				if (!isNaN(Number(o.showingDuration))) { _o.showingDuration = Number(o.showingDuration); }
+				if (!isNaN(Number(o.hidingDuration))) { _o.hidingDuration = Number(o.hidingDuration); }
+				if (!isNaN(Number(o.autoHideDelayDuration))) { _o.autoHideDelayDuration = Number(o.autoHideDelayDuration); }
 
 				if (
-					_.centerRef && (
-						_.centerRef == document.documentElement ||
-						_.centerRef == document ||
-						_.centerRef == document.body ||
-						_.centerRef == window ||
-						_.centerRef == this.rootElement.parentNode ||
-						_.centerRef.toLowerCase() === 'parent' ||
-						_.centerRef.toLowerCase() === 'parentnode'
+					o.centerRef && (
+						o.centerRef == document.documentElement ||
+						o.centerRef == document ||
+						o.centerRef == document.body ||
+						o.centerRef == window ||
+						o.centerRef == this.rootElement.parentNode ||
+						o.centerRef.toLowerCase() === 'parent' ||
+						o.centerRef.toLowerCase() === 'parentnode'
 					)
 				) {
 
-					_o.centerRef = _.centerRef;
+					_o.centerRef = o.centerRef;
 
-					if (_.centerRef == document.documentElement ||
-						_.centerRef == document ||
-						_.centerRef == document.body ||
-						_.centerRef == window
+					if (o.centerRef == document.documentElement ||
+						o.centerRef == document ||
+						o.centerRef == document.body ||
+						o.centerRef == window
 					) {
-						_.centerRef = document.documentElement;
+						o.centerRef = document.documentElement;
 					}
 
 					if (_o.centerRef === 'parent' || _o.centerRef === 'parentnode') {
@@ -478,17 +485,17 @@ function WLCWebsite(wlcJS) {
 					}
 				}
 
-				if (Array.isArray(_.showButtons)) {
+				if (Array.isArray(o.showButtons)) {
 					this.clearShowButtons();
-					this.addShowButtons(_.showButtons, _allowWarning);
+					this.addShowButtons(o.showButtons, _allowWarning);
 				}
-				if (Array.isArray(_.hideButtons)) {
+				if (Array.isArray(o.hideButtons)) {
 					this.clearHideButtons();
-					this.addHideButtons(_.hideButtons, _allowWarning);
+					this.addHideButtons(o.hideButtons, _allowWarning);
 				}
-				if (Array.isArray(_.toggleButtons)) {
+				if (Array.isArray(o.toggleButtons)) {
 					this.clearToggleButtons();
-					this.addToggleButtons(_.toggleButtons, _allowWarning);
+					this.addToggleButtons(o.toggleButtons, _allowWarning);
 				}
 
 
@@ -498,7 +505,6 @@ function WLCWebsite(wlcJS) {
 
 				_refresh.call(this);
 			}
-
 
 
 			function _clearButtonsInArray(arrayName) {
@@ -514,7 +520,6 @@ function WLCWebsite(wlcJS) {
 					w('The array "'+arrayName+'" of '+this.logName+' has been cleared! From now on, there is nothing inside this array.');
 				}
 			}
-
 			function _addButtonsToArray(elementOrArrayToAdd, targetArray, _allowWarning) {
 				var addedElements = [];
 				_allowWarning = (typeof _allowWarning === 'undefined') || !!_allowWarning;
@@ -588,7 +593,6 @@ function WLCWebsite(wlcJS) {
 
 				return addedElements;
 			}
-
 			function _removeButtonsFromArray(elementOrArrayToAdd, targetArray) {
 				var removedElements = [];
 
@@ -635,7 +639,6 @@ function WLCWebsite(wlcJS) {
 					);
 				};
 			}
-
 			function _wireUpHideButtons(elementsArray) {
 				for (var i = 0; i < elementsArray.length; i++) {
 					var element = elementsArray[i];
@@ -650,7 +653,6 @@ function WLCWebsite(wlcJS) {
 					);
 				};
 			}
-
 			function _wireUpToggleButtons(elementsArray) {
 				for (var i = 0; i < elementsArray.length; i++) {
 					var element = elementsArray[i];
@@ -671,27 +673,22 @@ function WLCWebsite(wlcJS) {
 			function _detachOneShowButton(showButton) {
 				$(showButton).off('click'+'.showPopupWindow-'+this.rootElement.id);
 			}
-
 			function _detachOneHideButton(hideButton) {
 				$(hideButton).off('click'+'.hidePopupWindow-'+this.rootElement.id);
 			}
-
 			function _detachOneToggleButton(toggleButton) {
 				$(toggleButton).off('click'+'.togglePopupWindow-'+this.rootElement.id);
 			}
-
 			function _detachAllShowButtons() {
 				for (var i = 0; i < this.options.showButtons.length; i++) {
 					_detachOneShowButton.call(this, this.options.showButtons[i]);
 				};
 			}
-
 			function _detachAllHideButtons() {
 				for (var i = 0; i < this.options.hideButtons.length; i++) {
 					_detachOneHideButton.call(this, this.options.hideButtons[i]);
 				};
 			}
-
 			function _detachAllToggleButtons() {
 				for (var i = 0; i < this.options.toggleButtons.length; i++) {
 					_detachOneToggleButton.call(this, this.options.toggleButtons[i]);
@@ -699,36 +696,6 @@ function WLCWebsite(wlcJS) {
 			}
 
 
-
-			function _show(o) {
-				if (this.isShown) {
-					// l(this.logName+' has already been opened. Skipped.');
-					// return false;
-				}
-				this.isShown = true;
-
-				o = o || {};
-				o.showBackplate = (o.hasOwnProperty('showBackplate')) ? !!o.showBackplate : !!this.options.showBackplate;
-				// if (typeof o.onShow === 'function') {
-				// 	o.onshow.call(this);
-				// }
-
-				if (typeof this.onshow === 'function') this.onshow();
-				_popupWindowsService.prepareShowingPopupWindow(this, o.showBackplate);
-
-				this.rootElement.show(this.options.showingDuration);
-
-				this.updateSizeAndPosition();
-				// l(this.logName+'this.options.autoHide:', this.options.autoHide, '\nthis.options:', this.options)
-				if (!!this.options.autoHide) {
-					var thisPopupWindow = this;
-					var _duration = this.options.autoHideDelayDuration + this.options.showingDuration;
-					l(this.logName+' will close automatically in about '+Math.round(_duration/1000)+' seconds.');
-					window.setTimeout(function () {
-						thisPopupWindow.hide();
-					}, _duration);
-				}
-			}
 
 			function _updateSizeAndPosition() {
 				if (this.options.centered) {
@@ -751,7 +718,33 @@ function WLCWebsite(wlcJS) {
 				}
 				if (typeof this.onRelocateEnd === 'function') this.onRelocateEnd();		
 			}
+			function _refresh() { if (this.isShown) this.updateSizeAndPosition(); }
 
+
+
+			function _show(o) {
+				if (this.isShown) {
+					// l(this.logName+' has already been opened. Skipped.');
+					// return false;
+				}
+				this.isShown = true;
+
+				o = o || {};
+				o.showBackplate = (o.hasOwnProperty('showBackplate')) ? !!o.showBackplate : !!this.options.showBackplate;
+				o.autoHide = (o.hasOwnProperty('autoHide')) ? !!o.autoHide : !!this.options.autoHide;
+
+				if (typeof this.onshow === 'function') this.onshow();
+				_popupWindowsService.prepareShowingPopupWindow(this, o.showBackplate);
+
+				this.rootElement.show(this.options.showingDuration);
+				this.updateSizeAndPosition();
+
+				if (o.autoHide) {
+					var _duration = this.options.autoHideDelayDuration + this.options.showingDuration;
+					// l(this.logName+' will close automatically in about '+Math.round(_duration/1000)+' seconds.');
+					window.setTimeout(function () { _thisPopupWindow.hide(); }, _duration);
+				}
+			}
 			function _hide() {
 				if (!this.isShown) {
 					// l(this.logName+' has already been closed. Skipped.');
@@ -764,7 +757,6 @@ function WLCWebsite(wlcJS) {
 				_popupWindowsService.prepareHidingPopupWindow(this);
 				this.rootElement.hide(this.options.hidingDuration);
 			}
-
 			function _toggle() {
 				if (this.isShown) {
 					this.hide();
@@ -774,30 +766,23 @@ function WLCWebsite(wlcJS) {
 			}
 
 
-			function _refresh() { if (this.isShown) this.refresh(); }
 
-
-
-			Object.defineProperty(this, 'buttonsWhoShowMe', {
+			Object.defineProperty(_thisPopupWindow, 'buttonsWhoShowMe', {
 				get: function () { return this.options.showButtons; }
 			});
 
-			Object.defineProperty(this, 'buttonsWhoHideMe', {
+			Object.defineProperty(_thisPopupWindow, 'buttonsWhoHideMe', {
 				get: function () { return this.options.hideButtons; }
 			});
 
-			Object.defineProperty(this, 'buttonsWhoToggleMe', {
+			Object.defineProperty(_thisPopupWindow, 'buttonsWhoToggleMe', {
 				get: function () { return this.options.toggleButtons; }
 			});
 
 
 
-			_setRootElement.call(this, rootElement);
-
-			if (this.rootElement) {
+			return (function() { // initializing
 				this.rootElement.style.display = 'none';
-				_popupWindowsService.rootElement.appendChild(this.rootElement);
-				// this.hide(); // will cause fadingOut if jQuery or Zepto presents.
 				this.config(initOptions, false);
 
 				// l(this.logName+':\n\tJust for conveniences, construcor is now automatically searching all possible hide-buttons:');
@@ -807,11 +792,10 @@ function WLCWebsite(wlcJS) {
 					this.rootElement.qS('.button-confirm'),
 					this.rootElement.qS('.button-yes')
 				], false);
-				_popupWindowsService.windows.push(this);
-			}
 
-			return true;
-		} // CLASS:PopupWindow
+				return this;
+			}).apply(_thisPopupWindow);
+		} // _createWindow
 	});
 
 
